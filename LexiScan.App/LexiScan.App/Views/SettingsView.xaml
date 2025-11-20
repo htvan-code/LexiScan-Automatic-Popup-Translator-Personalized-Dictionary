@@ -1,0 +1,77 @@
+﻿<UserControl x:Class="LexiScan.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="800">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="LexiScan" 
+                   FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Width="550" HorizontalAlignment="Left">
+
+                <GroupBox Header="Phím Tắt &amp; Tương Tác Hệ Thống" Margin="0,10">
+                    <StackPanel Margin="15">
+                        <TextBlock Text="Phím Tắt Kích Hoạt (Hotkey):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Name="HotkeyTextBox" Grid.Column="0" Text="Ctrl + Shift + S (Placeholder)" 
+                                     IsReadOnly="True" Height="30" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
+                            <Button Content="Thiết Lập" Grid.Column="1" Width="80" Height="30"/>
+                        </Grid>
+
+                        <CheckBox Content="Hiển thị Icon quét sau khi chọn văn bản" 
+                                  IsChecked="True" Margin="0,15,0,5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Giao Diện &amp; Màu Sắc" Margin="0,10">
+                    <StackPanel Margin="15">
+
+                        <TextBlock Text="Chủ Đề (Theme):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox Name="ThemeComboBox" SelectedIndex="0" Width="200" HorizontalAlignment="Left" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Chủ Đề Sáng (Light)"/>
+                            <ComboBoxItem Content="Chủ Đề Tối (Dark)"/>
+                            <ComboBoxItem Content="Tùy chỉnh"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Màu Accent Chính (Primary Color):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox Text="#30A8FF (Placeholder Color)" Width="200" HorizontalAlignment="Left" Height="30"/>
+
+                        <CheckBox Content="Bật chế độ đọc tự động (Auto-Read) khi dịch xong" 
+                                  IsChecked="False" Margin="0,15,0,5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Quản Lý Dữ Liệu" Margin="0,10">
+                    <StackPanel Margin="15">
+                        <CheckBox Content="Lưu lịch sử tra cứu vào Từ điển Cá nhân" 
+                                  IsChecked="True" Margin="0,5"/>
+
+                        <Button Content="Xóa Toàn Bộ Lịch Sử Tra Cứu" Name="DeleteHistoryButton" 
+                                Width="250" HorizontalAlignment="Left" Margin="0,15"/>
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Hủy Bỏ" Width="100" Margin="0,0,10,0"/>
+            <Button Content="LƯU CÀI ĐẶT" Name="SaveSettingsButton" Width="150" FontWeight="Bold"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
