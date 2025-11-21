@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LexiScan.App.ViewModels;
+using LexiScan.App.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +25,9 @@ namespace LexiScan.App
         public MainWindow()
         {
             InitializeComponent();
+            SettingsView settingsView = new SettingsView();
+            settingsView.DataContext = new SettingsViewModel();
+            MainContentArea.Content = settingsView;
         }
     }
 }

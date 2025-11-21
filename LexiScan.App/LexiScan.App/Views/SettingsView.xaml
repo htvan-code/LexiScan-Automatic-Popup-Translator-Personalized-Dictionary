@@ -19,7 +19,7 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Width="550" HorizontalAlignment="Left">
 
-                <GroupBox Header="Phím Tắt &amp; Tương Tác Hệ Thống" Margin="0,10">
+                <GroupBox Header="Phím Tắt &amp; Tương Tác Hệ Thống" Margin="0,10" BorderBrush="#FF004286">
                     <StackPanel Margin="15">
                         <TextBlock Text="Phím Tắt Kích Hoạt (Hotkey):" FontWeight="SemiBold" Margin="0,0,0,5"/>
 
@@ -38,7 +38,7 @@
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Giao Diện &amp; Màu Sắc" Margin="0,10">
+                <GroupBox Header="Giao Diện &amp; Màu Sắc" Margin="0,10" AutomationProperties.IsColumnHeader="True" BorderBrush="#FF004286">
                     <StackPanel Margin="15">
 
                         <TextBlock Text="Chủ Đề (Theme):" FontWeight="SemiBold" Margin="0,0,0,5"/>
@@ -56,7 +56,7 @@
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Quản Lý Dữ Liệu" Margin="0,10">
+                <GroupBox Header="Quản Lý Dữ Liệu" Margin="0,10" BorderBrush="#FF004286">
                     <StackPanel Margin="15">
                         <CheckBox Content="Lưu lịch sử tra cứu vào Từ điển Cá nhân" 
                                   IsChecked="True" Margin="0,5"/>
