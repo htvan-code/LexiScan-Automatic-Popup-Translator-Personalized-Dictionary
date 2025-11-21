@@ -24,5 +24,10 @@ namespace LexiScan.App.Views
         {
             InitializeComponent();
         }
+
+        private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
