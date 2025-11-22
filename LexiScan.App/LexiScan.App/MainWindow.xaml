@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LexiScan.App"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="726">
+        Title="MainWindow" Height="514" Width="651">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="703*"/>
