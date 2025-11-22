@@ -5,12 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LexiScan.App"
         mc:Ignorable="d"
-        Title="MainWindow" Height="514" Width="651">
+        Title="LexiScan - Translator" Height="514" Width="651">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="703*"/>
-            <ColumnDefinition Width="97*"/>
+            <ColumnDefinition Width="9*"/>
+            <ColumnDefinition Width="117*"/>
+            <ColumnDefinition Width="67*"/>
+            <ColumnDefinition Width="379*"/>
+            <ColumnDefinition Width="79*"/>
         </Grid.ColumnDefinitions>
-        <ContentControl Name="MainContentArea" Margin="0,10,0,0" Grid.ColumnSpan="2"/>
+        <ContentControl Name="MainContentArea" Margin="0,10,0,0" Grid.ColumnSpan="5"/>
     </Grid>
 </Window>
