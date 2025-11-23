@@ -24,5 +24,15 @@ namespace LexiScan.App.Views
         {
             InitializeComponent();
         }
+
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void SearchTextBox_TextChanged_1()
+        {
+
+        }
     }
 }
