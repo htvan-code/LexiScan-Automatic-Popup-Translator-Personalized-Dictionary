@@ -65,7 +65,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBox Name="HotkeyTextBox"
-                                     Text="Ctrl + Shift + S"
+                                     Text="Ctrl + Space"
                                      IsReadOnly="True"
                                      Height="30"
                                      VerticalContentAlignment="Center"
