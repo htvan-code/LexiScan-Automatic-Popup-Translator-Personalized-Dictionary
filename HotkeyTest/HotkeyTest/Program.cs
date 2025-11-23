@@ -40,14 +40,11 @@ class Program
         // --- PHẦN 2: GIẢ LẬP CÀI ĐẶT CỦA NGƯỜI DÙNG (SETTINGS) ---
 
         // Sau này, 2 dòng dưới đây sẽ được thay bằng code đọc từ file (ví dụ: Settings.Load())
-        // Hiện tại, ta gán mặc định là Shift (0x0004) và S (0x53)
-        int userKeyModifier = MOD_SHIFT;
-        int userKeyVCode = 0x53; // Mã Hex của phím 'S'
+        // Hiện tại, ta gán mặc định là Ctrl (0x0002) và Space (0x20)
+        int userKeyModifier = MOD_CONTROL;
+        int userKeyVCode = 0x20; // Mã Hex của phím 'S'
 
-        // Ví dụ: Nếu muốn đổi thành Alt + Q, bạn chỉ cần sửa dòng trên thành:
-        // int userKeyModifier = MOD_ALT;
-        // int userKeyVCode = 0x51; // Phím Q
-
+        
         Console.WriteLine($"Dang dang ky phim tat voi ma: Mod={userKeyModifier}, Key={userKeyVCode:X}");
 
         // --- PHẦN 3: ĐĂNG KÝ VỚI WINDOWS ---
