@@ -1,20 +1,15 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows.Forms; 
 
 class Program
 {
-    // --- PHẦN 1: ĐỊNH NGHĨA CÁC HẰNG SỐ CƠ BẢN ---
+    //  KHAI BÁO HOTKEY-----
+    const int MOD_CONTROL = 0x0002;
     const int WM_HOTKEY = 0x0312;
     const int HOTKEY_ID = 1;
 
-    // Các phím bổ trợ (Modifiers)
-    const int MOD_NONE = 0x0000;
-    const int MOD_ALT = 0x0001;
-    const int MOD_CONTROL = 0x0002;
-    const int MOD_SHIFT = 0x0004;
-    const int MOD_WIN = 0x0008;
-
-    // P/Invoke
     [DllImport("user32.dll")]
     public static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
 
@@ -35,44 +30,73 @@ class Program
         public int pt_y;
     }
 
+    // --- MAIN ---
+
+    // truy cập Clipboard
+    [STAThread]
     static void Main(string[] args)
     {
-        // --- PHẦN 2: GIẢ LẬP CÀI ĐẶT CỦA NGƯỜI DÙNG (SETTINGS) ---
+        Console.WriteLine("--- TEXT SELECTION TOOL ---");
+        Console.WriteLine("B1: Boi den mot doan text bat ky (tren Chrome, Word...).");
+        Console.WriteLine("B2: Nhan to hop phim: Ctrl + Space");
 
-        // Sau này, 2 dòng dưới đây sẽ được thay bằng code đọc từ file (ví dụ: Settings.Load())
-        // Hiện tại, ta gán mặc định là Ctrl (0x0002) và Space (0x20)
-        int userKeyModifier = MOD_CONTROL;
-        int userKeyVCode = 0x20; // Mã Hex của phím 'S'
-
-        
-        Console.WriteLine($"Dang dang ky phim tat voi ma: Mod={userKeyModifier}, Key={userKeyVCode:X}");
-
-        // --- PHẦN 3: ĐĂNG KÝ VỚI WINDOWS ---
-
-        // Truyền biến số userKeyModifier và userKeyVCode vào thay vì số cứng
-        if (RegisterHotKey(IntPtr.Zero, HOTKEY_ID, userKeyModifier, userKeyVCode))
+        // Đăng ký Ctrl + Space (0x20)
+        if (RegisterHotKey(IntPtr.Zero, HOTKEY_ID, MOD_CONTROL, 0x20))
         {
-            Console.WriteLine("Dang ky THANH CONG!");
-            Console.WriteLine("Hay thu nhan: Shift + S");
-            Console.WriteLine("(Luu y: Khi dang chay, ban se KHONG go duoc chu S in hoa binh thuong)");
+            Console.WriteLine("Da san sang! Hay thu boi den text va bam Hotkey.");
         }
         else
         {
-            Console.WriteLine("Loi: Khong the dang ky. Co the phim tat nay dang bi trung.");
+            Console.WriteLine("Loi dang ky Hotkey!");
             return;
         }
 
-        // --- PHẦN 4: LẮNG NGHE ---
         MSG msg;
         while (GetMessage(out msg, IntPtr.Zero, 0, 0) != 0)
         {
             if (msg.message == WM_HOTKEY)
             {
-                // Logic xử lý khi bấm phím sẽ nằm ở đây
-                Console.WriteLine($"!!! DA BAT DUOC PHIM TAT !!! (Time: {DateTime.Now.ToString("HH:mm:ss")})");
+                // Khi bấm Hotkey, ta gọi hàm xử lý
+                HandleSelection();
             }
         }
 
         UnregisterHotKey(IntPtr.Zero, HOTKEY_ID);
+    }
+
+    // --- PHẦN 3: LOGIC LẤY TEXT (CORE) ---
+    static void HandleSelection()
+    {
+        // 1. Xóa Clipboard cũ để tránh lấy nhầm dữ liệu cũ
+        // (Bỏ qua bước này nếu muốn giữ lịch sử, nhưng nên làm để sạch sẽ)
+        try { Clipboard.Clear(); } catch { }
+
+        // 2. Giả lập nhấn Ctrl + C
+        // SendWait: Gửi phím và chờ xử lý xong mới chạy tiếp
+        // "^c": Trong SendKeys, dấu ^ đại diện cho Ctrl, c là phím C
+        SendKeys.SendWait("^c");
+
+        // 3. Chờ một chút xíu để hệ điều hành kịp chép vào Clipboard
+        // (Windows cần vài mili-giây để xử lý việc copy)
+        Thread.Sleep(150);
+
+        // 4. Lấy dữ liệu từ Clipboard ra
+        if (Clipboard.ContainsText())
+        {
+            string selectedText = Clipboard.GetText();
+
+            // In ra kết quả
+            Console.WriteLine("\n---------------------------------");
+            Console.WriteLine("NOI DUNG BAN VUA CHON LA:");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine(selectedText);
+            Console.WriteLine("---------------------------------");
+
+            // SAU NÀY: Thay vì Console.WriteLine, bạn sẽ gửi text này vào Google Translate API
+        }
+        else
+        {
+            Console.WriteLine("\n[!] Khong lay duoc text (Co the ban chua boi den?)");
+        }
     }
 }
