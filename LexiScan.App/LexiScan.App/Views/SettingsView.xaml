@@ -5,20 +5,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
-             d:DesignHeight="700" d:DesignWidth="592"
+             d:DesignHeight="815.27" d:DesignWidth="592"
              Background="White">
 
-    <!-- 🟦 Global Styles -->
     <UserControl.Resources>
-
-        <!-- GroupBox Style -->
+        <!-- Styles đã giữ nguyên -->
         <Style TargetType="GroupBox">
             <Setter Property="BorderBrush" Value="#FF0771DD"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="0,10,0,10"/>
         </Style>
 
-        <!-- Button Style -->
         <Style TargetType="Button">
             <Setter Property="Height" Value="32"/>
             <Setter Property="Margin" Value="0,5,0,5"/>
@@ -26,9 +23,7 @@
             <Setter Property="Background" Value="#FFEDEDED"/>
             <Setter Property="BorderBrush" Value="#FFA19898"/>
         </Style>
-
     </UserControl.Resources>
-
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -37,7 +32,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- TITLE -->
         <TextBlock Grid.Row="0"
                    FontSize="28" FontWeight="Bold"
                    Margin="0,0,0,20"
@@ -45,19 +39,13 @@
             <Run Text="⚙️ LexiScan Settings"/>
         </TextBlock>
 
-
-        <!-- SCROLL CONTENT -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Width="550" HorizontalAlignment="Left">
 
-
-                <!-- 🔶 HOTKEY -->
                 <GroupBox Header="Phím Tắt &amp; Tương Tác Hệ Thống">
                     <StackPanel Margin="15">
-
                         <TextBlock Text="Phím Tắt Kích Hoạt (Hotkey):"
                                    FontWeight="SemiBold" Foreground="#FF0C39E8"/>
-
                         <Grid Margin="0,5,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -89,45 +77,66 @@
                     </StackPanel>
                 </GroupBox>
 
-
-                <!-- 🟩 THEME SECTION -->
-                <GroupBox Header="Giao Diện &amp; Màu Sắc">
+                <!-- ĐÃ SỬA: SỬ DỤNG RADIO BUTTONS THAY CHO COMBOBOX -->
+                <GroupBox Header="Phát Âm (Speech)">
                     <StackPanel Margin="15">
 
-                        <TextBlock Text="Chủ Đề (Theme):"
-                                   FontWeight="SemiBold" Foreground="#FF2A50E9"/>
+                        <!-- Tốc độ phát âm (Sử dụng RadioButton) -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="VolumeHigh" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#333"/>
+                            <TextBlock Text="Tốc độ phát âm" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" Foreground="#333"/>
+                        </StackPanel>
 
-                        <ComboBox Name="ThemeComboBox"
-                                  SelectedIndex="0"
-                                  Width="220"
-                                  Margin="0,5,0,15" BorderBrush="White">
-                            <ComboBoxItem Content="Chủ Đề Sáng (Light)"/>
-                            <ComboBoxItem Content="Chủ Đề Tối (Dark)"/>
-                            <ComboBoxItem Content="Tùy chỉnh"/>
-                        </ComboBox>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
+                            <!-- GroupName là BẮT BUỘC để đảm bảo chỉ chọn được 1 trong 3 -->
+                            <RadioButton Content="Chậm hơn" GroupName="SpeedGroup" Margin="0,0,20,0"/>
+                            <RadioButton Content="Chậm" GroupName="SpeedGroup" Margin="0,0,20,0"/>
+                            <RadioButton Content="Bình thường" GroupName="SpeedGroup" IsChecked="True"/>
+                        </StackPanel>
 
-                        <TextBlock Text="Màu Accent Chính:"
-                                   FontWeight="SemiBold" Foreground="#FF2A50E9"/>
+                        <!-- Giọng Phát âm Mặc định (Sử dụng RadioButton) -->
+                        <TextBlock Text="Âm thanh mặc định" FontWeight="SemiBold" Foreground="#FF2A50E9" Margin="0,5,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
+                            <RadioButton Content="Anh Anh" GroupName="VoiceGroup" IsChecked="True" Margin="0,0,20,0"/>
+                            <RadioButton Content="Anh Mỹ" GroupName="VoiceGroup"/>
+                        </StackPanel>
 
-                        <TextBox Text="#30A8FF"
-                                 Width="200"
-                                 Height="30"
-                                 Margin="0,5,0,0"/>
+                        <!-- Tự động phát âm khi tra từ (Sử dụng CheckBox, đã có sẵn) -->
+                        <TextBlock Text="Tự động phát âm khi tra từ" FontWeight="SemiBold" Foreground="#FF2A50E9" Margin="0,5,0,0"/>
+                        <CheckBox Content="Tự động phát âm" IsChecked="True" Margin="0,5,0,0"/>
 
-                        <CheckBox Content="Bật chế độ đọc tự động khi dịch xong"
-                                  Margin="0,15,0,0"/>
+                        <!-- CheckBox còn lại -->
+                        <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" Margin="0,5,0,0"/>
+
                     </StackPanel>
                 </GroupBox>
 
+                <GroupBox Header="Giao Diện">
+                    <StackPanel Margin="15">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Chủ Đề Tối"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       Foreground="#333"/>
 
-                <!-- 🟥 DATA MANAGEMENT -->
+                            <ToggleButton Name="ToggleDarkMode"
+                                          Margin="10,0" IsChecked="False" VerticalAlignment="Center"
+                                          Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                          ToolTip="Bật để chuyển sang Chủ Đề Tối"/>
+
+                            <TextBlock Text="Chủ Đề Sáng"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       Foreground="#333"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
                 <GroupBox Header="Quản Lý Dữ Liệu">
                     <StackPanel Margin="15">
-
                         <CheckBox Content="Lưu lịch sử tra cứu vào Từ điển cá nhân"
                                   IsChecked="True"/>
-
-                        <Button Width="240" Margin="0,15,0,0" Background="#FFD5EEFF" BorderBrush="White">
+                        <Button Width="240" Margin="0,15,0,0" Background="#FFD5EEFF" BorderBrush="White" HorizontalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon 
                                     Kind="DeleteForever"
@@ -136,15 +145,11 @@
                                 <TextBlock Text="Xóa Toàn Bộ Lịch Sử Tra Cứu"/>
                             </StackPanel>
                         </Button>
-
                     </StackPanel>
                 </GroupBox>
-
             </StackPanel>
         </ScrollViewer>
 
-
-        <!-- FOOTER BUTTONS -->
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right" Margin="0,20,0,0">
 
@@ -161,8 +166,6 @@
                     <TextBlock Text="Lưu Cài Đặt"/>
                 </StackPanel>
             </Button>
-
         </StackPanel>
-
     </Grid>
 </UserControl>
