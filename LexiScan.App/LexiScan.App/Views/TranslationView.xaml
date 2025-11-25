@@ -1,0 +1,201 @@
+﻿<UserControl x:Class="LexiScan.App.Views.TranslationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="#F4F4F9">
+
+    <UserControl.Resources>
+
+        <!-- Style cơ bản cho các nút icon hành động nhỏ -->
+        <Style x:Key="ActionIconButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Style cho Tab Ngôn ngữ -->
+        <Style x:Key="LanguageTabStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border" BorderBrush="Transparent" BorderThickness="0,0,0,3" Margin="0,0,0,-1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#333"/>
+                            </Trigger>
+                            <Trigger Property="IsDefaulted" Value="True">
+                                <Setter Property="Foreground" Value="#0C39E8"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#0C39E8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- STYLE CHO ICON TÌM KIẾM/MICRO -->
+        <Style x:Key="MicroSearchIconStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Foreground" Value="#0C39E8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- TIÊU ĐỀ GỐC: "Translate" -->
+        <TextBlock Grid.Row="0" Text="Translate" 
+                   FontSize="28" FontWeight="Bold" 
+                   Foreground="#0C39E8" Margin="5,0,0,10"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT 0: VĂN BẢN NGUỒN (SOURCE: Anh) -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Margin="5,5,5,5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Ngôn ngữ nguồn (Thanh Tabs) -->
+                    <Border Grid.Row="0" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal" Margin="10,0" Height="45">
+                            <Button Content="Anh" Style="{StaticResource LanguageTabStyle}" IsDefault="True"/>
+                    
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Vùng nhập văn bản & Actions -->
+                    <Grid Grid.Row="1" Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Textbox -->
+                        <TextBox Grid.Row="0" x:Name="SourceTextBox" 
+                                 Text="" 
+                                 BorderThickness="0" Background="Transparent" 
+                                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                 FontSize="18" Foreground="#333" FontWeight="SemiBold" 
+                                 MinHeight="150" AcceptsReturn="True" VerticalAlignment="Stretch"/>
+
+                        <!-- Thanh công cụ dưới cùng -->
+                        <Grid Grid.Row="1" Height="30" VerticalAlignment="Bottom" Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- MICRO/SEARCH (Góc dưới bên trái) -->
+                            <Button Grid.Column="0" Style="{StaticResource MicroSearchIconStyle}" Margin="0,0,10,0">
+                                <TextBlock Text="&#xE720;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center"/>
+                            </Button>
+
+                            <!-- Bộ đếm ký tự và menu (Góc dưới bên phải) -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="0" Foreground="#666" FontSize="13"/>
+                                <TextBlock Text="/ 5.000" Foreground="#AAA" FontSize="13" Margin="0,0,5,0"/>
+                                <Button Style="{StaticResource ActionIconButton}" Width="15" Height="25">
+                                    <TextBlock Text="&#xE70D;" FontFamily="Segoe MDL2 Assets" Foreground="#666" FontSize="10"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- CỘT 1: NÚT ĐỔI CHIỀU -->
+            <Border Grid.Column="1" VerticalAlignment="Top" Margin="0,50,0,0" Width="30" Height="30"
+                    Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
+                <Button Style="{StaticResource ActionIconButton}" Background="Transparent">
+                    <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" Foreground="#666" FontSize="14"/>
+                </Button>
+            </Border>
+
+            <!-- CỘT 2: KẾT QUẢ DỊCH (TARGET: Việt) -->
+            <Border Grid.Column="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Margin="5,5,5,5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Ngôn ngữ đích (Thanh Tabs) -->
+                    <Border Grid.Row="0" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal" Margin="10,0" Height="45">
+                            <Button Content="Việt" Style="{StaticResource LanguageTabStyle}" IsDefault="True"/>
+                         
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Vùng hiển thị kết quả (Target) -->
+                    <Grid Grid.Row="1" Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- TextBlock Tiêu đề kết quả -->
+                        <TextBlock Grid.Row="0" Text="Bản dịch" 
+                                   FontSize="18" FontWeight="SemiBold" Foreground="#333"
+                                   VerticalAlignment="Top" Margin="0,0,0,10"/>
+                    </Grid>
+
+                    <!-- Thanh công cụ dưới cùng (Target) -->
+                    <Grid Grid.Row="2" Height="30" VerticalAlignment="Bottom" Margin="10,0,10,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LOA, FAVORITE (Góc dưới bên trái) -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <Button Style="{StaticResource ActionIconButton}" Width="30" Height="30">
+                                <TextBlock Text="&#xE767;" FontFamily="Segoe MDL2 Assets" Foreground="#666" FontSize="16"/>
+                            </Button>
+                            <Button Style="{StaticResource ActionIconButton}" Margin="10,0,0,0">
+                                <TextBlock Text="&#xE734;" FontFamily="Segoe MDL2 Assets" Foreground="#666" FontSize="16"/>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Gợi ý phản hồi (Góc dưới bên phải) -->
+                        <TextBlock Grid.Column="2" Text="Gửi ý kiến phản hồi" FontSize="10" Foreground="#AAAAAA" 
+                                   VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

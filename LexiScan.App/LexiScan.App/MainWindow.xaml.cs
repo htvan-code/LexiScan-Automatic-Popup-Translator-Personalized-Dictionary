@@ -1,33 +1,53 @@
-﻿using LexiScan.App.ViewModels;
-using LexiScan.App.Views;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using LexiScan.App.Views; // Đảm bảo include namespace Views
 
-namespace LexiScan.App
+namespace LexiScan.App.ViewModels
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public class MainViewModel : BaseViewModel
     {
-        public MainWindow()
+        private UserControl _currentView;
+
+        public UserControl CurrentView
         {
-            InitializeComponent();
-            SettingsView settingsView = new SettingsView();
-            settingsView.DataContext = new SettingsViewModel();
-            MainContentArea.Content = settingsView;
+            get { return _currentView; }
+            set { SetProperty(ref _currentView, value); }
+        }
+
+        public ICommand NavigateCommand { get; set; }
+
+        public MainViewModel()
+        {
+            // THIẾT LẬP TRANG CHỦ MẶC ĐỊNH KHI ỨNG DỤNG KHỞI ĐỘNG
+            NavigateCommand = new RelayCommand(ExecuteNavigate);
+            CurrentView = new DictionaryView();
+        }
+
+        private void ExecuteNavigate(object parameter)
+        {
+            string viewName = parameter as string;
+
+            if (viewName == null) return;
+
+            // Xử lý chuyển View dựa trên CommandParameter
+            switch (viewName)
+            {
+                case "Home":
+                    CurrentView = new DictionaryView();
+                    break;
+                case "Dictionary":
+                    CurrentView = new PersonalDictionaryView();
+                    break;
+                case "History":
+                    CurrentView = new HistoryView();
+                    break;
+                case "Translation":
+                    CurrentView = new TranslationView();
+                    break;
+                case "Settings":
+                    CurrentView = new SettingsView();
+                    break;
+            }
         }
     }
 }
