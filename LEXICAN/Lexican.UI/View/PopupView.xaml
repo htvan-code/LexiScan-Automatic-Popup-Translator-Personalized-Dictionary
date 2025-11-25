@@ -1,0 +1,104 @@
+﻿<UserControl x:Class="LexiScan.UI.Views.PopupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="160" 
+             d:DesignWidth="400">
+
+    <UserControl.Resources>
+
+        <!-- Style nút icon -->
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="#666"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#007ACC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
+
+    <!-- Popup container -->
+    <Border Background="White"
+            CornerRadius="6"
+            BorderBrush="#007ACC"
+            BorderThickness="1"
+            Padding="10"
+            Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Hàng icon -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
+
+                <Button Style="{StaticResource IconButtonStyle}"
+                        ToolTip="Nghe đọc">
+                    <TextBlock Text="🔊" FontSize="15"/>
+                </Button>
+
+                <Button Style="{StaticResource IconButtonStyle}"
+                        ToolTip="Ghim nghĩa">
+                    <TextBlock Text="⭐" FontSize="15"/>
+                </Button>
+
+                <Button Style="{StaticResource IconButtonStyle}"
+                        ToolTip="Cài đặt">
+                    <TextBlock Text="⚙️" FontSize="15"/>
+                </Button>
+
+                <Button Style="{StaticResource IconButtonStyle}"
+                        ToolTip="Đóng"
+                        Click="Close_Click">
+                    <TextBlock Text="❌" FontSize="15"/>
+                </Button>
+
+            </StackPanel>
+
+            <!-- Nội dung -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="110">
+                <StackPanel Margin="0,5,0,0">
+
+                    <!-- Bản dịch -->
+                    <TextBlock x:Name="TranslatedText"
+                               Text="Đây là bản dịch thuần tiếng Việt của câu đã chọn."
+                               FontWeight="SemiBold"
+                               Foreground="#007ACC"
+                               TextWrapping="Wrap"/>
+
+                    <!-- Nghĩa từ -->
+                    <TextBlock x:Name="MeaningText"
+                               Text="Danh từ: quyền, quyền lực, thể lực"
+                               Foreground="#333"
+                               Margin="0,6,0,0"
+                               TextWrapping="Wrap"/>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+    </Border>
+</UserControl>
