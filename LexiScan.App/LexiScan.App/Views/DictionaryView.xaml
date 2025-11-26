@@ -7,7 +7,6 @@
              Background="#F4F4F9">
 
     <UserControl.Resources>
-        <!-- CÁC STYLES TÌM KIẾM CẦN PHẢI ĐƯỢC CHUYỂN SANG ĐÂY HOẶC APP.XAML -->
         <Style TargetType="{x:Type TextBox}" x:Key="SearchTextBoxStyle">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -64,9 +63,9 @@
         </Style>
     </UserControl.Resources>
 
-    <!-- NỘI DUNG CHÍNH (CỘT PHẢI CỦA TRANG CHỦ CŨ) -->
-    <Grid Margin="24,20,16,0" VerticalAlignment="Top"> 
+    <Grid Margin="24,20,16,0" VerticalAlignment="Top">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -124,8 +123,8 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Row="2" Name="SearchHistoryPopup"  
-                    Background="White"  
+            <Border Grid.Row="2" Name="SearchHistoryPopup" 
+                    Background="White" 
                     BorderBrush="#CCCCCC" BorderThickness="1"
                     CornerRadius="5" Margin="0,-5,0,0" Padding="0,0,0,5"
                     Visibility="Collapsed" Grid.ZIndex="1">
@@ -172,10 +171,10 @@
                                 <TextBlock Grid.Column="0" Text="&#xE100;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#666" Margin="0,0,10,0"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="instrument" FontWeight="Bold" FontSize="15" Foreground="#333"/>
-                                        <TextBlock Text=" ['ɪnstrəmənt] (n, v)" FontSize="12" Foreground="#666" FontStyle="Italic" Margin="5,0,0,0"/>
+                                        <TextBlock Text="ball" FontWeight="Bold" FontSize="15" Foreground="#333"/>
+                                        <TextBlock Text=" [bɔːl] (n, v)" FontSize="12" Foreground="#666" FontStyle="Italic" Margin="5,0,0,0"/>
                                     </StackPanel>
-                                    <TextBlock Text="dụng cụ, thiết bị phát ra âm thanh" FontSize="14" Foreground="#0C39E8" Margin="0,2,0,0"/>
+                                    <TextBlock Text="quả bóng, quả banh" FontSize="14" Foreground="#0C39E8" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Style="{StaticResource DropdownActionButtonStyle}">
@@ -187,10 +186,44 @@
                                 </StackPanel>
                             </Grid>
                         </ListBoxItem>
-                        
+
                     </ListBox>
                 </StackPanel>
             </Border>
         </Grid>
+
+        <Border Grid.Row="1" Margin="0,20,0,0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15">
+            <StackPanel>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="[Từ đang tra cứu]" FontSize="24" FontWeight="Bold" Foreground="#333"/>
+                        <TextBlock Text="/ˈdɪk.ʃə.nər.i/ (n)" FontSize="16" Foreground="#666" FontStyle="Italic" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" CornerRadius="18" Width="36" Height="36" Background="#E0F7FA">
+                        <Button Background="Transparent" BorderThickness="0">
+                            <TextBlock Text="&#xE767;" FontSize="20" Foreground="#0C39E8" FontFamily="Segoe MDL2 Assets"/>
+                        </Button>
+                    </Border>
+                </Grid>
+
+                <Rectangle Height="1" Fill="#E0E0E0" Margin="0,5"/>
+
+                <TextBlock Text="Định nghĩa:" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,10,0,5"/>
+                <TextBlock Text="1. (Danh từ): Cuốn sách liệt kê các từ của một ngôn ngữ theo thứ tự bảng chữ cái và đưa ra ý nghĩa, phát âm, và ví dụ."
+                           TextWrapping="Wrap" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+
+                <TextBlock Text="2. (Động từ): Tra cứu từ trong từ điển."
+                           TextWrapping="Wrap" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+
+            </StackPanel>
+        </Border>
+
     </Grid>
 </UserControl>

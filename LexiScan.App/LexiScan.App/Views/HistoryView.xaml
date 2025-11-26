@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
+             xmlns:vm="clr-namespace:LexiScan.App.ViewModels" d:DataContext="{d:DesignInstance Type=vm:HistoryViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="#F4F4F9">
@@ -39,32 +39,48 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=ActualWidth}" Margin="0,5">
+                    <Grid Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Bên trái -->
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="5,0,0,0">
                             <TextBlock Text="{Binding SearchTerm}" 
-                                       FontWeight="SemiBold" FontSize="16" Foreground="#333"/>
+                           FontWeight="SemiBold" FontSize="16" Foreground="#333"/>
                             <TextBlock Text="{Binding DisplayTime}" 
-                                       FontSize="12" Foreground="#999" Margin="0,2,0,0"/>
+                           FontSize="12" Foreground="#999" Margin="0,2,0,0"/>
                         </StackPanel>
 
-                        <Button Grid.Column="1" Style="{StaticResource ActionIconButton}" Margin="0,0,10,0">
-                            <TextBlock Text="&#xE767;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
-                        </Button>
+                        <!-- Icon sát lề phải, không spacing -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" 
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,0,0">
 
-                        <Button Grid.Column="2" Style="{StaticResource ActionIconButton}" 
-                                Command="{Binding DataContext.DeleteHistoryEntryCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"
-                                CommandParameter="{Binding}">
-                            <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
-                        </Button>
+                            <!-- Mic -->
+                            <Button Style="{StaticResource ActionIconButton}" 
+                        Margin="0" Padding="0"
+                        Width="28" Height="28">
+                                <TextBlock Text="&#xE767;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
+                            </Button>
+
+                            <!-- Thùng rác -->
+                            <Button Style="{StaticResource ActionIconButton}" 
+                        Margin="0" Padding="0"
+                        Width="28" Height="28"
+                        Command="{Binding DataContext.DeleteHistoryEntryCommand, 
+                                          RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"
+                        CommandParameter="{Binding}">
+                                <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
+                            </Button>
+
+                        </StackPanel>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
+
         </ListView>
 
         <Border Grid.Row="2" CornerRadius="5" Background="#FFEEEE" 

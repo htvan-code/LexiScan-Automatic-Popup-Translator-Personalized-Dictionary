@@ -7,9 +7,10 @@
         mc:Ignorable="d"
         Title="LexiScan" 
         Height="600" 
-        Width="800"
+        Width="900"
         MinHeight="500"
         MinWidth="700"
+        ResizeMode="NoResize"
         Background="#F4F4F9">
 
     <Window.DataContext>
@@ -17,7 +18,8 @@
     </Window.DataContext>
 
     <Window.Resources>
-        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+
+        <Style x:Key="SidebarNavigationStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -26,24 +28,25 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#333333"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="GroupName" Value="SidebarGroup"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="ButtonBorder" 
                                 Background="{TemplateBinding Background}" 
                                 CornerRadius="5">
+
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
                                               Margin="{TemplateBinding Padding}"/>
                         </Border>
+
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Background" Value="#E5E5E5"/>
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#D0D0D0"/>
-                            </Trigger>
-                            <Trigger Property="IsDefaulted" Value="True">
+
+                            <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Background" Value="#E0F7FA"/>
                                 <Setter Property="Foreground" Value="#0C39E8"/>
                             </Trigger>
@@ -84,42 +87,42 @@
                     </StackPanel>
                 </StackPanel>
 
-                <Button Style="{StaticResource SidebarButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsDefault="True">
+                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsChecked="True">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE80F;" Style="{StaticResource SidebarIconStyle}"/>
                         <TextBlock Text="Trang chủ"/>
                     </StackPanel>
-                </Button>
+                </RadioButton>
 
-                <Button Style="{StaticResource SidebarButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="Dictionary">
+                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Dictionary">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE8B9;" Style="{StaticResource SidebarIconStyle}"/>
                         <TextBlock Text="Từ điển cá nhân"/>
                     </StackPanel>
-                </Button>
+                </RadioButton>
 
-                <Button Style="{StaticResource SidebarButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="History">
+                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="History">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE81C;" Style="{StaticResource SidebarIconStyle}"/>
                         <TextBlock Text="Lịch sử tra cứu"/>
                     </StackPanel>
-                </Button>
+                </RadioButton>
 
-                <Button Style="{StaticResource SidebarButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="Translation">
+                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Translation">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE756;" Style="{StaticResource SidebarIconStyle}"/>
                         <TextBlock Text="Dịch văn bản"/>
                     </StackPanel>
-                </Button>
+                </RadioButton>
 
                 <Rectangle Height="1" Fill="#E0E0E0" Margin="0,15"/>
 
-                <Button Style="{StaticResource SidebarButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE713;" Style="{StaticResource SidebarIconStyle}"/>
                         <TextBlock Text="Cài đặt"/>
                     </StackPanel>
-                </Button>
+                </RadioButton>
             </StackPanel>
         </Border>
 

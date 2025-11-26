@@ -1,25 +1,19 @@
-﻿using System.ComponentModel;
+﻿// File: ViewModels/BaseViewModel.cs
+
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace LexiScan.App.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (Equals(storage, value))
-            {
-                return false;
-            }
+        // Khắc phục CS8618/CS8612: Thêm '?' để cho phép null
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-            storage = value;
-            OnPropertyChanged(propertyName);
-            return true;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            // Sử dụng toán tử null-conditional (?. ) là đủ an toàn
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:viewmodels="clr-namespace:LexiScan.App.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
              mc:Ignorable="d"
-             d:DesignHeight="815.27" d:DesignWidth="592"
+             d:DesignHeight="832.07" d:DesignWidth="624.8"
              Background="White">
 
     <UserControl.Resources>
@@ -35,9 +35,7 @@
         <TextBlock Grid.Row="0"
                    FontSize="28" FontWeight="Bold"
                    Margin="0,0,0,20"
-                   Foreground="#FF0C39E8">
-            <Run Text="⚙️ LexiScan Settings"/>
-        </TextBlock>
+                   Foreground="#FF0C39E8" Text="LexiScan Settings"/>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Width="550" HorizontalAlignment="Left">

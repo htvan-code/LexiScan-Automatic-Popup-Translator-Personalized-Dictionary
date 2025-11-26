@@ -1,32 +1,41 @@
-﻿using System;
+﻿// File: ViewModels/HistoryViewModel.cs
+
+using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using LexiScan.App.Commands;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Linq; // Cần thiết để xóa một phần tử cụ thể
 
 namespace LexiScan.App.ViewModels
 {
-    // Giả định bạn có lớp BaseViewModel và RelayCommand
+    // Kế thừa từ BaseViewModel
     public class HistoryViewModel : BaseViewModel
     {
         // Model đơn giản cho một mục lịch sử
         public class HistoryEntry
         {
-            public string SearchTerm { get; set; }
+            // Khắc phục CS8618: Khởi tạo với string.Empty
+            public string SearchTerm { get; set; } = string.Empty;
             public DateTime Timestamp { get; set; }
             public string DisplayTime => Timestamp.ToString("HH:mm - dd/MM/yyyy");
         }
 
+        // ObservableCollection tự động thông báo khi thêm/xóa/sắp xếp item
         public ObservableCollection<HistoryEntry> HistoryEntries { get; set; }
-        public ICommand ClearHistoryCommand { get; set; }
-        public ICommand DeleteHistoryEntryCommand { get; set; }
+        public ICommand ClearHistoryCommand { get; } // Dùng `get;` để tuân thủ ReadOnly
+        public ICommand DeleteHistoryEntryCommand { get; } // Dùng `get;` để tuân thủ ReadOnly
 
         public HistoryViewModel()
         {
-            // Khởi tạo danh sách và Commands
             HistoryEntries = new ObservableCollection<HistoryEntry>();
+
+            // Khắc phục CS0246: RelayCommand đã được tham chiếu đúng
             ClearHistoryCommand = new RelayCommand(ExecuteClearHistory);
+            // DeleteHistoryEntryCommand chấp nhận tham số (HistoryEntry)
             DeleteHistoryEntryCommand = new RelayCommand(ExecuteDeleteHistoryEntry);
 
-            // Dữ liệu giả định (Placeholder Data)
             LoadPlaceholderData();
         }
 
@@ -39,12 +48,14 @@ namespace LexiScan.App.ViewModels
             HistoryEntries.Add(new HistoryEntry { SearchTerm = "commitment", Timestamp = DateTime.Now.AddDays(-2) });
         }
 
-        private void ExecuteClearHistory(object parameter)
+        // Khắc phục cảnh báo unused parameter bằng cách sử dụng dấu gạch dưới `_`
+        private void ExecuteClearHistory(object? _)
         {
             HistoryEntries.Clear();
         }
 
-        private void ExecuteDeleteHistoryEntry(object parameter)
+        // Khắc phục cảnh báo unused parameter và sử dụng object?
+        private void ExecuteDeleteHistoryEntry(object? parameter)
         {
             if (parameter is HistoryEntry entry)
             {
