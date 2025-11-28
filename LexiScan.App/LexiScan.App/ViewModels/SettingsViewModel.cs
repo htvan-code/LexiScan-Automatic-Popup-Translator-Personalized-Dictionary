@@ -2,6 +2,7 @@
 
 using LexiScan.App.Commands;
 using LexiScan.App.Models; // Đảm bảo namespace này khớp với nơi Settings được định nghĩa
+using LexiScan.App.Models.LexiScan.App.Models;
 using LexiScan.App.Services;
 using System.Windows;
 using System.Windows.Input;

@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LexiScan.App.Views"
              mc:Ignorable="d" 
-             Background="#F4F4F9">
-
+             d:DesignHeight="373.437" d:DesignWidth="740.625" Background="White">
     <UserControl.Resources>
         <Style TargetType="{x:Type TextBox}" x:Key="SearchTextBoxStyle">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -63,7 +63,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24,20,16,0" VerticalAlignment="Top">
+    <Grid Margin="20" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -192,7 +192,7 @@
             </Border>
         </Grid>
 
-        <Border Grid.Row="1" Margin="0,20,0,0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15">
+        <Border Grid.Row="1" Margin="0,20,0,0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" VerticalAlignment="Stretch">
             <StackPanel>
 
                 <Grid Margin="0,0,0,10">

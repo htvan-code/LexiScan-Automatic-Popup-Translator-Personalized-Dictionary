@@ -1,166 +1,223 @@
 ﻿<UserControl x:Class="LexiScan.App.Views.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:viewmodels="clr-namespace:LexiScan.App.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
-             mc:Ignorable="d"
-             d:DesignHeight="832.07" d:DesignWidth="624.8"
-             Background="White">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LexiScan.App.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="912" d:DesignWidth="800" Background="White">
 
     <UserControl.Resources>
-        <!-- Styles đã giữ nguyên -->
+        <!-- Styles đã được tinh chỉnh để phù hợp với theme LexiScan -->
         <Style TargetType="GroupBox">
-            <Setter Property="BorderBrush" Value="#FF0771DD"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="#333333"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="0,10,0,10"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
-        <Style TargetType="Button">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Margin" Value="0,5,0,5"/>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="Background" Value="#FFEDEDED"/>
-            <Setter Property="BorderBrush" Value="#FFA19898"/>
+        <!-- Style chung cho nút lưu/hủy -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <!-- Style cho nút Primary (Lưu) -->
+        <Style x:Key="SaveButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#0C39E8"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#0A2CBB"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Style cho nút Secondary (Hủy) -->
+        <Style x:Key="CancelButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#D0D0D0"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Tiêu đề Chính -->
         <TextBlock Grid.Row="0"
-                   FontSize="28" FontWeight="Bold"
-                   Margin="0,0,0,20"
-                   Foreground="#FF0C39E8" Text="LexiScan Settings"/>
+                   FontSize="32" FontWeight="ExtraBold"
+                   Margin="0,0,0,25"
+                   Foreground="#FF4D58FF" Text="LexiScan Settings"/>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Width="550" HorizontalAlignment="Left">
+            <StackPanel Width="600" HorizontalAlignment="Left">
 
+                <!-- 1. Phím Tắt & Tương Tác Hệ Thống -->
                 <GroupBox Header="Phím Tắt &amp; Tương Tác Hệ Thống">
                     <StackPanel Margin="15">
                         <TextBlock Text="Phím Tắt Kích Hoạt (Hotkey):"
-                                   FontWeight="SemiBold" Foreground="#FF0C39E8"/>
-                        <Grid Margin="0,5,0,0">
+                                   FontWeight="SemiBold" Foreground="#333333" Margin="0,0,0,5"/>
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Name="HotkeyTextBox"
-                                     Text="Ctrl + Space"
-                                     IsReadOnly="True"
-                                     Height="30"
-                                     VerticalContentAlignment="Center"
-                                     Margin="0,0,10,0"
-                                     BorderBrush="#FFA19898"/>
+                            <!-- SỬA LỖI CORNERRADIUS: BỌC TEXTBOX TRONG BORDER -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5"
+                                    Height="38"
+                                    Margin="0,0,10,0">
+                                <TextBox Name="HotkeyTextBox"
+                                         IsReadOnly="True"
+                                         VerticalContentAlignment="Center"
+                                         Padding="10,0"
+                                         BorderThickness="0" Text="CTRL + Space"/>
+                            </Border>
+                            <!-- KẾT THÚC SỬA LỖI -->
 
-                            <Button Grid.Column="1" Width="110" BorderBrush="White" Background="#FFD5EEFF">
+                            <Button Grid.Column="1" Width="120" Style="{StaticResource ActionButtonStyle}" Background="#E0F7FA" Foreground="#0C39E8" Command="{Binding ChangeHotkeyCommand}">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon 
-                                        Kind="Keyboard"
-                                        Width="18" Height="18"
-                                        Margin="0,0,6,0"/>
+                                    <!-- Thay thế materialDesign:PackIcon Kind="Keyboard" bằng TextBlock (Segoe MDL2 Assets: &#xE92E;) -->
+                                    <TextBlock Text="&#xE92E;"
+                                         FontFamily="Segoe MDL2 Assets"
+                                         Width="18" Height="18"
+                                         Margin="0,0,6,0"/>
                                     <TextBlock Text="Thiết Lập"/>
                                 </StackPanel>
                             </Button>
                         </Grid>
 
                         <CheckBox Content="Hiển thị icon quét sau khi chọn văn bản"
-                                  IsChecked="True"
+                                  IsChecked="{Binding ShowScanIcon}"
                                   Margin="0,15,0,0"/>
+
                     </StackPanel>
                 </GroupBox>
 
-                <!-- ĐÃ SỬA: SỬ DỤNG RADIO BUTTONS THAY CHO COMBOBOX -->
-                <GroupBox Header="Phát Âm (Speech)">
+                <!-- 2. Phát Âm (Speech) -->
+                <GroupBox Header="Phát Âm (Text-to-Speech)">
                     <StackPanel Margin="15">
 
                         <!-- Tốc độ phát âm (Sử dụng RadioButton) -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="VolumeHigh" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#333"/>
+                            <!-- Thay thế materialDesign:PackIcon Kind="Speedometer" bằng TextBlock (Segoe MDL2 Assets: &#xEC4A;) -->
+                            <TextBlock Text="&#xEC4A;" FontFamily="Segoe MDL2 Assets" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#0C39E8"/>
                             <TextBlock Text="Tốc độ phát âm" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" Foreground="#333"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
-                            <!-- GroupName là BẮT BUỘC để đảm bảo chỉ chọn được 1 trong 3 -->
-                            <RadioButton Content="Chậm hơn" GroupName="SpeedGroup" Margin="0,0,20,0"/>
-                            <RadioButton Content="Chậm" GroupName="SpeedGroup" Margin="0,0,20,0"/>
-                            <RadioButton Content="Bình thường" GroupName="SpeedGroup" IsChecked="True"/>
+                            <!-- Thay thế binding enum bằng binding trực tiếp đến thuộc tính Boolean -->
+                            <RadioButton Content="Chậm hơn" GroupName="SpeedGroup" Margin="0,0,20,0" IsChecked="{Binding SpeedSlower}"/>
+                            <RadioButton Content="Chậm" GroupName="SpeedGroup" Margin="0,0,20,0" IsChecked="{Binding SpeedSlow}"/>
+                            <RadioButton Content="Bình thường" GroupName="SpeedGroup" IsChecked="{Binding SpeedNormal}"/>
                         </StackPanel>
 
                         <!-- Giọng Phát âm Mặc định (Sử dụng RadioButton) -->
-                        <TextBlock Text="Âm thanh mặc định" FontWeight="SemiBold" Foreground="#FF2A50E9" Margin="0,5,0,0"/>
+                        <TextBlock Text="Giọng đọc mặc định" FontWeight="SemiBold" Foreground="#333333" Margin="0,5,0,5"/>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
-                            <RadioButton Content="Anh Anh" GroupName="VoiceGroup" IsChecked="True" Margin="0,0,20,0"/>
-                            <RadioButton Content="Anh Mỹ" GroupName="VoiceGroup"/>
+                            <!-- Thay thế binding enum bằng binding trực tiếp đến thuộc tính Boolean -->
+                            <RadioButton Content="Anh Anh" GroupName="VoiceGroup" IsChecked="{Binding VoiceEngUK}" Margin="0,0,20,0"/>
+                            <RadioButton Content="Anh Mỹ" GroupName="VoiceGroup" IsChecked="{Binding VoiceEngUS}"/>
                         </StackPanel>
 
-                        <!-- Tự động phát âm khi tra từ (Sử dụng CheckBox, đã có sẵn) -->
-                        <TextBlock Text="Tự động phát âm khi tra từ" FontWeight="SemiBold" Foreground="#FF2A50E9" Margin="0,5,0,0"/>
-                        <CheckBox Content="Tự động phát âm" IsChecked="True" Margin="0,5,0,0"/>
-
-                        <!-- CheckBox còn lại -->
-                        <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" Margin="0,5,0,0"/>
+                        <!-- Tự động phát âm khi tra từ -->
+                        <CheckBox Content="Tự động phát âm khi tra từ" IsChecked="{Binding AutoPronounceOnLookup}" Margin="0,5,0,0"/>
+                        <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" IsChecked="{Binding AutoPronounceOnTranslate}" Margin="0,5,0,0"/>
 
                     </StackPanel>
                 </GroupBox>
 
+                <!-- 3. Giao Diện -->
                 <GroupBox Header="Giao Diện">
                     <StackPanel Margin="15">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Chủ Đề Tối"
+                            <!-- Thay thế materialDesign:PackIcon Kind="ThemeLightDark" bằng TextBlock (Segoe MDL2 Assets: &#xE706;) -->
+                            <TextBlock Text="&#xE706;" FontFamily="Segoe MDL2 Assets" Width="20" Height="15" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#0C39E8"/>
+
+                            <TextBlock Text="Chủ Đề Tối/Sáng"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"
-                                       Foreground="#333"/>
+                                       Foreground="#333" Margin="0,0,20,0"/>
 
-                            <ToggleButton Name="ToggleDarkMode"
-                                          Margin="10,0" IsChecked="False" VerticalAlignment="Center"
-                                          Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                          ToolTip="Bật để chuyển sang Chủ Đề Tối"/>
+                            <!-- SỬ DỤNG CHECKBOX/TOGGLE TIÊU CHUẨN NẾU KHÔNG CÓ MATERIAL DESIGN -->
+                            <CheckBox Content="Bật Chủ Đề Tối" IsChecked="{Binding IsDarkModeEnabled}" VerticalAlignment="Center"/>
 
-                            <TextBlock Text="Chủ Đề Sáng"
-                                       FontWeight="SemiBold"
-                                       VerticalAlignment="Center"
-                                       Foreground="#333"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
 
+                <!-- 4. Quản Lý Dữ Liệu -->
                 <GroupBox Header="Quản Lý Dữ Liệu">
                     <StackPanel Margin="15">
-                        <CheckBox Content="Lưu lịch sử tra cứu vào Từ điển cá nhân"
-                                  IsChecked="True"/>
-                        <Button Width="240" Margin="0,15,0,0" Background="#FFD5EEFF" BorderBrush="White" HorizontalAlignment="Center">
+                        <CheckBox Content="Tự động lưu lịch sử tra cứu vào Từ điển cá nhân"
+                                  IsChecked="{Binding AutoSaveHistoryToDictionary}"/>
+
+                        <Button Width="300" 
+                                Margin="0,20,0,0" 
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource ActionButtonStyle}"
+                                Background="#FFD5EEFF" 
+                                Foreground="#0C39E8"
+                                Command="{Binding ExportDataCommand}">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon 
-                                    Kind="DeleteForever"
-                                    Width="20" Height="20"
-                                    Margin="0,0,6,0"/>
-                                <TextBlock Text="Xóa Toàn Bộ Lịch Sử Tra Cứu"/>
+                                <!-- Thay thế materialDesign:PackIcon Kind="Export" bằng TextBlock (Segoe MDL2 Assets: &#xE11C;) -->
+                                <TextBlock Text="&#xE11C;"
+                                     FontFamily="Segoe MDL2 Assets"
+                                     Width="20" Height="20"
+                                     Margin="0,0,6,0"/>
+                                <TextBlock Text="Xuất (Export) Dữ Liệu Cá Nhân"/>
                             </StackPanel>
                         </Button>
+
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
         </ScrollViewer>
 
+        <!-- Nút Hành Động Cuối Cùng (Lưu/Hủy) -->
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right" Margin="0,20,0,0">
 
-            <Button Width="120" Background="#FFD5EEFF" BorderBrush="White">
+            <Button Width="120" Style="{StaticResource CancelButtonStyle}" Margin="0,0,10,0" Command="{Binding CancelCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Close" Width="18" Margin="0,0,6,0"/>
+                    <!-- Thay thế materialDesign:PackIcon Kind="Close" bằng TextBlock (Segoe MDL2 Assets: &#xE711;) -->
+                    <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" Width="18" Margin="0,0,6,0"/>
                     <TextBlock Text="Hủy Bỏ"/>
                 </StackPanel>
             </Button>
 
-            <Button Name="SaveSettingsButton" Width="150" Margin="10,0,0,0" Background="#FFD5EEFF" BorderBrush="White">
+            <Button Name="SaveSettingsButton" Width="150" Style="{StaticResource SaveButtonStyle}" Command="{Binding SaveSettingsCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="ContentSave" Width="18" Margin="0,0,6,0"/>
+                    <!-- Thay thế materialDesign:PackIcon Kind="ContentSave" bằng TextBlock (Segoe MDL2 Assets: &#xE74E;) -->
+                    <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" Width="18" Margin="0,0,6,0"/>
                     <TextBlock Text="Lưu Cài Đặt"/>
                 </StackPanel>
             </Button>

@@ -1,43 +1,71 @@
-﻿// File: Services/SettingsService.cs
-
-// Đã sửa: Chỉ cần using LexiScan.App.Models (nếu Settings nằm trong đó)
-using LexiScan.App.Models;
+﻿using LexiScan.App.Models.LexiScan.App.Models;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace LexiScan.App.Services
 {
+    // Lớp xử lý logic I/O cho cấu hình người dùng
     public class SettingsService
     {
-        private const string SettingsFilePath = "settings.json";
+        private readonly string _settingsFilePath;
 
-        // Khắc phục CS8603/CS8600: Đảm bảo không bao giờ trả về null
+        public SettingsService()
+        {
+            // Thiết lập đường dẫn file cài đặt trong thư mục dữ liệu ứng dụng của người dùng
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDirectory = Path.Combine(appDataPath, "LexiScan");
+
+            if (!Directory.Exists(appDirectory))
+            {
+                Directory.CreateDirectory(appDirectory);
+            }
+
+            _settingsFilePath = Path.Combine(appDirectory, "settings.json");
+        }
+
+        // Tải cài đặt từ file JSON
         public Settings LoadSettings()
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(_settingsFilePath))
             {
                 try
                 {
-                    string json = File.ReadAllText(SettingsFilePath);
-                    // Sử dụng toán tử null-coalescing (??) để xử lý trường hợp DeserializeObject trả về null
-                    var settings = JsonConvert.DeserializeObject<Settings>(json);
-                    return settings ?? new Settings();
+                    string json = File.ReadAllText(_settingsFilePath);
+                    // Deserialization: Chuyển JSON thành đối tượng Settings
+                    return JsonConvert.DeserializeObject<Settings>(json);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Xử lý lỗi đọc/parse file JSON và trả về default settings
+                    // Xử lý lỗi: Nếu file bị hỏng, in ra console và trả về cấu hình mặc định
+                    Console.WriteLine($"Error loading settings: {ex.Message}");
                     return new Settings();
                 }
             }
-            // Trả về một instance mới nếu file không tồn tại.
+
+            // Nếu không tìm thấy file, trả về cấu hình mặc định
             return new Settings();
         }
 
-        // Khắc phục CA1822: Giữ nguyên phương thức instance
+        // Lưu cài đặt vào file JSON
         public void SaveSettings(Settings settings)
         {
-            string json = JsonConvert.SerializeObject(settings, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText(SettingsFilePath, json);
+            try
+            {
+                // Serialization: Chuyển đối tượng Settings thành chuỗi JSON
+                string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+                File.WriteAllText(_settingsFilePath, json);
+                Console.WriteLine("Settings successfully saved to settings.json");
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi khi ghi file
+                Console.WriteLine($"Error saving settings: {ex.Message}");
+            }
         }
     }
 }

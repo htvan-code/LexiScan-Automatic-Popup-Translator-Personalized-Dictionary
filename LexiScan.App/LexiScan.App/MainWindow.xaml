@@ -3,20 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
+        xmlns:local="clr-namespace:LexiScan.App"
         mc:Ignorable="d"
-        Title="LexiScan" 
-        Height="600" 
-        Width="900"
-        MinHeight="500"
-        MinWidth="700"
-        ResizeMode="NoResize"
-        Background="#F4F4F9">
-
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
-
+        Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
 
         <Style x:Key="SidebarNavigationStyle" TargetType="RadioButton">
@@ -87,6 +76,7 @@
                     </StackPanel>
                 </StackPanel>
 
+                <!-- Trang chủ (DictionaryView) -->
                 <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsChecked="True">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE80F;" Style="{StaticResource SidebarIconStyle}"/>
@@ -94,13 +84,15 @@
                     </StackPanel>
                 </RadioButton>
 
-                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Dictionary">
+                <!-- Từ điển Cá nhân -->
+                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="PersonalDictionary">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE8B9;" Style="{StaticResource SidebarIconStyle}"/>
                         <TextBlock Text="Từ điển cá nhân"/>
                     </StackPanel>
                 </RadioButton>
 
+                <!-- Lịch sử Tra cứu -->
                 <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="History">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE81C;" Style="{StaticResource SidebarIconStyle}"/>
@@ -108,6 +100,7 @@
                     </StackPanel>
                 </RadioButton>
 
+                <!-- Dịch Văn bản -->
                 <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Translation">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE756;" Style="{StaticResource SidebarIconStyle}"/>
@@ -117,6 +110,7 @@
 
                 <Rectangle Height="1" Fill="#E0E0E0" Margin="0,15"/>
 
+                <!-- Cài đặt -->
                 <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE713;" Style="{StaticResource SidebarIconStyle}"/>
@@ -126,6 +120,8 @@
             </StackPanel>
         </Border>
 
+        <!-- 🚨 ĐIỂM QUAN TRỌNG: Hiển thị ViewModel hiện tại -->
         <ContentControl Grid.Column="1" Content="{Binding CurrentView}"/>
     </Grid>
 </Window>
+    

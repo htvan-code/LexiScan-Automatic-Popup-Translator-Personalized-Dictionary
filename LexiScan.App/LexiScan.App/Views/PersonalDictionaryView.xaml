@@ -3,26 +3,192 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LexiScan.App.Views"
              mc:Ignorable="d" 
-             Background="#F4F4F9" d:DesignHeight="328.666">
+             d:DesignHeight="450" d:DesignWidth="800" Background="White">
+    <!-- ĐỊNH NGHĨA STYLES TẠI ĐÂY (UserControl.Resources) -->
+    <UserControl.Resources>
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#0C39E8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E0F7FA"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="IconButtonStyleRed" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+            <Setter Property="Foreground" Value="#FF4D4D"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFE0E0"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <!-- KẾT THÚC ĐỊNH NGHĨA STYLES -->
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="⭐ Từ Điển Cá Nhân" 
-                   FontSize="28" FontWeight="ExtraBold" 
-                   Margin="0,0,0,15" Foreground="#0C39E8"/>
+        <!-- Phần Header: Tiêu đề, Thanh Tìm kiếm và Nút Thêm Mới -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Từ điển Cá nhân" FontSize="28" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,5"/>
+            <TextBlock Text="Quản lý bộ từ vựng và ghi chú của riêng bạn." FontSize="14" Foreground="#666666" Margin="0,0,0,15"/>
 
-        <Border Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15">
-            <StackPanel>
-                <TextBlock Text="Danh sách các từ bạn đã đánh dấu và lưu trữ cá nhân." 
-                           Foreground="#666" Margin="0,0,0,10"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <Rectangle Height="1" Fill="#E0E0E0" Margin="0,5,0,15"/>
-                <TextBlock Text="[Chưa có từ nào được lưu]" Foreground="#AAA" HorizontalAlignment="Center" FontStyle="Italic"/>
-            </StackPanel>
+                <!-- Thanh Tìm kiếm/Lọc -->
+                <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#999999" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                 BorderThickness="0" 
+                                 Background="Transparent" 
+                                 VerticalContentAlignment="Center"
+                                 FontSize="14"
+                                 Foreground="#333333"
+                                 d:Text="Tìm kiếm từ khóa hoặc định nghĩa..."
+                                 Width="350"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Nút Thêm Từ Mới -->
+                <Button Grid.Column="1"
+                        Content="&#xE710; Thêm Từ Mới"
+                        FontFamily="Segoe MDL2 Assets"
+                        Command="{Binding AddNewWordCommand}"
+                        Background="#0C39E8"
+                        Foreground="White"
+                        FontSize="14"
+                        Padding="15,8"
+                        HorizontalAlignment="Right">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#0A2CBB"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </StackPanel>
+
+        <!-- Hiển thị Danh sách Từ vựng -->
+        <Border Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10">
+            <ListView ItemsSource="{Binding FilteredWords}" 
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      BorderThickness="0"
+                      Background="Transparent">
+
+                <ListView.ItemContainerStyle>
+                    <!-- Loại bỏ highlight mặc định và tạo đường phân cách -->
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Margin" Value="0,2"/>
+                        <Setter Property="Padding" Value="0,5"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Grid>
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal"/>
+                                                <VisualState x:Name="MouseOver">
+                                                    <Storyboard>
+                                                        <ColorAnimation To="#F0F0F0" Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+
+                                        <Border x:Name="Border" Background="Transparent" Padding="10">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <!-- Đường phân cách -->
+                                        <Border Height="1" Background="#E0E0E0" VerticalAlignment="Bottom" Margin="0,5,0,0"/>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <!-- Từ khóa chính -->
+                                <TextBlock Text="{Binding Word}" FontSize="18" FontWeight="Bold" Foreground="#333333"/>
+                                <!-- Định nghĩa/Ghi chú tóm tắt -->
+                                <TextBlock Text="{Binding DefinitionPreview}" FontSize="13" Foreground="#666666" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+
+                            <!-- Nút Chỉnh sửa và Xóa -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="&#xE70F;" 
+                                        FontFamily="Segoe MDL2 Assets"
+                                        ToolTip="Chỉnh sửa từ"
+                                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.EditWordCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Margin="0,0,10,0"
+                                        Style="{StaticResource IconButtonStyle}"/>
+
+                                <Button Content="&#xE74D;" 
+                                        FontFamily="Segoe MDL2 Assets"
+                                        ToolTip="Xóa từ"
+                                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteWordCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource IconButtonStyleRed}"/>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </Border>
+
     </Grid>
 </UserControl>

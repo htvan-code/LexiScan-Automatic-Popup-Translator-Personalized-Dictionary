@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace LexiScan.app
+namespace LexiScan.App
 {
     /// <summary>
     /// Interaction logic for App.xaml

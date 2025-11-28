@@ -3,10 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LexiScan.App.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="410.4" d:DesignWidth="800"
-             Background="#F4F4F9">
-
+             d:DesignHeight="450" d:DesignWidth="800" Background="White">
     <UserControl.Resources>
 
         <Style x:Key="ActionIconButton" TargetType="Button">
@@ -57,7 +56,7 @@
 
     </UserControl.Resources>
 
-    <Grid Margin="10">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -65,7 +64,7 @@
 
         <TextBlock Grid.Row="0" Text="Translate" 
                    FontSize="28" FontWeight="Bold" 
-                   Foreground="#0C39E8" Margin="5,0,0,10"/>
+                   Foreground="#0C39E8" Margin="0,0,0,10"/>
 
         <Grid Grid.Row="1" RenderTransformOrigin="0.468,0.502">
             <Grid.ColumnDefinitions>
@@ -74,7 +73,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Margin="5,5,10,169">
+            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Margin="0,5,10,130">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -124,7 +123,7 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Column="1" VerticalAlignment="Top" Margin="0,50,0,0" Width="30" Height="30"
+            <Border Grid.Column="1" VerticalAlignment="Center" Margin="0" Width="30" Height="30"
                     Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
                 <Button Style="{StaticResource ActionIconButton}" Background="Transparent">
                     <TextBlock Text="&#xE8CB;" FontFamily="Segoe MDL2 Assets" Foreground="#666" FontSize="14" RenderTransformOrigin="0.5,0.5">
@@ -140,7 +139,7 @@
                 </Button>
             </Border>
 
-            <Border Grid.Column="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Margin="6,5,10,169">
+            <Border Grid.Column="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Margin="10,5,0,130">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -189,3 +188,4 @@
         </Grid>
     </Grid>
 </UserControl>
+
