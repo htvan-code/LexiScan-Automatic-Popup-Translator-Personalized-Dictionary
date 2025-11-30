@@ -5,25 +5,37 @@
              xmlns:v="clr-namespace:LexiScan.App.Views"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        
-        <DataTemplate DataType="{x:Type vm:DictionaryViewModel}">
-            <v:DictionaryView />
-        </DataTemplate>
 
-        <DataTemplate DataType="{x:Type vm:PersonalDictionaryViewModel}">
-            <v:PersonalDictionaryView />
-        </DataTemplate>
+        <!-- Khai báo một ResourceDictionary duy nhất làm container cho tất cả các tài nguyên -->
+        <ResourceDictionary>
 
-        <DataTemplate DataType="{x:Type vm:HistoryViewModel}">
-            <v:HistoryView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:TranslationViewModel}">
-            <v:TranslationView />
-        </DataTemplate>
+            <!-- Định nghĩa các Data Templates -->
+            <DataTemplate DataType="{x:Type vm:DictionaryViewModel}">
+                <v:DictionaryView />
+            </DataTemplate>
 
-        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
-            <v:SettingsView />
-        </DataTemplate>
-        
+            <DataTemplate DataType="{x:Type vm:PersonalDictionaryViewModel}">
+                <v:PersonalDictionaryView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:HistoryViewModel}">
+                <v:HistoryView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:TranslationViewModel}">
+                <v:TranslationView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+                <v:SettingsView />
+            </DataTemplate>
+
+            <!-- Các Resource Dictionaries đã được Merge (Theme,...) -->
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Khai báo Theme Light (Mặc định) -->
+                <ResourceDictionary Source="Themes/LightTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+        </ResourceDictionary>
+
     </Application.Resources>
 </Application>
