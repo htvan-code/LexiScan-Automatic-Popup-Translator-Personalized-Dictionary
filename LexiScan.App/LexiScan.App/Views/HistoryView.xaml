@@ -6,9 +6,82 @@
              xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="700"
-             Background="#F4F4F9"
+             Background="{DynamicResource BackgroundColor}"
              >
-    <!-- Đã thay đổi d:DataContext thành DataContext -->
+    <UserControl.Resources>
+        <!-- STYLE MỚI CHO TEXTBOX TÌM KIẾM -->
+        <Style TargetType="{x:Type TextBox}" x:Key="SearchHistoryTextBoxStyle">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryForeground}"/>
+            <!-- Thêm Template để đảm bảo nền trong suốt -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho nút Xem Chi Tiết -->
+        <Style x:Key="DetailButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource PrimaryColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource PrimaryHoverColor}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Style cho nút Icon Xóa -->
+        <Style x:Key="DeleteIconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
+                    <Setter Property="Foreground" Value="#FF4D4D"/>
+                    <!-- Giữ màu đỏ cho Delete (Chỉ Foreground) -->
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -19,8 +92,8 @@
 
         <!-- Tiêu đề và Nút hành động -->
         <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="Lịch sử Tra cứu" FontSize="28" FontWeight="Bold" Foreground="#FF0C39E8"/>
-            <TextBlock Text="Xem lại và quản lý các từ khóa bạn đã tra cứu." FontSize="14" Foreground="#666666"/>
+            <TextBlock Text="Lịch sử Tra cứu" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource PrimaryColor}"/>
+            <TextBlock Text="Xem lại và quản lý các từ khóa bạn đã tra cứu." FontSize="14" Foreground="{DynamicResource SecondaryForeground}" FontStyle="Italic"/>
         </StackPanel>
 
         <!-- Thanh Tìm kiếm và Nút Xóa -->
@@ -31,36 +104,32 @@
             </Grid.ColumnDefinitions>
 
             <!-- Thanh Tìm kiếm/Lọc -->
-            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,10,0">
+            <!-- Sử dụng SidebarColor làm nền cho Border -->
+            <Border Grid.Column="0" Background="{DynamicResource SidebarColor}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,10,0">
                 <StackPanel Orientation="Horizontal">
                     <!-- Icon Tìm kiếm -->
-                    <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#999999" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryColor}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                    <!-- TextBox đã được áp dụng Style mới -->
                     <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
-                             BorderThickness="0" 
+                             Style="{StaticResource SearchHistoryTextBoxStyle}" 
                              Background="Transparent" 
-                             VerticalContentAlignment="Center"
-                             FontSize="14"
-                             Foreground="#333333"
                              Width="350"
                              d:Text="Nhập từ khóa để tìm kiếm trong lịch sử..."
                              />
                 </StackPanel>
             </Border>
 
-            <!-- Nút Xóa Lịch sử (Tuần 5-6) -->
+            <!-- Nút Xóa Lịch sử -->
             <Button Grid.Column="1"
                     Content="Xóa Toàn bộ Lịch sử"
                     Command="{Binding ClearHistoryCommand}"
-                    Background="#0C39E8"
+                    Background="{DynamicResource PrimaryColor}" 
                     Foreground="White"
                     FontSize="14"
                     Padding="15,8"
                     HorizontalAlignment="Right">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="8"/>
-                    </Style>
-                </Button.Resources>
+                <!-- Thao tác Delete (Xóa) sử dụng PrimaryColor và PrimaryHoverColor -->
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Template">
@@ -74,7 +143,8 @@
                         </Setter>
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#CC3C3C"/>
+                                <!-- Sử dụng PrimaryHoverColor để có hiệu ứng rê chuột đúng theme -->
+                                <Setter Property="Background" Value="{DynamicResource PrimaryHoverColor}"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
@@ -83,14 +153,13 @@
         </Grid>
 
         <!-- Hiển thị Danh sách Lịch sử -->
-        <Border Grid.Row="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10">
+        <Border Grid.Row="2" Background="{DynamicResource SidebarColor}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10">
             <ListView ItemsSource="{Binding FilteredHistoryItems}" 
                       ScrollViewer.VerticalScrollBarVisibility="Auto"
                       BorderThickness="0"
                       Background="Transparent">
 
                 <ListView.ItemContainerStyle>
-                    <!-- Loại bỏ highlight mặc định và tạo đường phân cách -->
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="Margin" Value="0,2"/>
@@ -99,38 +168,27 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
                                     <Grid>
-                                        <VisualStateManager.VisualStateGroups>
-                                            <VisualStateGroup x:Name="CommonStates">
-                                                <VisualState x:Name="Normal"/>
-                                                <VisualState x:Name="MouseOver">
-                                                    <Storyboard>
-                                                        <ColorAnimation To="#F0F0F0" Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" Duration="0:0:0.1"/>
-                                                    </Storyboard>
-                                                </VisualState>
-                                            </VisualStateGroup>
-                                        </VisualStateManager.VisualStateGroups>
 
                                         <Border x:Name="Border" Background="Transparent" Padding="10">
                                             <ContentPresenter/>
                                         </Border>
+                                        <!-- Đường phân cách -->
+                                        <Border Height="1" Background="{DynamicResource BorderColor}" VerticalAlignment="Bottom" Margin="0,5,0,0"/>
+
                                     </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <!-- Sử dụng Setter trực tiếp với DynamicResource cho MouseOver -->
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
+                                        </Trigger>
+                                        <!-- Bổ sung Trigger cho IsSelected để thay đổi màu nền nếu cần -->
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
-                        <!-- Thêm đường phân cách dưới mỗi item -->
-                        <Style.Resources>
-                            <Style TargetType="Grid">
-                                <Setter Property="Tag" Value="Separator"/>
-                                <Setter Property="Background" Value="#E0E0E0"/>
-                                <Setter Property="Height" Value="1"/>
-                                <Setter Property="Margin" Value="0,5,0,0"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=PreviousData}}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Style.Resources>
                     </Style>
                 </ListView.ItemContainerStyle>
 
@@ -144,9 +202,9 @@
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <!-- Từ khóa tra cứu -->
-                                <TextBlock Text="{Binding Keyword}" FontSize="16" FontWeight="SemiBold" Foreground="#0C39E8"/>
+                                <TextBlock Text="{Binding Keyword}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryColor}"/>
                                 <!-- Thời gian tra cứu -->
-                                <TextBlock Text="{Binding SearchDate, StringFormat='dd/MM/yyyy HH:mm:ss'}" FontSize="12" Foreground="#999999"/>
+                                <TextBlock Text="{Binding SearchDate, StringFormat='dd/MM/yyyy HH:mm:ss'}" FontSize="12" Foreground="{DynamicResource SecondaryForeground}"/>
                             </StackPanel>
 
                             <!-- Nút Xem chi tiết hoặc Xóa từng mục -->
@@ -168,58 +226,6 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Border>
-
-        <!-- Định nghĩa Styles cho các nút bên trong View -->
-        <Grid.Resources>
-            <!-- Style cho nút Xem Chi Tiết -->
-            <Style x:Key="DetailButtonStyle" TargetType="Button">
-                <Setter Property="Background" Value="#0C39E8"/>
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontSize" Value="12"/>
-                <Setter Property="Padding" Value="10,4"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#0A2CBB"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-
-            <!-- Style cho nút Icon Xóa -->
-            <Style x:Key="DeleteIconButtonStyle" TargetType="Button">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Foreground" Value="#999999"/>
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Width" Value="30"/>
-                <Setter Property="Height" Value="30"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="15">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#F0F0F0"/>
-                        <Setter Property="Foreground" Value="#FF4D4D"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-        </Grid.Resources>
 
     </Grid>
 </UserControl>

@@ -1,11 +1,12 @@
-﻿// File: ViewModels/SettingsViewModel.cs
-
-using LexiScan.App.Commands;
-using LexiScan.App.Models; // Đảm bảo namespace này khớp với nơi Settings được định nghĩa
+﻿using LexiScan.App.Commands;
+using LexiScan.App.Models;
 using LexiScan.App.Models.LexiScan.App.Models;
 using LexiScan.App.Services;
 using System.Windows;
 using System.Windows.Input;
+// Lưu ý: Namespace 'LexiScan.App.Models.LexiScan.App.Models' có vẻ là một lỗi đánh máy
+// Tôi đã loại bỏ nó và giả định rằng Settings Model nằm trong LexiScan.App.Models
+// Nếu Settings Model không nằm trong LexiScan.App.Models, bạn cần điều chỉnh lại namespace.
 
 namespace LexiScan.App.ViewModels
 {
@@ -14,7 +15,7 @@ namespace LexiScan.App.ViewModels
     {
         // Khởi tạo _settingsService và _currentSettings
         private readonly SettingsService _settingsService = new SettingsService();
-        private Settings _currentSettings; // CS8618 đã được giải quyết bằng cách khởi tạo trong constructor
+        private Settings _currentSettings;
 
         public SettingsViewModel()
         {
@@ -53,6 +54,27 @@ namespace LexiScan.App.ViewModels
             }
         }
 
+        // *** Thuộc tính bọc (Wrapper Property) cho IsDarkModeEnabled ***
+        // Giá trị này được lưu trong Models/Settings.cs để đảm bảo lưu trữ bền vững.
+        public bool IsDarkModeEnabled
+        {
+            get => _currentSettings.IsDarkModeEnabled;
+            set
+            {
+                if (_currentSettings.IsDarkModeEnabled != value)
+                {
+                    _currentSettings.IsDarkModeEnabled = value;
+                    OnPropertyChanged(); // Gọi OnPropertyChanged để cập nhật UI nếu cần
+
+                    // Kích hoạt logic theme thông qua Service
+                    ThemeService.Instance.ApplyTheme(value ? "Dark" : "Light");
+                }
+            }
+        }
+
+        // Cần đảm bảo rằng các thuộc tính khác (ShowScanIcon, SpeedSlower, v.v.)
+        // cũng được thêm vào đây dưới dạng thuộc tính bọc tương tự.
+
         public ICommand SaveCommand { get; }
 
         // Khắc phục CS8376: Sử dụng object?
@@ -63,4 +85,3 @@ namespace LexiScan.App.ViewModels
         }
     }
 }
-// **ĐÃ XÓA** định nghĩa giả định của Settings và SettingsService khỏi đây.

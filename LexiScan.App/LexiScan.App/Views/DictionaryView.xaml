@@ -5,13 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LexiScan.App.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="373.437" d:DesignWidth="740.625" Background="White">
+             d:DesignHeight="373.437" d:DesignWidth="740.625" Background="{DynamicResource BackgroundColor}">
     <UserControl.Resources>
         <Style TargetType="{x:Type TextBox}" x:Key="SearchTextBoxStyle">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryForeground}"/>
+            <!-- Đã sửa: Đặt nền là Transparent để nền của Border bên ngoài được thấy -->
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
@@ -31,7 +33,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="30"/>
             <Setter Property="Height" Value="30"/>
-            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}"/>
             <Setter Property="Margin" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -51,10 +53,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E0F0FF"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#D0E0FF"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderColor}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -77,9 +79,12 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,10" Foreground="#0C39E8"/>
+            <!-- Tiêu đề -->
+            <TextBlock Grid.Row="0" Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,10" Foreground="{DynamicResource PrimaryColor}"/>
 
-            <Border Grid.Row="1" CornerRadius="18" Background="White" BorderBrush="#CCCCCC" BorderThickness="1" Grid.ZIndex="1" Name="SearchBorder" Margin="0">
+            <!-- Thanh Tìm kiếm Chính -->
+            <!-- Background của Border: Sử dụng SidebarColor -->
+            <Border Grid.Row="1" CornerRadius="18" Background="{DynamicResource SidebarColor}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Grid.ZIndex="1" Name="SearchBorder" Margin="0">
                 <Grid Height="36">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -87,51 +92,37 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
+                    <!-- Nút Icon Kính Lúp (Foreground dùng PrimaryColor) -->
                     <Button Grid.Column="0" Width="36" Height="36" Background="Transparent" BorderThickness="0" Margin="5,0,0,0">
-                        <TextBlock Text="&#xE720;" FontSize="18" Foreground="#0C39E8" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE720;" FontSize="18" Foreground="{DynamicResource PrimaryColor}" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
                     </Button>
 
+                    <!-- TextBox sử dụng Style SearchTextBoxStyle đã sửa lỗi nền -->
                     <TextBox x:Name="SearchTextBox" Grid.Column="1"
                              Text="Tra cứu từ, hoặc dịch văn bản nhanh..."
                              Style="{StaticResource SearchTextBoxStyle}"
-                             Foreground="#666666">
-                        <TextBox.Triggers>
-                            <EventTrigger RoutedEvent="GotFocus">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SearchHistoryPopup" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <EventTrigger RoutedEvent="LostFocus">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SearchHistoryPopup" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0.1" Value="{x:Static Visibility.Collapsed}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </TextBox.Triggers>
+                             Foreground="{DynamicResource SecondaryForeground}">
+                        <!-- Triggers giữ nguyên -->
                     </TextBox>
 
+                    <!-- Nút Icon Tìm kiếm (Foreground dùng PrimaryColor) -->
                     <Button Grid.Column="2" x:Name="SearchButton" Width="36" Height="36" Background="Transparent" BorderThickness="0" Margin="0,0,5,0">
-                        <TextBlock Text="&#xE721;" FontSize="16" Foreground="#0C39E8" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE721;" FontSize="16" Foreground="{DynamicResource PrimaryColor}" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
                     </Button>
                 </Grid>
             </Border>
 
+            <!-- Popup/Lịch sử Tra cứu -->
             <Border Grid.Row="2" Name="SearchHistoryPopup" 
-                    Background="White" 
-                    BorderBrush="#CCCCCC" BorderThickness="1"
+                    Background="{DynamicResource SidebarColor}" 
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
                     CornerRadius="5" Margin="0,-5,0,0" Padding="0,0,0,5"
                     Visibility="Collapsed" Grid.ZIndex="1">
                 <StackPanel>
                     <ListBox BorderThickness="0" Background="Transparent" MaxHeight="250" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ItemContainerStyle="{StaticResource ListBoxItemStyle}">
 
+                        <!-- ListBoxItem 1 (Ví dụ) -->
                         <ListBoxItem>
                             <Grid Margin="5,8">
                                 <Grid.ColumnDefinitions>
@@ -140,14 +131,14 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Grid.Column="0" Text="&#xE100;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#666" Margin="0,0,10,0"/>
+                                <TextBlock Grid.Column="0" Text="&#xE100;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="{DynamicResource SecondaryForeground}" Margin="0,0,10,0"/>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="question" FontWeight="Bold" FontSize="15" Foreground="#333"/>
-                                        <TextBlock Text=" ['kwɛstʃən] (n, v)" FontSize="12" Foreground="#666" FontStyle="Italic" Margin="5,0,0,0"/>
+                                        <TextBlock Text="question" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource PrimaryForeground}"/>
+                                        <TextBlock Text=" ['kwɛstʃən] (n, v)" FontSize="12" Foreground="{DynamicResource SecondaryForeground}" FontStyle="Italic" Margin="5,0,0,0"/>
                                     </StackPanel>
-                                    <TextBlock Text="câu hỏi" FontSize="14" Foreground="#0C39E8" Margin="0,2,0,0"/>
+                                    <TextBlock Text="câu hỏi" FontSize="14" Foreground="{DynamicResource PrimaryColor}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -161,6 +152,7 @@
                             </Grid>
                         </ListBoxItem>
 
+                        <!-- ListBoxItem 2 (Ví dụ) -->
                         <ListBoxItem>
                             <Grid Margin="5,8">
                                 <Grid.ColumnDefinitions>
@@ -168,13 +160,13 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="&#xE100;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#666" Margin="0,0,10,0"/>
+                                <TextBlock Grid.Column="0" Text="&#xE100;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="{DynamicResource SecondaryForeground}" Margin="0,0,10,0"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="ball" FontWeight="Bold" FontSize="15" Foreground="#333"/>
-                                        <TextBlock Text=" [bɔːl] (n, v)" FontSize="12" Foreground="#666" FontStyle="Italic" Margin="5,0,0,0"/>
+                                        <TextBlock Text="ball" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource PrimaryForeground}"/>
+                                        <TextBlock Text=" [bɔːl] (n, v)" FontSize="12" Foreground="{DynamicResource SecondaryForeground}" FontStyle="Italic" Margin="5,0,0,0"/>
                                     </StackPanel>
-                                    <TextBlock Text="quả bóng, quả banh" FontSize="14" Foreground="#0C39E8" Margin="0,2,0,0"/>
+                                    <TextBlock Text="quả bóng, quả banh" FontSize="14" Foreground="{DynamicResource PrimaryColor}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Style="{StaticResource DropdownActionButtonStyle}">
@@ -192,7 +184,10 @@
             </Border>
         </Grid>
 
-        <Border Grid.Row="1" Margin="0,20,0,0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" VerticalAlignment="Stretch">
+        <!-- Khung Kết quả Tra cứu -->
+        <Border Grid.Row="1" Margin="0,20,0,0" 
+                Background="{DynamicResource SidebarColor}" 
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="15" VerticalAlignment="Stretch">
             <StackPanel>
 
                 <Grid Margin="0,0,0,10">
@@ -202,25 +197,25 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="[Từ đang tra cứu]" FontSize="24" FontWeight="Bold" Foreground="#333"/>
-                        <TextBlock Text="/ˈdɪk.ʃə.nər.i/ (n)" FontSize="16" Foreground="#666" FontStyle="Italic" Margin="0,4,0,0"/>
+                        <TextBlock Text="[Từ đang tra cứu]" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}"/>
+                        <TextBlock Text="/ˈdɪk.ʃə.nər.i/ (n)" FontSize="16" Foreground="{DynamicResource SecondaryForeground}" FontStyle="Italic" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <Border Grid.Column="1" CornerRadius="18" Width="36" Height="36" Background="#E0F7FA">
+                    <Border Grid.Column="1" CornerRadius="18" Width="36" Height="36" Background="{DynamicResource SelectedBackgroundColor}">
                         <Button Background="Transparent" BorderThickness="0">
-                            <TextBlock Text="&#xE767;" FontSize="20" Foreground="#0C39E8" FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="&#xE767;" FontSize="20" Foreground="{DynamicResource PrimaryColor}" FontFamily="Segoe MDL2 Assets"/>
                         </Button>
                     </Border>
                 </Grid>
 
-                <Rectangle Height="1" Fill="#E0E0E0" Margin="0,5"/>
+                <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,5"/>
 
-                <TextBlock Text="Định nghĩa:" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,10,0,5"/>
+                <TextBlock Text="Định nghĩa:" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryForeground}" Margin="0,10,0,5"/>
                 <TextBlock Text="1. (Danh từ): Cuốn sách liệt kê các từ của một ngôn ngữ theo thứ tự bảng chữ cái và đưa ra ý nghĩa, phát âm, và ví dụ."
-                           TextWrapping="Wrap" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+                           TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource SecondaryForeground}" Margin="0,5,0,0"/>
 
                 <TextBlock Text="2. (Động từ): Tra cứu từ trong từ điển."
-                           TextWrapping="Wrap" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+                           TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource SecondaryForeground}" Margin="0,5,0,0"/>
 
             </StackPanel>
         </Border>

@@ -5,12 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LexiScan.App.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Background="White">
+             d:DesignHeight="450" d:DesignWidth="800" Background="{DynamicResource BackgroundColor}">
     <!-- ĐỊNH NGHĨA STYLES TẠI ĐÂY (UserControl.Resources) -->
     <UserControl.Resources>
         <Style x:Key="IconButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#0C39E8"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryColor}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Width" Value="30"/>
             <Setter Property="Height" Value="30"/>
@@ -27,12 +27,13 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E0F7FA"/>
+                    <Setter Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="IconButtonStyleRed" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+            <!-- Giữ màu đỏ cho nút Delete -->
             <Setter Property="Foreground" Value="#FF4D4D"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -51,8 +52,8 @@
 
         <!-- Phần Header: Tiêu đề, Thanh Tìm kiếm và Nút Thêm Mới -->
         <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="Từ điển Cá nhân" FontSize="28" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,5"/>
-            <TextBlock Text="Quản lý bộ từ vựng và ghi chú của riêng bạn." FontSize="14" Foreground="#666666" Margin="0,0,0,15"/>
+            <TextBlock Text="Từ điển Cá nhân" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource PrimaryColor}" Margin="0,0,0,5"/>
+            <TextBlock Text="Quản lý bộ từ vựng và ghi chú của riêng bạn." FontSize="14" Foreground="{DynamicResource SecondaryForeground}" Margin="0,0,0,15" FontStyle="Italic"/>
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -61,15 +62,15 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Thanh Tìm kiếm/Lọc -->
-                <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,10,0">
+                <Border Grid.Column="0" Background="{DynamicResource SidebarColor}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#999999" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryColor}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
                                  BorderThickness="0" 
                                  Background="Transparent" 
                                  VerticalContentAlignment="Center"
                                  FontSize="14"
-                                 Foreground="#333333"
+                                 Foreground="{DynamicResource PrimaryForeground}"
                                  d:Text="Tìm kiếm từ khóa hoặc định nghĩa..."
                                  Width="350"/>
                     </StackPanel>
@@ -77,19 +78,13 @@
 
                 <!-- Nút Thêm Từ Mới -->
                 <Button Grid.Column="1"
-                        Content="&#xE710; Thêm Từ Mới"
-                        FontFamily="Segoe MDL2 Assets"
+                        Content="Thêm Từ Mới"
                         Command="{Binding AddNewWordCommand}"
-                        Background="#0C39E8"
+                        Background="{DynamicResource PrimaryColor}"
                         Foreground="White"
                         FontSize="14"
                         Padding="15,8"
-                        HorizontalAlignment="Right">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="8"/>
-                        </Style>
-                    </Button.Resources>
+                        HorizontalAlignment="Right" Click="Button_Click">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -103,7 +98,7 @@
                             </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#0A2CBB"/>
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHoverColor}"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -113,14 +108,13 @@
         </StackPanel>
 
         <!-- Hiển thị Danh sách Từ vựng -->
-        <Border Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10">
+        <Border Grid.Row="1" Background="{DynamicResource SidebarColor}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10">
             <ListView ItemsSource="{Binding FilteredWords}" 
                       ScrollViewer.VerticalScrollBarVisibility="Auto"
                       BorderThickness="0"
                       Background="Transparent">
 
                 <ListView.ItemContainerStyle>
-                    <!-- Loại bỏ highlight mặc định và tạo đường phân cách -->
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="Margin" Value="0,2"/>
@@ -134,7 +128,8 @@
                                                 <VisualState x:Name="Normal"/>
                                                 <VisualState x:Name="MouseOver">
                                                     <Storyboard>
-                                                        <ColorAnimation To="#F0F0F0" Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" Duration="0:0:0.1"/>
+                                                        <!-- Màu hover động -->
+                                                        <ColorAnimation To="{Binding Source={DynamicResource SelectedBackgroundColor}, Path=Color}" Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" Duration="0:0:0.1"/>
                                                     </Storyboard>
                                                 </VisualState>
                                             </VisualStateGroup>
@@ -144,7 +139,7 @@
                                             <ContentPresenter/>
                                         </Border>
                                         <!-- Đường phân cách -->
-                                        <Border Height="1" Background="#E0E0E0" VerticalAlignment="Bottom" Margin="0,5,0,0"/>
+                                        <Border Height="1" Background="{DynamicResource BorderColor}" VerticalAlignment="Bottom" Margin="0,5,0,0"/>
                                     </Grid>
                                 </ControlTemplate>
                             </Setter.Value>
@@ -162,9 +157,9 @@
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <!-- Từ khóa chính -->
-                                <TextBlock Text="{Binding Word}" FontSize="18" FontWeight="Bold" Foreground="#333333"/>
+                                <TextBlock Text="{Binding Word}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}"/>
                                 <!-- Định nghĩa/Ghi chú tóm tắt -->
-                                <TextBlock Text="{Binding DefinitionPreview}" FontSize="13" Foreground="#666666" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding DefinitionPreview}" FontSize="13" Foreground="{DynamicResource SecondaryForeground}" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
 
                             <!-- Nút Chỉnh sửa và Xóa -->
