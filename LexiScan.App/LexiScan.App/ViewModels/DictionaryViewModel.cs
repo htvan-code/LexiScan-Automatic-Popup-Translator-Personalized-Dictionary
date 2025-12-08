@@ -2,5 +2,8 @@
 {
     internal class DictionaryViewModel : BaseViewModel
     {
+        public DictionaryViewModel()
+        {
+        }
     }
 }

@@ -1,63 +1,49 @@
-﻿using System;
+﻿// LexiScan.App/MainWindow.xaml.cs
+
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using LexiScan.App.ViewModels;
-using LexiScan.App.Services; // Thêm namespace Service
+using System.Windows.Input;
+// Xóa: using LexiScan.App.Services; 
 
 namespace LexiScan.App
 {
     public partial class MainWindow : Window
     {
-        // Khóa để xác định Resource Dictionary nào đã được tải
-        private const string LightThemeUri = "Themes/LightTheme.xaml";
-        private const string DarkThemeUri = "Themes/DarkTheme.xaml";
+        // Xóa các khai báo URI không cần thiết
+        // private const string LightThemeUri = "Themes/LightTheme.xaml";
+        // private const string DarkThemeUri = "Themes/DarkTheme.xaml";
 
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = new MainViewModel();
 
-            // Đăng ký lắng nghe sự kiện thay đổi theme
-            ThemeService.Instance.ThemeChanged += OnThemeChanged;
-
-            // Tải theme mặc định khi khởi động (chúng ta sẽ mặc định là Light Theme)
-            LoadTheme(LightThemeUri);
+            // Xóa logic ThemeService và LoadTheme
+            // ThemeService.Instance.ThemeChanged += OnThemeChanged;
+            // LoadTheme(DarkThemeUri); 
         }
 
-        private void OnThemeChanged(string themeName)
-        {
-            string themeUri = themeName == "Dark" ? DarkThemeUri : LightThemeUri;
-            LoadTheme(themeUri);
-        }
+        // Xóa các phương thức liên quan đến Theme
+        /*
+        private void OnThemeChanged(string themeName) { ... }
+        private void LoadTheme(string themeUri) { ... }
+        protected override void OnClosed(EventArgs e) { ... } 
+        */
 
-        private void LoadTheme(string themeUri)
-        {
-            // Bước 1: Loại bỏ Resource Dictionary theme cũ (nếu có)
-            var currentDictionaries = Application.Current.Resources.MergedDictionaries;
 
-            // Tìm và loại bỏ bất kỳ theme nào trước đó đã được load
-            for (int i = currentDictionaries.Count - 1; i >= 0; i--)
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
             {
-                var dictionary = currentDictionaries[i];
-                if (dictionary.Source != null && (dictionary.Source.OriginalString.Contains("Theme.xaml")))
-                {
-                    currentDictionaries.RemoveAt(i);
-                }
+                this.DragMove();
             }
-
-            // Bước 2: Thêm Resource Dictionary theme mới
-            ResourceDictionary newTheme = new ResourceDictionary
-            {
-                Source = new Uri(themeUri, UriKind.Relative)
-            };
-            currentDictionaries.Add(newTheme);
         }
 
-        // Đảm bảo hủy đăng ký sự kiện khi cửa sổ đóng
-        protected override void OnClosed(EventArgs e)
+        private void CloseApp_Click(object sender, RoutedEventArgs e)
         {
-            ThemeService.Instance.ThemeChanged -= OnThemeChanged;
-            base.OnClosed(e);
+            Application.Current.Shutdown();
         }
     }
 }

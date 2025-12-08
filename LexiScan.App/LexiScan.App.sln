@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36518.9 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan.App", "LexiScan.App\LexiScan.App.csproj", "{2064A2E7-B317-40F8-9E31-FFFC0E479B8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan.App", "LexiScan.App\LexiScan.App.csproj", "{6037CE70-9904-4FCB-B6A5-73B438D88321}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2064A2E7-B317-40F8-9E31-FFFC0E479B8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2064A2E7-B317-40F8-9E31-FFFC0E479B8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2064A2E7-B317-40F8-9E31-FFFC0E479B8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2064A2E7-B317-40F8-9E31-FFFC0E479B8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5C6883FE-C1FA-4D70-BB34-E61EC109053C}
+		SolutionGuid = {2741236B-3046-4FA4-BD92-0CA00056A0EB}
 	EndGlobalSection
 EndGlobal

@@ -3,46 +3,66 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:LexiScan.App"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="920"
-        ResizeMode="NoResize">
-    <Window.Resources>
+        xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
+        xmlns:view="clr-namespace:LexiScan.App.Views" 
+    mc:Ignorable="d"
+        Title="LexiScan"
+        Height="600"
+        Width="920"
+        ResizeMode="CanResize"
+        Background="Transparent" 
+        AllowsTransparency="True" 
+        WindowStyle="None"
+        MouseDown="Window_MouseDown"
+>
 
-        <!-- SỬ DỤNG DYNAMIC RESOURCE TRONG STYLES -->
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:DictionaryViewModel}">
+            <view:DictionaryView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PersonalDictionaryViewModel}">
+            <view:PersonalDictionaryView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HistoryViewModel}">
+            <view:HistoryView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TranslationViewModel}">
+            <view:TranslationView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <view:SettingsView />
+        </DataTemplate>
+
+        <!-- Style cho RadioButton Sidebar -->
         <Style x:Key="SidebarNavigationStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Foreground" Value="#F0F0F0"/>
             <Setter Property="Padding" Value="15,10"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryForeground}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="GroupName" Value="SidebarGroup"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="ButtonBorder" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="5">
-
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
-                                              Margin="{TemplateBinding Padding}"/>
+                        <Border x:Name="ButtonBorder" CornerRadius="5" Background="{TemplateBinding Background}">
+                            <ContentPresenter Margin="{TemplateBinding Padding}" 
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
-
                         <ControlTemplate.Triggers>
+                            <!-- Hover Background: #442233 -->
                             <Trigger Property="IsMouseOver" Value="True">
-                                <!-- Màu nền khi rê chuột -->
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource BorderColor}"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#442233"/>
                             </Trigger>
-
+                            <!-- Checked Background: #442233, Checked Foreground: #E91E63 -->
                             <Trigger Property="IsChecked" Value="True">
-                                <!-- Màu nền khi được chọn -->
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
-                                <!-- Màu chữ/icon khi được chọn -->
-                                <Setter Property="Foreground" Value="{DynamicResource PrimaryColor}"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#442233"/>
+                                <Setter Property="Foreground" Value="#E91E63"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -50,6 +70,7 @@
             </Setter>
         </Style>
 
+        <!-- Style cho Icon Sidebar (đã sửa lỗi cú pháp nếu có) -->
         <Style x:Key="SidebarIconStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
             <Setter Property="FontSize" Value="18"/>
@@ -58,78 +79,92 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,10,0"/>
         </Style>
-
     </Window.Resources>
 
-    <Grid Background="{DynamicResource BackgroundColor}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Grid>
+        <!-- BackgroundColor: #121212 -->
+        <Border Background="#121212" CornerRadius="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-        <!-- Sidebar Background -->
-        <Border Grid.Column="0" 
-                Background="{DynamicResource SidebarColor}" 
-                BorderBrush="{DynamicResource BorderColor}" 
-                BorderThickness="0,0,1,0" 
-                Padding="15">
-            <StackPanel>
+                <!-- Navigation Panel (Sidebar) - Column 0 -->
+                <Grid Grid.Column="0">
+                    <!-- SidebarColor: #1E1E1E -->
+                    <Border Background="#1E1E1E" CornerRadius="20,0,0,20" />
 
-                <!-- User Profile Section -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,25">
-                    <!-- Icon nền Primary Color -->
-                    <Border Width="40" Height="40" CornerRadius="20" Background="{DynamicResource PrimaryColor}" VerticalAlignment="Center" Margin="5,0,10,0">
-                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="20" Foreground="White" 
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <!-- User Text -->
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Người dùng" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource PrimaryForeground}"/>
-                        <TextBlock Text="Đã đăng nhập" FontSize="11" Foreground="{DynamicResource SecondaryForeground}"/>
+                    <StackPanel Margin="15,20,15,20">
+
+                        <!-- Tiêu đề - PrimaryColor: #E91E63 -->
+                        <TextBlock Text="LexiScan" 
+                                   FontSize="24" 
+                                   FontWeight="ExtraBold" 
+                                   Foreground="#FFE91E5F" 
+                                   Margin="0,0,0,25" HorizontalAlignment="Center"/>
+
+                        <!-- Đã sử dụng Style SidebarNavigationStyle -->
+                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsChecked="True">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE80F;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="Trang chủ"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="PersonalDictionary">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8B9;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="Từ điển cá nhân"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="History">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE81C;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="Lịch sử tra cứu"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Translation">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE756;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="Dịch văn bản"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <!-- BorderColor: #444444 -->
+                        <Rectangle Height="1" Fill="#444444" Margin="0,15"/>
+
+                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE713;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="Cài đặt"/>
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
 
-                <!-- Navigation RadioButtons (Sử dụng SidebarNavigationStyle đã sửa) -->
-                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsChecked="True">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE80F;" Style="{StaticResource SidebarIconStyle}"/>
-                        <TextBlock Text="Trang chủ"/>
-                    </StackPanel>
-                </RadioButton>
-                <!-- ... các RadioButton khác ... -->
-                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="PersonalDictionary">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE8B9;" Style="{StaticResource SidebarIconStyle}"/>
-                        <TextBlock Text="Từ điển cá nhân"/>
-                    </StackPanel>
-                </RadioButton>
+                <!-- Content Panel - Column 1 - BackgroundColor: #121212 -->
+                <Grid Grid.Column="1" >
+                    <ContentControl Content="{Binding CurrentView}" Foreground="#FF707070" />
+                </Grid>
 
-                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="History">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE81C;" Style="{StaticResource SidebarIconStyle}"/>
-                        <TextBlock Text="Lịch sử tra cứu"/>
-                    </StackPanel>
-                </RadioButton>
+                <!-- Nút đóng ứng dụng - SecondaryForeground: #AAAAAA -->
+                <Button x:Name="CloseApp"
+                        Grid.ColumnSpan="2"
+                        Content="&#xE711;"
+                        FontFamily="Segoe MDL2 Assets"
+                        Foreground="#AAAAAA"
+                        FontSize="14"
+                        Width="30"
+                        Height="30"
+                        Click="CloseApp_Click" 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,10,10,0"/>
 
-                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Translation">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE756;" Style="{StaticResource SidebarIconStyle}"/>
-                        <TextBlock Text="Dịch văn bản"/>
-                    </StackPanel>
-                </RadioButton>
-
-                <!-- Separator -->
-                <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,15"/>
-
-                <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE713;" Style="{StaticResource SidebarIconStyle}"/>
-                        <TextBlock Text="Cài đặt"/>
-                    </StackPanel>
-                </RadioButton>
-            </StackPanel>
+            </Grid>
         </Border>
-
-        <ContentControl Grid.Column="1" Content="{Binding CurrentView}"/>
     </Grid>
 </Window>

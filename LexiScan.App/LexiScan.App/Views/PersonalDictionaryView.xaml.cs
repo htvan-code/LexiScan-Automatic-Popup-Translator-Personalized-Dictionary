@@ -15,9 +15,7 @@ using System.Windows.Shapes;
 
 namespace LexiScan.App.Views
 {
-    /// <summary>
-    /// Interaction logic for PersonalDictionaryView.xaml
-    /// </summary>
+    // Đảm bảo tên class là PersonalDictionaryView
     public partial class PersonalDictionaryView : UserControl
     {
         public PersonalDictionaryView()

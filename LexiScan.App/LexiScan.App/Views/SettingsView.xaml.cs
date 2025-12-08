@@ -24,10 +24,5 @@ namespace LexiScan.App.Views
         {
             InitializeComponent();
         }
-
-        private void HotkeyTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
     }
 }
