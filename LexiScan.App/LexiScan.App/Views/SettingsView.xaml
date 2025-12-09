@@ -9,6 +9,121 @@
              Background="{DynamicResource AppBackground}">
 
     <UserControl.Resources>
+        <Style x:Key="ScrollThumbStyle" TargetType="{x:Type Thumb}">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Grid>
+                            <Rectangle Name="ThumbRect"
+                                Fill="{DynamicResource SecondaryText}" 
+                                RadiusX="4" RadiusY="4" 
+                                Margin="2" 
+                                Opacity="0.4"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ThumbRect" Property="Opacity" Value="0.8"/>
+                                <Setter TargetName="ThumbRect" Property="Fill" Value="{DynamicResource PrimaryText}"/>
+                            </Trigger>
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="ThumbRect" Property="Opacity" Value="1"/>
+                                <Setter TargetName="ThumbRect" Property="Fill" Value="{DynamicResource PrimaryAccent}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RoundedScrollBar" TargetType="{x:Type ScrollBar}">
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
+            <Setter Property="Stylus.IsFlicksEnabled" Value="false"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="200"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid x:Name="Bg" SnapsToDevicePixels="true" Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="true" IsEnabled="{TemplateBinding IsMouseOver}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.LineUpCommand}" Visibility="Collapsed"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.LineDownCommand}" Visibility="Collapsed"/>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ScrollThumbStyle}"/>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Width" Value="Auto"/>
+                    <Setter Property="Height" Value="10"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type ScrollViewer}">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                        <Grid x:Name="Grid" Background="{TemplateBinding Background}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" 
+                                             CanContentScroll="{TemplateBinding CanContentScroll}" 
+                                             CanHorizontallyScroll="False" 
+                                             CanVerticallyScroll="False" 
+                                             ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                             Content="{TemplateBinding Content}" 
+                                             Grid.Column="0" Grid.Row="0" 
+                                             Margin="{TemplateBinding Padding}"/>
+
+                            <ScrollBar x:Name="PART_VerticalScrollBar" 
+                                Grid.Column="1" Grid.Row="0"
+                                AutomationProperties.AutomationId="VerticalScrollBar" 
+                                Cursor="Arrow" 
+                                Maximum="{TemplateBinding ScrollableHeight}" 
+                                Minimum="0" 
+                                Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" 
+                                Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                ViewportSize="{TemplateBinding ViewportHeight}"
+                                Style="{StaticResource RoundedScrollBar}"/>
+
+                            <ScrollBar x:Name="PART_HorizontalScrollBar" 
+                                Grid.Column="0" Grid.Row="1"
+                                AutomationProperties.AutomationId="HorizontalScrollBar" 
+                                Cursor="Arrow" 
+                                Maximum="{TemplateBinding ScrollableWidth}" 
+                                Minimum="0" 
+                                Orientation="Horizontal" 
+                                Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" 
+                                Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                ViewportSize="{TemplateBinding ViewportWidth}"
+                                Style="{StaticResource RoundedScrollBar}"/>
+
+                            <Rectangle Grid.Column="1" Grid.Row="1" Fill="Transparent"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
         <util:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 
         <Style TargetType="GroupBox">
@@ -179,7 +294,8 @@
                    Foreground="{DynamicResource PrimaryAccent}" 
                    Text="Settings"/>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      >
             <StackPanel Width="600" HorizontalAlignment="Left">
 
                 <GroupBox Header="Tuỳ chỉnh Popup" FontWeight="Normal">
@@ -217,14 +333,14 @@
                                         Background="{DynamicResource CardBackground}" 
                                         Foreground="{DynamicResource PrimaryAccent}" 
                                         Command="{Binding ChangeHotkeyCommand}">
-                                    <TextBlock Text="Thiết Lập"/>
+                                    <Border Background="{DynamicResource BorderColor}" CornerRadius="5" Padding="10,5">
+                                        <TextBlock Text="Thiết Lập" 
+                   Foreground="{DynamicResource PrimaryAccent}" 
+                   FontWeight="SemiBold"/>
+                                    </Border>
                                 </Button>
                             </Grid>
 
-                            <CheckBox Content="Hiển thị icon quét sau khi chọn văn bản"
-                                      Style="{StaticResource StandardCheckBoxStyle}"
-                                      IsChecked="{Binding CurrentSettings.ShowScanIcon}"
-                                      Margin="0,15,0,0"/>
 
                             <CheckBox Content="Tự động phát âm khi tra từ" 
                                       Style="{StaticResource StandardCheckBoxStyle}"

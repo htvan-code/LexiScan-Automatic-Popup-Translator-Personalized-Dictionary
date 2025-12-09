@@ -39,7 +39,7 @@ namespace LexiScan.App.Models
             public bool AutoPronounceOnTranslate { get; set; } = false;
             public bool IsAutoReadEnabled { get; set; } = true;
             // 3. Giao Diện
-            public bool IsDarkModeEnabled { get; set; } = false;
+            public bool IsDarkModeEnabled { get; set; } = true;
 
             // 4. Quản Lý Dữ Liệu
             public bool AutoSaveHistoryToDictionary { get; set; } = true;

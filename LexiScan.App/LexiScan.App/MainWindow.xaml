@@ -5,6 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
         xmlns:view="clr-namespace:LexiScan.App.Views" 
+        
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+        
         mc:Ignorable="d"
         Title="LexiScan"
         Height="600"
@@ -89,6 +92,11 @@
 
                     <StackPanel Margin="15,20,15,20">
 
+                        <materialDesign:PackIcon Kind="BookAlphabet" 
+                                                 Width="48" Height="48" 
+                                                 Foreground="{DynamicResource PrimaryAccent}" 
+                                                 HorizontalAlignment="Center" 
+                                                 Margin="0,0,0,10"/>
                         <TextBlock Text="LexiScan" 
                                    FontSize="24" 
                                    FontWeight="ExtraBold" 
