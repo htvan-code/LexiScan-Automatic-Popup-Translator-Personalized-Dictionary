@@ -4,29 +4,62 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LexiScan.App.Views"
+             xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
              mc:Ignorable="d" 
-             d:DesignHeight="373.437" d:DesignWidth="740.625" 
-             Background="#121212">
+             d:DesignHeight="450" d:DesignWidth="800" 
+             Background="{DynamicResource AppBackground}">
+
     <UserControl.Resources>
         <Style TargetType="{x:Type TextBox}" x:Key="SearchTextBoxStyle">
-            <Setter Property="Foreground" Value="#F0F0F0"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource PrimaryAccent}"/>
         </Style>
-        <Style x:Key="DropdownActionButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="#E91E63"/>
+
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.8"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
+
         <Style x:Key="ListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                        <Border x:Name="Border" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true"
-                                Background="{TemplateBinding Background}">
+                        <Border x:Name="Border" Padding="5,8" SnapsToDevicePixels="true"
+                                Background="{TemplateBinding Background}"
+                                Cursor="Hand">
+                            <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#442233"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderColor}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#442233"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderColor}"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter TargetName="Border" Property="BorderThickness" Value="2,0,0,0"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -49,9 +82,12 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,10" Foreground="#E91E63"/>
+            <TextBlock Grid.Row="0" Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,10" Foreground="{DynamicResource PrimaryAccent}"/>
 
-            <Border Grid.Row="1" CornerRadius="18" Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" Grid.ZIndex="1" Name="SearchBorder" Margin="0">
+            <Border Grid.Row="1" CornerRadius="18" 
+                    Background="{DynamicResource CardBackground}" 
+                    BorderBrush="{DynamicResource BorderColor}" 
+                    BorderThickness="1" Grid.ZIndex="2" Name="SearchBorder" Margin="0">
                 <Grid Height="36">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -59,80 +95,115 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Width="36" Height="36" Background="Transparent" BorderThickness="0" Margin="5,0,0,0">
-                        <TextBlock Text="&#xE720;" FontSize="18" Foreground="#E91E63" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                    <Button Grid.Column="0" Width="36" Height="36" Margin="5,0,0,0" Style="{StaticResource IconButtonStyle}">
+                        <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20"/>
                     </Button>
 
                     <TextBox x:Name="SearchTextBox" Grid.Column="1"
                              Text="Tra cứu từ, hoặc dịch văn bản nhanh..."
                              Style="{StaticResource SearchTextBoxStyle}"
-                             Foreground="#F0F0F0" Background="{x:Null}" HorizontalAlignment="Left" VerticalAlignment="Center" BorderBrush="{x:Null}">
-                    </TextBox>
+                             HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
-                    <Button Grid.Column="2" x:Name="SearchButton" Width="36" Height="36" Background="Transparent" BorderThickness="0" Margin="0,0,5,0">
-                        <TextBlock Text="&#xE721;" FontSize="16" Foreground="#E91E63" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" x:Name="SearchButton" Width="36" Height="36" Margin="0,0,5,0" Style="{StaticResource IconButtonStyle}">
+                        <materialDesign:PackIcon Kind="Microphone" Width="18" Height="18"/>
                     </Button>
                 </Grid>
             </Border>
 
             <Border Grid.Row="2" Name="SearchHistoryPopup" 
-                    Background="#1E1E1E" 
-                    BorderBrush="#444444" BorderThickness="1"
-                    CornerRadius="5" Margin="0,-5,0,0" Padding="0,0,0,5"
-                    Visibility="Collapsed" Grid.ZIndex="1">
+                    Background="{DynamicResource CardBackground}" 
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                    CornerRadius="0,0,5,5" Margin="0,-5,0,0" Padding="0,5,0,5"
+                    Grid.ZIndex="1">
+
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=SearchTextBox, Path=IsKeyboardFocused}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+
                 <StackPanel>
-                    <ListBox BorderThickness="0" Background="Transparent" MaxHeight="250" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    <ListBox BorderThickness="0" Background="Transparent" MaxHeight="250" 
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ItemContainerStyle="{StaticResource ListBoxItemStyle}">
 
                         <ListBoxItem>
-                            <Grid Margin="5,8">
-                                <TextBlock Grid.Column="0" Text="&#xE100;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#F0F0F0" Margin="0,0,10,0"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <materialDesign:PackIcon Grid.Column="0" Kind="ClockOutline" 
+                                                         Width="16" Height="16" 
+                                                         Foreground="{DynamicResource SecondaryText}" 
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,10,0"/>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="question" FontWeight="Bold" FontSize="15" Foreground="#F0F0F0"/>
-                                        <TextBlock Text=" ['kwɛstʃən] (n, v)" FontSize="12" Foreground="#AAAAAA" FontStyle="Italic" Margin="5,0,0,0"/>
+                                        <TextBlock Text="question" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource PrimaryText}"/>
+                                        <TextBlock Text=" ['kwɛstʃən] (n, v)" FontSize="12" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic" Margin="5,0,0,0"/>
                                     </StackPanel>
-                                    <TextBlock Text="câu hỏi" FontSize="14" Foreground="#E91E63" Margin="0,2,0,0"/>
+                                    <TextBlock Text="câu hỏi" FontSize="14" Foreground="{DynamicResource PrimaryAccent}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Style="{StaticResource DropdownActionButtonStyle}">
-                                        <TextBlock Text="&#xE10A;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button Width="30" Height="30" Margin="0,0,5,0" Style="{StaticResource IconButtonStyle}">
+                                        <materialDesign:PackIcon Kind="VolumeHigh" Width="16" Height="16"/>
                                     </Button>
                                 </StackPanel>
                             </Grid>
                         </ListBoxItem>
+
                     </ListBox>
                 </StackPanel>
             </Border>
         </Grid>
 
         <Border Grid.Row="1" Margin="0,20,0,0" 
-                 Padding="15" 
-                 Background="#1E1E1E"
-                 CornerRadius="8"
-                 VerticalAlignment="Stretch">
+                Padding="15" 
+                Background="{DynamicResource CardBackground}"
+                CornerRadius="8"
+                VerticalAlignment="Stretch">
             <StackPanel>
 
                 <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="[Từ đang tra cứu]" FontSize="24" FontWeight="Bold" Foreground="#F0F0F0"/>
-                        <TextBlock Text="/ˈdɪk.ʃə.nər.i/ (n)" FontSize="16" Foreground="#AAAAAA" FontStyle="Italic" Margin="0,4,0,0"/>
+                        <TextBlock Text="[Từ đang tra cứu]" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}"/>
+                        <TextBlock Text="/ˈdɪk.ʃə.nər.i/ (n)" FontSize="16" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <Border Grid.Column="1" CornerRadius="18" Width="36" Height="36" Background="#442233">
-                        <Button Background="Transparent" BorderThickness="0">
-                            <TextBlock Text="&#xE767;" FontSize="20" Foreground="#E91E63" FontFamily="Segoe MDL2 Assets"/>
+                    <Border Grid.Column="1" CornerRadius="18" Width="36" Height="36" Background="{DynamicResource PrimaryAccent}" VerticalAlignment="Center">
+                        <Button Background="Transparent" BorderThickness="0" Style="{StaticResource IconButtonStyle}" Foreground="White">
+                            <materialDesign:PackIcon Kind="VolumeHigh" Width="20" Height="20"/>
                         </Button>
                     </Border>
                 </Grid>
 
-                <Rectangle Height="1" Fill="#444444" Margin="0,5"/>
+                <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,5"/>
 
-                <TextBlock Text="Định nghĩa:" FontSize="14" FontWeight="SemiBold" Foreground="#F0F0F0" Margin="0,10,0,5"/>
+                <TextBlock Text="Định nghĩa:" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" Margin="0,10,0,5"/>
                 <TextBlock Text="1. (Danh từ): Cuốn sách liệt kê các từ của một ngôn ngữ..."
-                           TextWrapping="Wrap" FontSize="14" Foreground="#AAAAAA" Margin="0,5,0,0"/>
+                           TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource SecondaryText}" Margin="0,5,0,0"/>
+
             </StackPanel>
         </Border>
 

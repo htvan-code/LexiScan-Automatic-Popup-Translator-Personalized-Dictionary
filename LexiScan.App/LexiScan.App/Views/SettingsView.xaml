@@ -3,21 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:util="clr-namespace:LexiScan.App.Utilities"              mc:Ignorable="d" 
-             d:DesignHeight="912" d:DesignWidth="700" Background="#121212">    
-    <UserControl.Resources>
-                <util:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+             xmlns:util="clr-namespace:LexiScan.App.Utilities"
+             mc:Ignorable="d" 
+             d:DesignHeight="912" d:DesignWidth="700" 
+             Background="{DynamicResource AppBackground}">
 
-                <Style TargetType="GroupBox">
+    <UserControl.Resources>
+        <util:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+
+        <Style TargetType="GroupBox">
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#F0F0F0"/>             
-             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="0,10,0,10"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
-                <Style x:Key="ActionButtonStyle" TargetType="Button">
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="38"/>
             <Setter Property="Padding" Value="15,0"/>
             <Setter Property="FontSize" Value="14"/>
@@ -36,22 +39,98 @@
         </Style>
 
         <Style x:Key="SaveButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-            <Setter Property="Background" Value="#E91E63"/>             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryAccent}"/>
+            <Setter Property="Foreground" Value="White"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#D81B60"/>                 </Trigger>
+                    <Setter Property="Opacity" Value="0.8"/>
+                </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="CancelButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-            <Setter Property="Background" Value="#444444"/>             <Setter Property="Foreground" Value="#F0F0F0"/>             <Style.Triggers>
+            <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#AAAAAA"/>                 </Trigger>
+                    <Setter Property="Opacity" Value="0.8"/>
+                </Trigger>
             </Style.Triggers>
         </Style>
 
-                <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
-            <Setter Property="Background" Value="#444444"/>             <Setter Property="BorderBrush" Value="#444444"/>             <Setter Property="Foreground" Value="#F0F0F0"/>             <Setter Property="Template">
+        <Style x:Key="StandardCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Height="18" Width="18" Margin="0,0,10,0">
+                                <Border x:Name="Box" CornerRadius="3" BorderThickness="2" 
+                                        BorderBrush="{DynamicResource SecondaryText}" 
+                                        Background="Transparent"/>
+                                <Path x:Name="CheckMark" 
+                                      Data="M3,9 L7,13 L15,5" 
+                                      Stroke="White" StrokeThickness="2.5"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Visibility="Collapsed"/>
+                            </Grid>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="StandardRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,20,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Height="18" Width="18" Margin="0,0,8,0">
+                                <Border x:Name="OuterCircle" CornerRadius="10" BorderThickness="2" 
+                                        BorderBrush="{DynamicResource SecondaryText}" 
+                                        Background="Transparent"/>
+                                <Ellipse x:Name="InnerDot" Width="10" Height="10" 
+                                         Fill="{DynamicResource PrimaryAccent}" 
+                                         Visibility="Collapsed"/>
+                            </Grid>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="OuterCircle" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter TargetName="InnerDot" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="OuterCircle" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
+            <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -62,7 +141,6 @@
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="1"
                                     VerticalAlignment="Center">
-
                                 <Grid x:Name="ToggleContainer" HorizontalAlignment="Left">
                                     <Ellipse x:Name="ToggleThumb"
                                              Width="14" Height="14"
@@ -73,11 +151,11 @@
                         </StackPanel>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="BackgroundBorder" Property="Background" Value="#E91E63"/>                                 <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="#E91E63"/>
+                                <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
                                 <Setter TargetName="ToggleContainer" Property="HorizontalAlignment" Value="Right"/>
                                 <Setter TargetName="ToggleThumb" Property="Margin" Value="0,0,3,0"/>
                             </Trigger>
-
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="BackgroundBorder" Property="Opacity" Value="0.85"/>
                             </Trigger>
@@ -95,19 +173,24 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0"
+        <TextBlock Grid.Row="0"
                    FontSize="32" FontWeight="ExtraBold"
                    Margin="0,0,0,25"
-                   Foreground="#E91E63" Text="Settings"/>
+                   Foreground="{DynamicResource PrimaryAccent}" 
+                   Text="Settings"/>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Width="600" HorizontalAlignment="Left">
+            <StackPanel Width="600" HorizontalAlignment="Left">
 
-                                                <GroupBox Header="Phím Tắt &amp; Tương Tác Hệ Thống" FontWeight="Normal">
-                    <Border Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" CornerRadius="8" Padding="15">
+                <GroupBox Header="Tuỳ chỉnh Popup" FontWeight="Normal">
+                    <Border Background="{DynamicResource CardBackground}" 
+                            BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="1" CornerRadius="8" Padding="15">
                         <StackPanel>
-                                                        <TextBlock Text="Phím Tắt Kích Hoạt (Hotkey):"
-                                       FontWeight="SemiBold" Foreground="#F0F0F0" Margin="0,0,0,5"/>
+                            <TextBlock Text="Phím Tắt Kích Hoạt (Hotkey):"
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource PrimaryText}" 
+                                       Margin="0,0,0,5"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -115,7 +198,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Border Grid.Column="0"
-                                        BorderBrush="#444444"
+                                        BorderBrush="{DynamicResource BorderColor}"
                                         BorderThickness="1"
                                         CornerRadius="5"
                                         Height="38"
@@ -126,122 +209,125 @@
                                              Padding="10,0"
                                              BorderThickness="0" 
                                              Text="{Binding CurrentSettings.Hotkey}" 
-                                             Foreground="#F0F0F0"
+                                             Foreground="{DynamicResource PrimaryText}"
                                              Background="Transparent"/>
                                 </Border>
 
-                                                                <Button Grid.Column="1" Width="120" Style="{StaticResource ActionButtonStyle}" 
-                                        Background="#442233" 
-                                        Foreground="#E91E63" 
+                                <Button Grid.Column="1" Width="120" Style="{StaticResource ActionButtonStyle}" 
+                                        Background="{DynamicResource CardBackground}" 
+                                        Foreground="{DynamicResource PrimaryAccent}" 
                                         Command="{Binding ChangeHotkeyCommand}">
                                     <TextBlock Text="Thiết Lập"/>
                                 </Button>
                             </Grid>
 
-                                                        <CheckBox Content="Hiển thị icon quét sau khi chọn văn bản"
+                            <CheckBox Content="Hiển thị icon quét sau khi chọn văn bản"
+                                      Style="{StaticResource StandardCheckBoxStyle}"
                                       IsChecked="{Binding CurrentSettings.ShowScanIcon}"
-                                      Foreground="#F0F0F0"
                                       Margin="0,15,0,0"/>
 
+                            <CheckBox Content="Tự động phát âm khi tra từ" 
+                                      Style="{StaticResource StandardCheckBoxStyle}"
+                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnLookup}"/>
+
+                            <CheckBox Content="Bật/Tắt popup" 
+                                      Style="{StaticResource StandardCheckBoxStyle}"
+                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnLookup}"/>
+
                         </StackPanel>
                     </Border>
                 </GroupBox>
 
-                                <GroupBox Header="Phát Âm (Text-to-Speech)" FontWeight="Normal">
-                    <Border Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" CornerRadius="8" Padding="15">
+                <GroupBox Header="Phát Âm (Text-to-Speech)" FontWeight="Normal">
+                    <Border Background="{DynamicResource CardBackground}" 
+                            BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="1" CornerRadius="8" Padding="15">
                         <StackPanel>
 
-                            <TextBlock Text="Tốc độ phát âm" FontWeight="SemiBold" FontSize="15" Foreground="#F0F0F0" Margin="0,0,0,10"/>
-                            
+                            <TextBlock Text="Tốc độ phát âm" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,10"/>
+
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
-                                                                <RadioButton Content="Chậm hơn" GroupName="SpeedGroup" Margin="0,0,20,0" 
+                                <RadioButton Content="Chậm hơn" GroupName="SpeedGroup" 
+                                             Style="{StaticResource StandardRadioButtonStyle}"
                                              IsChecked="{Binding CurrentSettings.Speed, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Slower}" 
-                                             Width="163" Foreground="#F0F0F0"/>
-                                <RadioButton Content="Chậm" GroupName="SpeedGroup" Margin="0,0,20,0" 
+                                             Width="163"/>
+                                <RadioButton Content="Chậm" GroupName="SpeedGroup" 
+                                             Style="{StaticResource StandardRadioButtonStyle}"
                                              IsChecked="{Binding CurrentSettings.Speed, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Slow}" 
-                                             Width="157" Foreground="#F0F0F0"/>
+                                             Width="157"/>
                                 <RadioButton Content="Bình thường" GroupName="SpeedGroup" 
-                                             IsChecked="{Binding CurrentSettings.Speed, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Normal}" 
-                                             Foreground="#F0F0F0"/>
+                                             Style="{StaticResource StandardRadioButtonStyle}"
+                                             IsChecked="{Binding CurrentSettings.Speed, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Normal}"/>
                             </StackPanel>
 
-                            <TextBlock Text="Giọng đọc mặc định" FontWeight="SemiBold" Foreground="#F0F0F0" Margin="0,5,0,5"/>
+                            <TextBlock Text="Giọng đọc mặc định" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" Margin="0,5,0,5"/>
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
                                 <RadioButton Content="Anh Anh" GroupName="VoiceGroup" 
+                                             Style="{StaticResource StandardRadioButtonStyle}"
                                              IsChecked="{Binding CurrentSettings.Voice, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=EngUK}" 
-                                             Margin="0,0,20,0" Width="161" Foreground="#F0F0F0"/>
+                                             Width="161"/>
                                 <RadioButton Content="Anh Mỹ" GroupName="VoiceGroup" 
+                                             Style="{StaticResource StandardRadioButtonStyle}"
                                              IsChecked="{Binding CurrentSettings.Voice, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=EngUS}" 
-                                             Width="84" Foreground="#F0F0F0"/>
+                                             Width="84"/>
                             </StackPanel>
 
-                            <CheckBox Content="Tự động phát âm khi tra từ" IsChecked="{Binding CurrentSettings.AutoPronounceOnLookup}" Margin="0,5,0,0" Foreground="#F0F0F0"/>
-                            <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}" Margin="0,5,0,0" Foreground="#F0F0F0"/>
+                            <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" 
+                                      Style="{StaticResource StandardCheckBoxStyle}"
+                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/>
 
                         </StackPanel>
                     </Border>
                 </GroupBox>
 
-                                <GroupBox Header="Giao Diện" FontWeight="Normal">
-                    <Border Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" CornerRadius="8" Padding="15">
+                <GroupBox Header="Giao Diện" FontWeight="Normal">
+                    <Border Background="{DynamicResource CardBackground}" 
+                            BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="1" CornerRadius="8" Padding="15">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                                <TextBlock Text="&#xE706;" FontFamily="Segoe MDL2 Assets" Width="20" Height="15" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#E91E63"/>
+                                <TextBlock Text="&#xE706;" FontFamily="Segoe MDL2 Assets" Width="20" Height="15" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryAccent}"/>
 
-                                                                <TextBlock Text="Chủ Đề Tối/Sáng:"
+                                <TextBlock Text="Chủ Đề Tối/Sáng:"
                                            VerticalAlignment="Center"
-                                           Foreground="#F0F0F0" Margin="0,0,20,0" FontStyle="Italic" Width="130"/>
-                                
+                                           Foreground="{DynamicResource PrimaryText}" 
+                                           Margin="0,0,20,0" FontStyle="Italic" Width="130"/>
+
                                 <CheckBox 
                                     Content="Bật Chủ Đề Tối" 
                                     Style="{StaticResource ToggleSwitchStyle}"
-                                    IsChecked="{Binding CurrentSettings.IsDarkModeEnabled}" 
+                                    IsChecked="{Binding IsDarkModeEnabled, Mode=TwoWay}" 
                                     VerticalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
                 </GroupBox>
 
-                                <GroupBox Header="Quản Lý Dữ Liệu" FontWeight="Normal">
-                    <Border Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" CornerRadius="8" Padding="15">
+                <GroupBox Header="Quản Lý Dữ Liệu" FontWeight="Normal">
+                    <Border Background="{DynamicResource CardBackground}" 
+                            BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="1" CornerRadius="8" Padding="15">
                         <StackPanel>
                             <CheckBox Content="Tự động lưu lịch sử tra cứu vào Từ điển cá nhân"
-                                      IsChecked="{Binding CurrentSettings.AutoSaveHistoryToDictionary}"
-                                      Foreground="#F0F0F0"/>
-
-                                                        <Button Width="300" 
-                                    Margin="0,20,0,0" 
-                                    HorizontalAlignment="Left"
-                                    Style="{StaticResource ActionButtonStyle}"
-                                    Background="#442233" 
-                                    Foreground="#E91E63"
-                                    Command="{Binding ExportDataCommand}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE11C;"
-                                               FontFamily="Segoe MDL2 Assets"
-                                               Width="20" Height="20"
-                                               Margin="0,0,6,0"/>
-                                    <TextBlock Text="Xuất (Export) Dữ Liệu Cá Nhân"/>
-                                </StackPanel>
-                            </Button>
-
+                                      Style="{StaticResource StandardCheckBoxStyle}"
+                                      IsChecked="{Binding CurrentSettings.AutoSaveHistoryToDictionary}"/>
                         </StackPanel>
                     </Border>
                 </GroupBox>
             </StackPanel>
         </ScrollViewer>
 
-                <StackPanel Grid.Row="2" Orientation="Horizontal"
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right" Margin="0,20,0,0">
 
-                        <Button Width="120" Style="{StaticResource CancelButtonStyle}" Margin="0,0,10,0" Command="{Binding CancelCommand}">
+            <Button Width="120" Style="{StaticResource CancelButtonStyle}" Margin="0,0,10,0" Command="{Binding CancelCommand}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" Width="18" Margin="0,0,6,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <TextBlock Text="Hủy Bỏ"/>
                 </StackPanel>
             </Button>
 
-                        <Button Name="SaveSettingsButton" Width="150" Style="{StaticResource SaveButtonStyle}" Command="{Binding SaveCommand}">
+            <Button Name="SaveSettingsButton" Width="150" Style="{StaticResource SaveButtonStyle}" Command="{Binding SaveCommand}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" Width="18" Margin="0,0,6,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <TextBlock Text="Lưu Cài Đặt"/>

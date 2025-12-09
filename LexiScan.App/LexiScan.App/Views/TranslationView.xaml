@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LexiScan.App.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Background="#121212">
+             d:DesignHeight="450" d:DesignWidth="800" Background="{DynamicResource AppBackground}">
     <UserControl.Resources>
 
         <Style x:Key="ActionIconButton" TargetType="Button">
@@ -13,7 +13,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="30"/>
             <Setter Property="Height" Value="30"/>
-            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
@@ -23,7 +23,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="8,5"/>
             <Setter Property="FontSize" Value="15"/>
-            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -33,11 +33,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#F0F0F0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
                             </Trigger>
                             <Trigger Property="IsDefaulted" Value="True">
-                                <Setter Property="Foreground" Value="#E91E63"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#E91E63"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -50,7 +50,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="36"/>
             <Setter Property="Height" Value="36"/>
-            <Setter Property="Foreground" Value="#E91E63"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
@@ -64,7 +64,7 @@
 
         <TextBlock Grid.Row="0" Text="Dịch văn bản" 
                    FontSize="28" FontWeight="Bold" 
-                   Foreground="#E91E63" Margin="0,0,0,10"/>
+                   Foreground="{DynamicResource PrimaryAccent}" Margin="0,0,0,10"/>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -73,14 +73,14 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" CornerRadius="8" Margin="0,5,10,148">
+            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="0,5,10,148">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" BorderBrush="#444444" BorderThickness="0,0,0,1">
+                    <Border Grid.Row="0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
                         <StackPanel Orientation="Horizontal" Margin="10,0" Height="45">
                             <Button Content="Anh" Style="{StaticResource LanguageTabStyle}" IsDefault="True" Width="43"/>
                             <Button Content="Việt" Style="{StaticResource LanguageTabStyle}" Width="38"/>
@@ -96,7 +96,8 @@
                         <TextBox Grid.Row="0" x:Name="SourceTextBox" 
                                  BorderThickness="0" Background="Transparent" 
                                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                                 FontSize="18" Foreground="#F0F0F0" FontWeight="SemiBold" 
+                                 FontSize="18" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" 
+                                 CaretBrush="{DynamicResource PrimaryAccent}"
                                  MinHeight="150" AcceptsReturn="True" VerticalAlignment="Stretch"/>
 
                         <Grid Grid.Row="1" Height="30" VerticalAlignment="Bottom" Margin="0,10,0,0">
@@ -111,10 +112,10 @@
                             </Button>
 
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="0" Foreground="#AAAAAA" FontSize="13"/>
-                                <TextBlock Text="/ 5.000" Foreground="#444444" FontSize="13" Margin="0,0,5,0"/>
+                                <TextBlock Text="0" Foreground="{DynamicResource SecondaryText}" FontSize="13"/>
+                                <TextBlock Text="/ 5.000" Foreground="{DynamicResource BorderColor}" FontSize="13" Margin="0,0,5,0"/>
                                 <Button Style="{StaticResource ActionIconButton}" Width="15" Height="25">
-                                    <TextBlock Text="&#xE70D;" FontFamily="Segoe MDL2 Assets" Foreground="#AAAAAA" FontSize="10"/>
+                                    <TextBlock Text="&#xE70D;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource SecondaryText}" FontSize="10"/>
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -123,9 +124,9 @@
             </Border>
 
             <Border Grid.Column="1" VerticalAlignment="Center" Margin="0" Width="30" Height="30"
-                    Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" CornerRadius="5">
+                    Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="5">
                 <Button Style="{StaticResource ActionIconButton}" Background="Transparent">
-                    <TextBlock Text="&#xE8CB;" FontFamily="Segoe MDL2 Assets" Foreground="#E91E63" FontSize="14" RenderTransformOrigin="0.5,0.5">
+                    <TextBlock Text="&#xE8CB;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource PrimaryAccent}" FontSize="14" RenderTransformOrigin="0.5,0.5">
                         <TextBlock.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -138,7 +139,7 @@
                 </Button>
             </Border>
 
-            <Border Grid.Column="2" Background="#1E1E1E" BorderBrush="#444444" BorderThickness="1" CornerRadius="8" Margin="10,5,0,148">
+            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="10,5,0,148">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -146,7 +147,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" BorderBrush="#444444" BorderThickness="0,0,0,1">
+                    <Border Grid.Row="0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
                         <StackPanel Orientation="Horizontal" Margin="10,0" Height="45">
                             <Button Content="Việt" Style="{StaticResource LanguageTabStyle}" IsDefault="True" Width="44"/>
                             <Button Content="Anh" Style="{StaticResource LanguageTabStyle}" Width="43"/>
@@ -155,7 +156,7 @@
 
                     <Grid Grid.Row="1" Margin="10">
                         <TextBlock Text="Bản dịch" 
-                                   FontSize="18" FontWeight="SemiBold" Foreground="#F0F0F0"
+                                   FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}"
                                    VerticalAlignment="Top" Margin="0,0,0,10"/>
                     </Grid>
 
@@ -168,14 +169,14 @@
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
                             <Button Style="{StaticResource ActionIconButton}" Width="30" Height="30">
-                                <TextBlock Text="&#xE767;" FontFamily="Segoe MDL2 Assets" Foreground="#E91E63" FontSize="16"/>
+                                <TextBlock Text="&#xE767;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource PrimaryAccent}" FontSize="16"/>
                             </Button>
                             <Button Style="{StaticResource ActionIconButton}" Margin="10,0,0,0">
-                                <TextBlock Text="&#xE734;" FontFamily="Segoe MDL2 Assets" Foreground="#E91E63" FontSize="16"/>
+                                <TextBlock Text="&#xE734;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource PrimaryAccent}" FontSize="16"/>
                             </Button>
                         </StackPanel>
 
-                        <TextBlock Grid.Column="2" Text="Gửi ý kiến phản hồi" FontSize="10" Foreground="#AAAAAA" 
+                        <TextBlock Grid.Column="2" Text="Gửi ý kiến phản hồi" FontSize="10" Foreground="{DynamicResource SecondaryText}" 
                                    VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
                     </Grid>
                 </Grid>

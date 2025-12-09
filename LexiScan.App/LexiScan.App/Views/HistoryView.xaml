@@ -5,21 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="700"
-             Background="#121212">
-    <!-- BackgroundColor: #121212 -->
+             Background="{DynamicResource AppBackground}">
+
     <UserControl.Resources>
         <Style TargetType="{x:Type TextBox}" x:Key="SearchHistoryTextBoxStyle">
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#F0F0F0"/>
-            <!-- PrimaryForeground: #F0F0F0 -->
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
         </Style>
 
         <Style x:Key="DetailButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#E91E63"/>
-            <!-- PrimaryColor: #E91E63 -->
+            <Setter Property="Background" Value="{DynamicResource PrimaryAccent}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="10,4"/>
@@ -37,8 +35,7 @@
 
         <Style x:Key="DeleteIconButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#AAAAAA"/>
-            <!-- SecondaryForeground: #AAAAAA -->
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Width" Value="30"/>
             <Setter Property="Height" Value="30"/>
@@ -54,10 +51,8 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#442233"/>
-                    <!-- SelectedBackgroundColor: #442233 -->
+                    <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
                     <Setter Property="Foreground" Value="#FF4D4D"/>
-                    <!-- DangerColor: #FF4D4D -->
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -70,50 +65,41 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Row 0: Tiêu đề và Nút hành động -->
         <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="Lịch sử Tra cứu" FontSize="28" FontWeight="Bold" Foreground="#FFE91E63"/>
-            <!-- PrimaryForeground: #F0F0F0 -->
-            <TextBlock Text="Xem lại và quản lý các từ khóa bạn đã tra cứu." FontSize="14" Foreground="#AAAAAA" FontStyle="Italic"/>
-            <!-- SecondaryForeground: #AAAAAA -->
+            <TextBlock Text="Lịch sử Tra cứu" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource PrimaryAccent}"/>
+            <TextBlock Text="Xem lại và quản lý các từ khóa bạn đã tra cứu." FontSize="14" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic"/>
         </StackPanel>
 
-        <!-- Row 1: Thanh Tìm kiếm và Nút Xóa -->
         <Grid Grid.Row="1" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Thanh Tìm kiếm/Lọc - SidebarColor: #1E1E1E -->
             <Border Grid.Column="0" Margin="0,0,10,0" Padding="10" 
-                    Background="#1E1E1E" CornerRadius="8">
+                    Background="{DynamicResource CardBackground}" CornerRadius="8">
                 <StackPanel Orientation="Horizontal">
-                    <!-- PrimaryColor: #E91E63 -->
-                    <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#E91E63" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryAccent}" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                     <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SearchHistoryTextBoxStyle}"
-                                Foreground="#F0F0F0"
                                 Width="350"
                                 d:Text="Nhập từ khóa để tìm kiếm trong lịch sử..."/>
                 </StackPanel>
             </Border>
 
-            <!-- Nút Xóa Lịch sử - DangerColor: #FF4D4D -->
             <Button Grid.Column="1"
-                       Content="Xóa Toàn bộ Lịch sử"
-                       Command="{Binding ClearHistoryCommand}"
-                       Background="#FF4D4D" 
-                       Foreground="White"
-                       FontSize="14"
-                       Padding="15,8"
-                       HorizontalAlignment="Right"/>
+                        Content="Xóa Toàn bộ Lịch sử"
+                        Command="{Binding ClearHistoryCommand}"
+                        Background="#FF4D4D" 
+                        Foreground="White"
+                        FontSize="14"
+                        Padding="15,8"
+                        HorizontalAlignment="Right"/>
         </Grid>
 
-        <!-- Row 2: Hiển thị Danh sách Lịch sử - SidebarColor: #1E1E1E -->
         <Border Grid.Row="2" Padding="10" 
-                Background="#1E1E1E" CornerRadius="8">
+                Background="{DynamicResource CardBackground}" CornerRadius="8">
             <ListView ItemsSource="{Binding HistoryEntries}" 
                       ScrollViewer.VerticalScrollBarVisibility="Auto"
                       BorderThickness="0"
@@ -135,10 +121,8 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding SearchTerm}" FontSize="16" FontWeight="SemiBold" Foreground="#E91E63"/>
-                                <!-- PrimaryColor: #E91E63 -->
-                                <TextBlock Text="{Binding DisplayTime}" FontSize="12" Foreground="#AAAAAA"/>
-                                <!-- SecondaryForeground: #AAAAAA -->
+                                <TextBlock Text="{Binding SearchTerm}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryAccent}"/>
+                                <TextBlock Text="{Binding DisplayTime}" FontSize="12" Foreground="{DynamicResource SecondaryText}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">

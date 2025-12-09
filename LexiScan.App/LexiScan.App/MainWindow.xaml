@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
         xmlns:view="clr-namespace:LexiScan.App.Views" 
-    mc:Ignorable="d"
+        mc:Ignorable="d"
         Title="LexiScan"
         Height="600"
         Width="920"
@@ -13,8 +13,7 @@
         Background="Transparent" 
         AllowsTransparency="True" 
         WindowStyle="None"
-        MouseDown="Window_MouseDown"
->
+        MouseDown="Window_MouseDown">
 
     <Window.DataContext>
         <vm:MainViewModel/>
@@ -37,10 +36,9 @@
             <view:SettingsView />
         </DataTemplate>
 
-        <!-- Style cho RadioButton Sidebar -->
         <Style x:Key="SidebarNavigationStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#F0F0F0"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
             <Setter Property="Padding" Value="15,10"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -55,14 +53,12 @@
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <!-- Hover Background: #442233 -->
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#442233"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource BorderColor}"/>
                             </Trigger>
-                            <!-- Checked Background: #442233, Checked Foreground: #E91E63 -->
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#442233"/>
-                                <Setter Property="Foreground" Value="#E91E63"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource BorderColor}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -70,7 +66,6 @@
             </Setter>
         </Style>
 
-        <!-- Style cho Icon Sidebar (đã sửa lỗi cú pháp nếu có) -->
         <Style x:Key="SidebarIconStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
             <Setter Property="FontSize" Value="18"/>
@@ -82,29 +77,24 @@
     </Window.Resources>
 
     <Grid>
-        <!-- BackgroundColor: #121212 -->
-        <Border Background="#121212" CornerRadius="20">
+        <Border Background="{DynamicResource AppBackground}" CornerRadius="20">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="220"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Navigation Panel (Sidebar) - Column 0 -->
                 <Grid Grid.Column="0">
-                    <!-- SidebarColor: #1E1E1E -->
-                    <Border Background="#1E1E1E" CornerRadius="20,0,0,20" />
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="20,0,0,20" />
 
                     <StackPanel Margin="15,20,15,20">
 
-                        <!-- Tiêu đề - PrimaryColor: #E91E63 -->
                         <TextBlock Text="LexiScan" 
                                    FontSize="24" 
                                    FontWeight="ExtraBold" 
-                                   Foreground="#FFE91E5F" 
+                                   Foreground="{DynamicResource PrimaryAccent}" 
                                    Margin="0,0,0,25" HorizontalAlignment="Center"/>
 
-                        <!-- Đã sử dụng Style SidebarNavigationStyle -->
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsChecked="True">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE80F;" Style="{StaticResource SidebarIconStyle}"/>
@@ -133,8 +123,7 @@
                             </StackPanel>
                         </RadioButton>
 
-                        <!-- BorderColor: #444444 -->
-                        <Rectangle Height="1" Fill="#444444" Margin="0,15"/>
+                        <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,15"/>
 
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
                             <StackPanel Orientation="Horizontal">
@@ -145,24 +134,44 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Content Panel - Column 1 - BackgroundColor: #121212 -->
                 <Grid Grid.Column="1" >
-                    <ContentControl Content="{Binding CurrentView}" Foreground="#FF707070" />
+                    <ContentControl Content="{Binding CurrentView}" Foreground="{DynamicResource PrimaryText}" />
                 </Grid>
 
-                <!-- Nút đóng ứng dụng - SecondaryForeground: #AAAAAA -->
                 <Button x:Name="CloseApp"
                         Grid.ColumnSpan="2"
                         Content="&#xE711;"
                         FontFamily="Segoe MDL2 Assets"
-                        Foreground="#AAAAAA"
+                        Foreground="{DynamicResource SecondaryText}"
                         FontSize="14"
                         Width="30"
                         Height="30"
                         Click="CloseApp_Click" 
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
-                        Margin="0,10,10,0"/>
+                        Margin="0,10,10,0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FF4D4D"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
             </Grid>
         </Border>
