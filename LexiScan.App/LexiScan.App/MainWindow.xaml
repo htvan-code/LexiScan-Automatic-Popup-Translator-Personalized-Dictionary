@@ -18,9 +18,7 @@
         WindowStyle="None"
         MouseDown="Window_MouseDown">
 
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
+
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:DictionaryViewModel}">
@@ -69,14 +67,6 @@
             </Setter>
         </Style>
 
-        <Style x:Key="SidebarIconStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
-            <Setter Property="FontSize" Value="18"/>
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,10,0"/>
-        </Style>
     </Window.Resources>
 
     <Grid>
@@ -97,6 +87,7 @@
                                                  Foreground="{DynamicResource PrimaryAccent}" 
                                                  HorizontalAlignment="Center" 
                                                  Margin="0,0,0,10"/>
+
                         <TextBlock Text="LexiScan" 
                                    FontSize="24" 
                                    FontWeight="ExtraBold" 
@@ -105,28 +96,28 @@
 
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsChecked="True">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE80F;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Trang chủ"/>
                             </StackPanel>
                         </RadioButton>
 
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="PersonalDictionary">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE8B9;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="&#xE736;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Từ điển cá nhân"/>
                             </StackPanel>
                         </RadioButton>
 
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="History">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE81C;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="&#xE81C;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Lịch sử tra cứu"/>
                             </StackPanel>
                         </RadioButton>
 
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Translation">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE756;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="&#xE8C1;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Dịch văn bản"/>
                             </StackPanel>
                         </RadioButton>
@@ -135,7 +126,7 @@
 
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE713;" Style="{StaticResource SidebarIconStyle}"/>
+                                <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Cài đặt"/>
                             </StackPanel>
                         </RadioButton>
@@ -180,7 +171,6 @@
                         </Style>
                     </Button.Style>
                 </Button>
-
             </Grid>
         </Border>
     </Grid>

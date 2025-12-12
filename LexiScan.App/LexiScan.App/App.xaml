@@ -10,9 +10,9 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Pink.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Secondary/MaterialDesignColor.Lime.xaml" />
 
-                <ResourceDictionary Source="Themes/DarkTheme.xaml"/>
-                <ResourceDictionary Source="Themes/ScrollBarStyle.xaml"/>
-            
+                <ResourceDictionary Source="pack://application:,,,/LexiScan.App;component/Themes/DarkTheme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/LexiScan.App;component/Themes/ScrollBarStyle.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

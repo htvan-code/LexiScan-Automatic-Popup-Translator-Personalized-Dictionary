@@ -1,48 +1,118 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+
 namespace LexiScan.App.Models
 {
+    // Enum giữ nguyên
+    public enum SpeechSpeed { Slower, Slow, Normal }
+    public enum SpeechVoice { EngUK, EngUS }
 
-    namespace LexiScan.App.Models
+    // Thêm INotifyPropertyChanged để báo hiệu thay đổi và ICloneable để copy
+    public class Settings : INotifyPropertyChanged, ICloneable
     {
-        // Enum cho Tốc độ đọc (được sử dụng nội bộ bởi Service)
-        public enum SpeechSpeed
+        // --- 1. Phím Tắt & Tương Tác ---
+        private string _hotkey = "Ctrl + Space";
+        public string Hotkey
         {
-            Slower,
-            Slow,
-            Normal
+            get => _hotkey;
+            set { if (_hotkey != value) { _hotkey = value; OnPropertyChanged(); } }
         }
 
-        // Enum cho Giọng đọc (được sử dụng nội bộ bởi Service)
-        public enum SpeechVoice
+        private bool _showScanIcon = true;
+        public bool ShowScanIcon
         {
-            EngUK,
-            EngUS
+            get => _showScanIcon;
+            set { if (_showScanIcon != value) { _showScanIcon = value; OnPropertyChanged(); } }
         }
 
-        // Lớp chứa tất cả các cấu hình ứng dụng.
-        // Các thuộc tính này sẽ được serialize (lưu) vào file JSON.
-        public class Settings
+        // --- 2. Phát Âm ---
+        private SpeechSpeed _speed = SpeechSpeed.Normal;
+        public SpeechSpeed Speed
         {
-            // 1. Phím Tắt & Tương Tác
-            public string Hotkey { get; set; } = "Ctrl + Space";
-            public bool ShowScanIcon { get; set; } = true;
+            get => _speed;
+            set { if (_speed != value) { _speed = value; OnPropertyChanged(); } }
+        }
 
-            // 2. Phát Âm (Sử dụng Enum để lưu trữ)
-            public SpeechSpeed Speed { get; set; } = SpeechSpeed.Normal;
-            public SpeechVoice Voice { get; set; } = SpeechVoice.EngUS;
-            public bool AutoPronounceOnLookup { get; set; } = true;
-            public bool AutoPronounceOnTranslate { get; set; } = false;
-            public bool IsAutoReadEnabled { get; set; } = true;
-            // 3. Giao Diện
-            public bool IsDarkModeEnabled { get; set; } = true;
+        private SpeechVoice _voice = SpeechVoice.EngUS;
+        public SpeechVoice Voice
+        {
+            get => _voice;
+            set { if (_voice != value) { _voice = value; OnPropertyChanged(); } }
+        }
 
-            // 4. Quản Lý Dữ Liệu
-            public bool AutoSaveHistoryToDictionary { get; set; } = true;
+        private bool _autoPronounceOnLookup = true;
+        public bool AutoPronounceOnLookup
+        {
+            get => _autoPronounceOnLookup;
+            set { if (_autoPronounceOnLookup != value) { _autoPronounceOnLookup = value; OnPropertyChanged(); } }
+        }
+
+        private bool _autoPronounceOnTranslate = false;
+        public bool AutoPronounceOnTranslate
+        {
+            get => _autoPronounceOnTranslate;
+            set { if (_autoPronounceOnTranslate != value) { _autoPronounceOnTranslate = value; OnPropertyChanged(); } }
+        }
+
+        private bool _isAutoReadEnabled = true;
+        public bool IsAutoReadEnabled
+        {
+            get => _isAutoReadEnabled;
+            set { if (_isAutoReadEnabled != value) { _isAutoReadEnabled = value; OnPropertyChanged(); } }
+        }
+
+        // --- 3. Giao Diện ---
+        private bool _isDarkModeEnabled = true;
+        public bool IsDarkModeEnabled
+        {
+            get => _isDarkModeEnabled;
+            set { if (_isDarkModeEnabled != value) { _isDarkModeEnabled = value; OnPropertyChanged(); } }
+        }
+
+        // --- 4. Quản Lý Dữ Liệu ---
+        private bool _autoSaveHistoryToDictionary = true;
+        public bool AutoSaveHistoryToDictionary
+        {
+            get => _autoSaveHistoryToDictionary;
+            set { if (_autoSaveHistoryToDictionary != value) { _autoSaveHistoryToDictionary = value; OnPropertyChanged(); } }
+        }
+
+        // --- CÁC HÀM HỖ TRỢ LOGIC ---
+
+        // Hàm copy object (để tạo bản backup)
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
+
+        // Hàm so sánh xem 2 Settings có giống hệt nhau không
+        public override bool Equals(object obj)
+        {
+            if (obj is not Settings other) return false;
+
+            return Hotkey == other.Hotkey &&
+                   ShowScanIcon == other.ShowScanIcon &&
+                   Speed == other.Speed &&
+                   Voice == other.Voice &&
+                   AutoPronounceOnLookup == other.AutoPronounceOnLookup &&
+                   AutoPronounceOnTranslate == other.AutoPronounceOnTranslate &&
+                   IsAutoReadEnabled == other.IsAutoReadEnabled &&
+                   IsDarkModeEnabled == other.IsDarkModeEnabled &&
+                   AutoSaveHistoryToDictionary == other.AutoSaveHistoryToDictionary;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Hotkey, Speed, Voice, IsDarkModeEnabled);
+        }
+
+        // Sự kiện thông báo
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }

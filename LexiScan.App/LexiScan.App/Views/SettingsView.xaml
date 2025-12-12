@@ -9,6 +9,10 @@
              Background="{DynamicResource AppBackground}">
 
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <util:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+
         <Style x:Key="ScrollThumbStyle" TargetType="{x:Type Thumb}">
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="Template">
@@ -85,13 +89,13 @@
                             </Grid.RowDefinitions>
 
                             <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" 
-                                             CanContentScroll="{TemplateBinding CanContentScroll}" 
-                                             CanHorizontallyScroll="False" 
-                                             CanVerticallyScroll="False" 
-                                             ContentTemplate="{TemplateBinding ContentTemplate}" 
-                                             Content="{TemplateBinding Content}" 
-                                             Grid.Column="0" Grid.Row="0" 
-                                             Margin="{TemplateBinding Padding}"/>
+                                               CanContentScroll="{TemplateBinding CanContentScroll}" 
+                                               CanHorizontallyScroll="False" 
+                                               CanVerticallyScroll="False" 
+                                               ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                               Content="{TemplateBinding Content}" 
+                                               Grid.Column="0" Grid.Row="0" 
+                                               Margin="{TemplateBinding Padding}"/>
 
                             <ScrollBar x:Name="PART_VerticalScrollBar" 
                                 Grid.Column="1" Grid.Row="0"
@@ -122,9 +126,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-
-        <util:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 
         <Style TargetType="GroupBox">
             <Setter Property="BorderThickness" Value="0"/>
@@ -294,8 +295,7 @@
                    Foreground="{DynamicResource PrimaryAccent}" 
                    Text="Settings"/>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                      >
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Width="600" HorizontalAlignment="Left">
 
                 <GroupBox Header="Tuỳ chỉnh Popup" FontWeight="Normal">
@@ -335,8 +335,8 @@
                                         Command="{Binding ChangeHotkeyCommand}">
                                     <Border Background="{DynamicResource BorderColor}" CornerRadius="5" Padding="10,5">
                                         <TextBlock Text="Thiết Lập" 
-                   Foreground="{DynamicResource PrimaryAccent}" 
-                   FontWeight="SemiBold"/>
+                                                   Foreground="{DynamicResource PrimaryAccent}" 
+                                                   FontWeight="SemiBold"/>
                                     </Border>
                                 </Button>
                             </Grid>
@@ -348,7 +348,7 @@
 
                             <CheckBox Content="Bật/Tắt popup" 
                                       Style="{StaticResource StandardCheckBoxStyle}"
-                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnLookup}"/>
+                                      IsChecked="{Binding CurrentSettings.IsAutoReadEnabled}"/>
 
                         </StackPanel>
                     </Border>
@@ -412,7 +412,7 @@
                                 <CheckBox 
                                     Content="Bật Chủ Đề Tối" 
                                     Style="{StaticResource ToggleSwitchStyle}"
-                                    IsChecked="{Binding IsDarkModeEnabled, Mode=TwoWay}" 
+                                        IsChecked="{Binding IsDarkModeEnabled, Mode=TwoWay}" 
                                     VerticalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
@@ -434,7 +434,8 @@
         </ScrollViewer>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal"
-                    HorizontalAlignment="Right" Margin="0,20,0,0">
+                    HorizontalAlignment="Right" Margin="0,20,0,0"
+                    Visibility="{Binding HasUnsavedChanges, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <Button Width="120" Style="{StaticResource CancelButtonStyle}" Margin="0,0,10,0" Command="{Binding CancelCommand}">
                 <StackPanel Orientation="Horizontal">

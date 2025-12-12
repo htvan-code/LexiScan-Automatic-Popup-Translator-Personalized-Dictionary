@@ -89,13 +89,13 @@
             </Border>
 
             <Button Grid.Column="1"
-                        Content="Xóa Toàn bộ Lịch sử"
+                        Content="Xóa toàn bộ Lịch sử"
                         Command="{Binding ClearHistoryCommand}"
                         Background="#FF4D4D" 
                         Foreground="White"
-                        FontSize="14"
+                        FontSize="12"
                         Padding="15,8"
-                        HorizontalAlignment="Right"/>
+                        HorizontalAlignment="Center" Click="Button_Click"/>
         </Grid>
 
         <Border Grid.Row="2" Padding="10" 
