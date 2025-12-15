@@ -93,13 +93,14 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBox Grid.Row="0" x:Name="SourceTextBox" 
-                                 BorderThickness="0" Background="Transparent" 
-                                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                                 FontSize="18" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" 
-                                 CaretBrush="{DynamicResource PrimaryAccent}"
-                                 MinHeight="150" AcceptsReturn="True" VerticalAlignment="Stretch"/>
-
+                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <TextBox x:Name="SourceTextBox" 
+                                     BorderThickness="0" Background="Transparent" 
+                                     TextWrapping="Wrap" 
+                                     FontSize="18" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" 
+                                     CaretBrush="{DynamicResource PrimaryAccent}"
+                                     MinHeight="150" AcceptsReturn="True" VerticalAlignment="Stretch"/>
+                        </ScrollViewer>
                         <Grid Grid.Row="1" Height="30" VerticalAlignment="Bottom" Margin="0,10,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -155,9 +156,12 @@
                     </Border>
 
                     <Grid Grid.Row="1" Margin="10">
-                        <TextBlock Text="Bản dịch" 
-                                   FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}"
-                                   VerticalAlignment="Top" Margin="0,0,0,10"/>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <TextBlock Text="Bản dịch" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}"
+                                       VerticalAlignment="Top" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                        </ScrollViewer>
                     </Grid>
 
                     <Grid Grid.Row="2" Height="30" VerticalAlignment="Bottom" Margin="10,0,10,10">

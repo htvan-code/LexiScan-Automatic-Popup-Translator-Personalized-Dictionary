@@ -13,12 +13,11 @@
         Height="600"
         Width="920"
         ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen"
         Background="Transparent" 
         AllowsTransparency="True" 
         WindowStyle="None"
         MouseDown="Window_MouseDown">
-
-
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:DictionaryViewModel}">
@@ -130,7 +129,29 @@
                                 <TextBlock Text="Cài đặt"/>
                             </StackPanel>
                         </RadioButton>
+
                     </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" 
+                                VerticalAlignment="Bottom" 
+                                HorizontalAlignment="Left"
+                                Margin="30,0,0,30"
+                                Cursor="Hand">
+                        <TextBlock Text="&#xE9CE;" 
+                                   FontFamily="Segoe MDL2 Assets" 
+                                   FontSize="18" 
+                                   Foreground="{DynamicResource PrimaryText}"
+                                   VerticalAlignment="Center" 
+                                   Margin="0,0,10,0"/>
+
+                        <TextBlock Text="How to use " 
+                                   FontSize="14" 
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryText}"
+                                   VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
                 </Grid>
 
                 <Grid Grid.Column="1" >

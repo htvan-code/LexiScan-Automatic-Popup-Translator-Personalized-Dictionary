@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
         mc:Ignorable="d"
-        Title="LoginView" Height="550" Width="900"
+        Title="LoginView" Height="600" Width="920"
         WindowStyle="None" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent" AllowsTransparency="True"

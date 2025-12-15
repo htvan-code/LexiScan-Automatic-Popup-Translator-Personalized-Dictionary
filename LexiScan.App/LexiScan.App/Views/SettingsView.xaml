@@ -21,7 +21,7 @@
                         <Grid>
                             <Rectangle Name="ThumbRect"
                                 Fill="{DynamicResource SecondaryText}" 
-                                RadiusX="4" RadiusY="4" 
+                                RadiusX="6" RadiusY="6" 
                                 Margin="2" 
                                 Opacity="0.4"/>
                         </Grid>
@@ -68,7 +68,7 @@
             <Style.Triggers>
                 <Trigger Property="Orientation" Value="Horizontal">
                     <Setter Property="Width" Value="Auto"/>
-                    <Setter Property="Height" Value="10"/>
+                    <Setter Property="Height" Value="200"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
