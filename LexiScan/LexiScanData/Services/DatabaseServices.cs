@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LexiScanData.Models;
+
 
 namespace LexiScanData.Services
 {
@@ -16,27 +18,6 @@ namespace LexiScanData.Services
         }
         // LexiScanData/Services/DatabaseServices.cs
 
-        public void SavePinnedWords(int sentenceId, List<string> selectedWords)
-        {
-            // Tìm câu hiện tại
-            var sentence = _context.Sentences.Find(sentenceId);
-
-            if (sentence != null)
-            {
-                // LOGIC LƯU: Tùy thuộc vào database của bạn thiết kế thế nào.
-                // Ví dụ 1: Nếu bạn lưu các từ đã chọn thành một chuỗi phân cách bởi dấu phẩy
-                string wordsToSave = string.Join(", ", selectedWords);
-
-                // Giả sử model Sentences có trường Note hoặc PinnedWords để lưu
-                // sentence.PinnedWords = wordsToSave; 
-
-                // Ví dụ 2: Nếu chỉ đơn giản là đánh dấu (như code mẫu ViewModel đang set IsPinned = true)
-                sentence.IsPinned = true;
-
-                // Lưu thay đổi vào DB
-                _context.SaveChanges();
-            }
-        }
         public bool TogglePinStatus(int sentenceId)
         {
             var sentence = _context.Sentences.Find(sentenceId);
@@ -61,5 +42,49 @@ namespace LexiScanData.Services
                 _context.SaveChanges();
             }
         }
+        public void TestConnection()
+        {
+            using var context = new LexiScanDbContext();
+            int count = context.Sentences.Count();
+        }
+        public void SavePinnedWords(int sentenceId, List<string> words)
+        {
+            using var context = new LexiScanDbContext();
+
+            // 1. Lấy câu
+            var sentence = context.Sentences.Find(sentenceId);
+            if (sentence == null) return;
+
+            sentence.IsPinned = true;
+
+            foreach (var wordText in words)
+            {
+                // 2. Kiểm tra từ đã tồn tại chưa
+                var word = context.Words.FirstOrDefault(w => w.Text == wordText);
+
+                if (word == null)
+                {
+                    word = new Words { Text = wordText };
+                    context.Words.Add(word);
+                    context.SaveChanges();
+                }
+
+                // 3. Gắn từ với câu
+                bool exists = context.SentenceWords.Any(sw =>
+                    sw.SentenceId == sentenceId && sw.WordId == word.WordId);
+
+                if (!exists)
+                {
+                    context.SentenceWords.Add(new SentenceWord
+                    {
+                        SentenceId = sentenceId,
+                        WordId = word.WordId
+                    });
+                }
+            }
+
+            context.SaveChanges();
+        }
+
     }
 }
