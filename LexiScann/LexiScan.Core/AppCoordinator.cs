@@ -1,4 +1,4 @@
-﻿// File: Services/AppCoordinator.cs
+﻿//Thao uyen xinh gai
 using LexiScan.Core.Models;
 using LexiScan.Core.Services;
 
