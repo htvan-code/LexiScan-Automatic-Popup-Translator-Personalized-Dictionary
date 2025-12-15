@@ -1,27 +1,23 @@
 ﻿using System;
-using System.ComponentModel; // Cần cái này cho CancelEventArgs
+using System.ComponentModel; 
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-
-// --- 1. QUAN TRỌNG: Đặt tên riêng để tránh xung đột giữa WPF và WinForms ---
-using WinForms = System.Windows.Forms;
 using Drawing = System.Drawing;
+using WinForms = System.Windows.Forms;
 
 namespace ScreenTranslator
 {
     public partial class MainWindow : Window
     {
-        // Khai báo Service (Cần câu)
         private ClipboardHookService _hookService;
         private bool _hasSetPosition = false;
 
         private int _currentMod = ClipboardHookService.MOD_CONTROL;
         private int _currentKey = 0x20;
 
-        // --- 2. QUAN TRỌNG: Khai báo biến cho System Tray ---
-        // (Lúc nãy bạn bị đỏ là do thiếu 2 dòng này)
         private WinForms.NotifyIcon _notifyIcon;
         private bool _isRealExit = false;
 
@@ -32,8 +28,6 @@ namespace ScreenTranslator
             _hookService = new ClipboardHookService();
             _hookService.OnTextCaptured += ShowResult;
             _hookService.OnError += ShowError;
-
-            // Gọi hàm tạo Icon ở đây
             InitSystemTray();
         }
 
@@ -53,8 +47,6 @@ namespace ScreenTranslator
             _hookService.ProcessWindowMessage(msg, wParam.ToInt32());
             return IntPtr.Zero;
         }
-
-        // --- CÁC HÀM HIỂN THỊ GIAO DIỆN (UI) ---
 
         private void ShowResult(string text)
         {
@@ -91,18 +83,13 @@ namespace ScreenTranslator
         {
             this.DragMove();
         }
-
-        // --- XỬ LÝ ĐÓNG CỬA SỔ & THOÁT ---
-
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            // Nếu chưa bấm nút "Thoát" dưới tray icon thì chỉ ẩn đi
             if (!_isRealExit)
             {
                 e.Cancel = true;
                 this.Hide();
             }
-            // Nhớ gọi Unregister khi đóng thật
             else
             {
                 if (_hookService != null) _hookService.Unregister();
@@ -113,12 +100,10 @@ namespace ScreenTranslator
 
         private void ExitApplication()
         {
-            _isRealExit = true; // Bật cờ cho phép thoát thật
-            _notifyIcon.Dispose(); // Xóa icon
-            System.Windows.Application.Current.Shutdown(); // Tắt app
+            _isRealExit = true; 
+            _notifyIcon.Dispose(); 
+            System.Windows.Application.Current.Shutdown(); 
         }
-
-        // --- CÁC HÀM STARTUP & SYSTEM TRAY ---
 
         private void SetStartup(bool enable)
         {
@@ -155,7 +140,6 @@ namespace ScreenTranslator
         private void InitSystemTray()
         {
             _notifyIcon = new WinForms.NotifyIcon();
-
             try
             {
                 string iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_icon.ico");
@@ -168,36 +152,45 @@ namespace ScreenTranslator
 
             _notifyIcon.Visible = true;
             _notifyIcon.Text = "Screen Translator (Đang chạy ngầm)";
-
             _notifyIcon.DoubleClick += (s, e) => ShowPopupMemory();
-
-            // Menu chuột phải
-            WinForms.ContextMenuStrip menu = new WinForms.ContextMenuStrip();
-
-            var mainItem = new WinForms.ToolStripMenuItem("Mở giao diện chính");
-            mainItem.Font = new Drawing.Font(mainItem.Font, Drawing.FontStyle.Bold);
-            mainItem.Click += (s, e) => ShowPopupMemory();
-            menu.Items.Add(mainItem);
-
-            menu.Items.Add(new WinForms.ToolStripSeparator());
-
-            var startupItem = new WinForms.ToolStripMenuItem("Khởi động cùng Windows");
-            startupItem.Checked = IsStartupEnabled();
-            startupItem.Click += (s, e) =>
+            _notifyIcon.MouseClick += (s, e) =>
             {
-                bool newState = !startupItem.Checked;
-                SetStartup(newState);
-                startupItem.Checked = newState;
+                if (e.Button == WinForms.MouseButtons.Right)
+                {
+                    var trayMenu = this.Resources["TrayMenu"] as ContextMenu;
+                    if (trayMenu != null)
+                    {
+                        foreach (var item in trayMenu.Items)
+                        {
+                            if (item is MenuItem menuItem && menuItem.Name == "MenuStartup")
+                            {
+                                menuItem.IsChecked = IsStartupEnabled();
+                                break;
+                            }
+                        }
+                        trayMenu.IsOpen = true;
+                        this.Activate();
+                    }
+                }
             };
-            menu.Items.Add(startupItem);
+        }
 
-            menu.Items.Add(new WinForms.ToolStripSeparator());
+        private void MenuOpen_Click(object sender, RoutedEventArgs e)
+        {
+            ShowPopupMemory();
+        }
 
-            var closeItem = new WinForms.ToolStripMenuItem("Thoát");
-            closeItem.Click += (s, e) => ExitApplication();
-            menu.Items.Add(closeItem);
+        private void MenuStartup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item)
+            {
+                SetStartup(item.IsChecked);
+            }
+        }
 
-            _notifyIcon.ContextMenuStrip = menu;
+        private void MenuExit_Click(object sender, RoutedEventArgs e)
+        {
+            ExitApplication();
         }
     }
 }
