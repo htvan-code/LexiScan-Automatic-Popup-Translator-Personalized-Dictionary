@@ -1,0 +1,153 @@
+﻿<UserControl x:Class="LexiScan.App.Views.PersonalDictionaryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="700"
+             Background="{DynamicResource AppBackground}">
+
+    <UserControl.DataContext>
+        <vm:PersonalDictionaryViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <Style TargetType="{x:Type TextBox}" x:Key="SearchHistoryTextBoxStyle">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        </Style>
+
+        <Style x:Key="DetailButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource PrimaryAccent}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DeleteIconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
+                    <Setter Property="Foreground" Value="#FF4D4D"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Từ điển Cá nhân" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource PrimaryAccent}"/>
+            <TextBlock Text="Quản lý danh sách từ vựng đã lưu." FontSize="14" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Margin="0,0,10,0" Padding="10" 
+                    Background="{DynamicResource CardBackground}" CornerRadius="8">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryAccent}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                    <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource SearchHistoryTextBoxStyle}"
+                                Width="350"
+                                d:Text="Nhập từ khóa để tìm kiếm..."/>
+                </StackPanel>
+            </Border>
+
+            <Button Grid.Column="1"
+                        Content="Xóa Toàn bộ"
+                        Command="{Binding ClearAllCommand}"
+                        Background="#FF4D4D" 
+                        Foreground="White"
+                        FontSize="12"
+                        Padding="15,8"
+                        HorizontalAlignment="Right"/>
+        </Grid>
+
+        <Border Grid.Row="2" Padding="10" 
+                Background="{DynamicResource CardBackground}" CornerRadius="8">
+            <ListView ItemsSource="{Binding SavedWords}" 
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      BorderThickness="0"
+                      Background="Transparent">
+
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Padding" Value="0,5"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Word}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryAccent}"/>
+                                <TextBlock Text="{Binding Meaning}" FontSize="12" Foreground="{DynamicResource SecondaryText}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="Xem Chi Tiết" 
+                                           Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.ViewDetailsCommand}"
+                                           CommandParameter="{Binding .}"
+                                           Margin="0,0,10,0"
+                                           Style="{StaticResource DetailButtonStyle}"/>
+
+                                <Button Content="&#xE74D;" 
+                                           FontFamily="Segoe MDL2 Assets"
+                                           Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteItemCommand}"
+                                           CommandParameter="{Binding .}"
+                                           Style="{StaticResource DeleteIconButtonStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+
+    </Grid>
+</UserControl>
