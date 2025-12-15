@@ -1,13 +1,13 @@
-﻿
+﻿using System.Speech.Synthesis; // Dùng thư viện chuẩn của .NET
+
 namespace LexiScanService
 {
-    internal class TtsService
+    public class TtsService
     {
         private readonly SpeechSynthesizer _synthesizer;
 
         public TtsService()
         {
-            // Cần tham chiếu tới System.Speech
             _synthesizer = new SpeechSynthesizer();
         }
 
@@ -15,16 +15,9 @@ namespace LexiScanService
         {
             if (!string.IsNullOrEmpty(text))
             {
+                // Gọi hàm SpeakAsync của System.Speech
                 _synthesizer.SpeakAsync(text);
             }
-        }
-    }
-
-    internal class SpeechSynthesizer
-    {
-        internal void SpeakAsync(string text)
-        {
-            throw new NotImplementedException();
         }
     }
 }

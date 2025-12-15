@@ -1,87 +1,159 @@
-﻿using System.Windows.Input;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+
 using LexiScanUI.Helpers;
+using LexiScanData.Services; // Add this using directive if DatabaseServices is in this namespace
+using LexiScanService;
 
 namespace LexiScanUI.ViewModels
 {
     public class PopupViewModel : INotifyPropertyChanged
     {
-        private readonly DatabaseServices _dbService = new DatabaseServices();
-        private readonly TtsService _ttsService = new TtsService();
-
-        public int CurrentSentenceId { get; set; } = 1;
-
-        private string _currentTranslatedText = "Đây là bản dịch thuần tiếng Việt của câu đã chọn.";
-        public string CurrentTranslatedText
-        {
-            get => _currentTranslatedText;
-            set { _currentTranslatedText = value; OnPropertyChanged(); }
-        }
-
-        private bool _isPinned;
-        public bool IsPinned
-        {
-            get => _isPinned;
-            set { _isPinned = value; OnPropertyChanged(); }
-        }
-
-        // ICommand Properties
-        public ICommand PinCommand { get; }
-        public ICommand ReadAloudCommand { get; }
-        public ICommand SettingsCommand { get; }
-        public ICommand CloseCommand { get; }
+        private readonly DatabaseServices _dbService;
+        private readonly TtsService _ttsService;
 
         public PopupViewModel()
         {
-            // Khởi tạo các lệnh sử dụng RelayCommand
+            _dbService = new DatabaseServices();
+            _ttsService = new TtsService();
+
             PinCommand = new RelayCommand(ExecutePin);
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
             SettingsCommand = new RelayCommand(ExecuteSettings);
             CloseCommand = new RelayCommand(ExecuteClose);
         }
 
-        // Logic cho Pin Command
-        private void ExecutePin(object parameter)
+        public int CurrentSentenceId { get; set; } = 1;
+
+        private string _currentTranslatedText =
+            "Đây là bản dịch thuần tiếng Việt của câu đã chọn.";
+
+        public string CurrentTranslatedText
         {
-            IsPinned = _dbService.TogglePinStatus(CurrentSentenceId);
+            get => _currentTranslatedText;
+            set
+            {
+                _currentTranslatedText = value;
+                OnPropertyChanged();
+            }
         }
 
-        // Logic cho Read Aloud Command
-        private void ExecuteReadAloud(object parameter)
+        private bool _isPinned;
+        public bool IsPinned
         {
-            string? textToRead = parameter as string ?? CurrentTranslatedText;
-            if (!string.IsNullOrEmpty(textToRead))
+            get => _isPinned;
+            set
+            {
+                _isPinned = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<SelectableWord> WordList { get; }
+            = new ObservableCollection<SelectableWord>();
+
+        private bool _isSelectionMode;
+        public bool IsSelectionMode
+        {
+            get => _isSelectionMode;
+            set
+            {
+                _isSelectionMode = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // ========================
+        // COMMANDS
+        // ========================
+        public ICommand PinCommand { get; }
+        public ICommand ReadAloudCommand { get; }
+        public ICommand SettingsCommand { get; }
+        public ICommand CloseCommand { get; }
+
+        // ========================
+        // PIN LOGIC (TUẦN 3–4)
+        // ========================
+        private void ExecutePin(object? parameter)
+        {
+            if (!IsSelectionMode)
+            {
+                // Lần 1: bật chế độ chọn từ
+                PrepareWordsForSelection();
+                IsSelectionMode = true;
+            }
+            else
+            {
+                // Lần 2: lưu từ đã chọn
+                var selectedWords = WordList
+                    .Where(w => w.IsSelected)
+                    .Select(w => w.Text)
+                    .ToList();
+
+                if (selectedWords.Any())
+                {
+                    _dbService.SavePinnedWords(CurrentSentenceId, selectedWords);
+                    IsPinned = true;
+                }
+
+                IsSelectionMode = false;
+            }
+        }
+
+        // ========================
+        // TÁCH TỪ
+        // ========================
+        private void PrepareWordsForSelection()
+        {
+            WordList.Clear();
+
+            if (string.IsNullOrWhiteSpace(CurrentTranslatedText))
+                return;
+
+            var words = CurrentTranslatedText.Split(' ');
+
+            foreach (var word in words)
+            {
+                WordList.Add(new SelectableWord(word));
+            }
+        }
+
+        // ========================
+        // READ ALOUD
+        // ========================
+        private void ExecuteReadAloud(object? parameter)
+        {
+            string textToRead = parameter as string ?? CurrentTranslatedText;
+
+            if (!string.IsNullOrWhiteSpace(textToRead))
             {
                 _ttsService.ReadText(textToRead);
             }
         }
 
-        // Logic cho Settings và Close
-        private void ExecuteSettings(object parameter) { /* Mở cửa sổ chính (Tuần 5-6) */ }
-        private void ExecuteClose(object parameter) { /* Đóng Popup */ }
-
-        // Triển khai INotifyPropertyChanged
-        public event PropertyChangedEventHandler? PropertyChanged; // Sửa lỗi CS8618
-        protected void OnPropertyChanged([CallerMemberName] string? name = null) // Thêm ? cho name
+        private void ExecuteSettings(object? parameter)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            // Mở cửa sổ settings (Person khác xử lý)
         }
-    }
 
-    internal class TtsService
-    {
-        internal void ReadText(string textToRead)
+        private void ExecuteClose(object? parameter)
         {
-            throw new NotImplementedException();
+            IsSelectionMode = false;
+            WordList.Clear();
         }
-    }
 
-    internal class DatabaseServices
-    {
-        internal bool TogglePinStatus(int currentSentenceId)
+        // ========================
+        // INotifyPropertyChanged
+        // ========================
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(
+            [CallerMemberName] string? propertyName = null)
         {
-            throw new NotImplementedException();
+            PropertyChanged?.Invoke(
+                this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
