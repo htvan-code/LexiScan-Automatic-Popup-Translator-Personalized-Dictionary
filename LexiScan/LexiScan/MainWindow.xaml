@@ -1,0 +1,13 @@
+﻿<Window x:Class="LexiScan.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:LexiScanUI.View;assembly=LexiScanUI"
+        Title="LexiScan"
+        Width="800"
+        Height="450">
+
+    <Grid>
+        <ui:PopupView/>
+    </Grid>
+
+</Window>
