@@ -7,6 +7,20 @@
              mc:Ignorable="d"
              Height="220"
              Width="360">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <!-- Material Design -->
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml"/>
+
+                <!-- Theme từ LexiScan.App -->
+                <ResourceDictionary Source="pack://application:,,,/LexiScan.App;component/Themes/DarkTheme.xaml"/>
+
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
 
     <!-- ROOT -->
     <Grid Background="{DynamicResource AppBackground}">
@@ -50,7 +64,7 @@
 
                     <!-- READ -->
                     <Button Grid.Column="1"
-                            Style="{StaticResource MaterialDesignIconButton}"
+                            Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Read aloud"
                             Command="{Binding ReadAloudCommand}">
                         <materialDesign:PackIcon Kind="VolumeHigh"/>
@@ -58,7 +72,7 @@
 
                     <!-- PIN -->
                     <Button Grid.Column="2"
-        Style="{StaticResource MaterialDesignIconButton}"
+        Style="{StaticResource MaterialDesignToolButton}"
         ToolTip="Save words"
         Command="{Binding PinCommand}">
                         <materialDesign:PackIcon Kind="StarOutline"/>
@@ -67,7 +81,7 @@
 
                     <!-- SETTINGS -->
                     <Button Grid.Column="3"
-                            Style="{StaticResource MaterialDesignIconButton}"
+                            Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Settings"
                             Command="{Binding SettingsCommand}">
                         <materialDesign:PackIcon Kind="Cog"/>
@@ -75,7 +89,7 @@
 
                     <!-- CLOSE -->
                     <Button Grid.Column="4"
-                            Style="{StaticResource MaterialDesignIconButton}"
+                            Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Close"
                             Command="{Binding CloseCommand}">
                         <materialDesign:PackIcon Kind="Close"

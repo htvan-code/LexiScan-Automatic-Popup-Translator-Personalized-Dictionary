@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
-
-using LexiScanUI.Helpers;
+﻿using LexiScan.App.ViewModels;
 using LexiScanData.Services; // Add this using directive if DatabaseServices is in this namespace
 using LexiScanService;
+using LexiScanUI.Helpers;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace LexiScanUI.ViewModels
 {
@@ -158,5 +158,20 @@ namespace LexiScanUI.ViewModels
             PropertyChanged?.Invoke(
                 this, new PropertyChangedEventArgs(propertyName));
         }
+        public class PopupViewModels : BaseViewModel
+        {
+            private string _displayText;
+
+            public string DisplayText
+            {
+                get => _displayText;
+                set
+                {
+                    _displayText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
     }
 }
