@@ -13,6 +13,7 @@ namespace LexiScan.Core
         public AppCoordinator(TranslationService translationService)
         {
             _translationSecomrvice = translationService;
+            _translationService = translationService;
         }
 
         // 🔔 EVENT bắn kết quả về UI (P1)

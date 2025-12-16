@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
+    <PackageReference Include="System.Speech" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>

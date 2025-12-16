@@ -13,7 +13,6 @@ namespace LexiScan.Core.Services
     {
         private static readonly HttpClient _http = new();
 
-        // Phương thức chính được AppCoordinator gọi
         public async Task<TranslationResult> ProcessTranslationAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -31,7 +30,6 @@ namespace LexiScan.Core.Services
             };
         }
 
-        // 1. Logic Phân Loại Đầu Vào (Input Detective)
         public InputType DetectInputType(string text)
         {
             var wc = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length;
@@ -42,8 +40,6 @@ namespace LexiScan.Core.Services
             }
             return InputType.PhraseOrSentence;
         }
-
-        // 2. Hàm Dịch Thuật Câu/Cụm Từ (Sử dụng Google Translate Non-official API)
         private async Task<TranslationResult> TranslateSentence(string text)
         {
             try
@@ -109,26 +105,22 @@ namespace LexiScan.Core.Services
                     Meanings = new List<Meaning>()
                 };
 
-                // Duyệt qua từng PartOfSpeech (Danh từ, Động từ,...)
                 foreach (var meaningEntry in firstEntry.meanings)
                 {
                     var partOfSpeech = (string)meaningEntry.partOfSpeech;
 
-                    // Lặp qua từng Definition trong PartOfSpeech đó
                     foreach (var definitionEntry in meaningEntry.definitions)
                     {
-                        // Đảm bảo Definition không null
+
                         var definition = (string)definitionEntry.definition;
                         if (string.IsNullOrWhiteSpace(definition)) continue;
 
-                        // Lấy các ví dụ (API có thể trả về array hoặc null)
                         List<string> examples = new List<string>();
                         if (definitionEntry.example != null)
                         {
                             examples.Add((string)definitionEntry.example);
                         }
-                        // Nếu API trả về synonims, có thể thêm vào đây
-
+                        
                         result.Meanings.Add(new Meaning
                         {
                             PartOfSpeech = partOfSpeech,
@@ -137,8 +129,6 @@ namespace LexiScan.Core.Services
                         });
                     }
                 }
-
-                // Gán nghĩa đầu tiên làm TranslatedText để hiển thị nhanh
                 result.TranslatedText = result.Meanings.FirstOrDefault()?.Definition ?? "Không có nghĩa dịch";
 
                 return result;
