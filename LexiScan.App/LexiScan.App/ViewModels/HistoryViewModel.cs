@@ -22,7 +22,7 @@ namespace LexiScan.App.ViewModels
     public class HistoryViewModel : BaseViewModel
     {
         // 1. KHAI BÁO SERVICE (Đấu nối với project LexiScanData/P4)
-        private readonly LexiScanDbContext _dbService;
+        private readonly DatabaseServices _dbService;
 
         // 2. DÙNG MODEL THẬT (Word) CHO COLLECTION
         public ObservableCollection<Word> HistoryEntries { get; set; } // <<<<<<<< Dùng Word
@@ -32,7 +32,7 @@ namespace LexiScan.App.ViewModels
         public HistoryViewModel()
         {
             // 3. KHỞI TẠO SERVICE
-            _dbService = new LexiScanDbContext();
+            _dbService = new DatabaseServices();
             HistoryEntries = new ObservableCollection<Word>();
 
             ClearHistoryCommand = new RelayCommand(ExecuteClearHistory);
