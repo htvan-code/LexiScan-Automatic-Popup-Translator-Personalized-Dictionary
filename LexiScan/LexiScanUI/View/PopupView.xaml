@@ -1,208 +1,111 @@
 ﻿<UserControl x:Class="LexiScanUI.View.PopupView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:LexiScanUI.View"
-             xmlns:vm="clr-namespace:LexiScanUI.ViewModels"
-             mc:Ignorable="d" 
-             d:DesignHeight="250" d:DesignWidth="400">
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d"
+             Height="220"
+             Width="360">
 
-    <d:UserControl.DataContext>
-        <vm:PopupViewModel/>
-    </d:UserControl.DataContext>
+    <!-- ROOT -->
+    <Grid Background="{DynamicResource AppBackground}">
 
-    <UserControl.Resources>
-        <SolidColorBrush x:Key="AppBackground" Color="White"/>
-        <SolidColorBrush x:Key="AppBorder" Color="#E0E0E0"/>
-        <SolidColorBrush x:Key="PrimaryText" Color="#333333"/>
-        <SolidColorBrush x:Key="SecondaryText" Color="#777777"/>
-        <SolidColorBrush x:Key="AccentColor" Color="#2D7FF9"/>
-        <SolidColorBrush x:Key="IconColor" Color="#666666"/>
-        <SolidColorBrush x:Key="HoverBackground" Color="#F5F5F5"/>
-        <SolidColorBrush x:Key="SelectedBackground" Color="#E3F2FD"/>
+        <!-- CARD -->
+        <Border Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="12">
 
-        <Style x:Key="IconButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="26"/>
-            <Setter Property="Height" Value="26"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{DynamicResource IconColor}"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
-                                <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
+            <Grid>
+                <!-- ROW DEFINITIONS -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Header -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Text -->
+                    <RowDefinition Height="*"/>
+                    <!-- Extra -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Footer -->
+                </Grid.RowDefinitions>
 
-    <Border Background="{DynamicResource AppBackground}"
-            CornerRadius="10"
-            BorderBrush="{DynamicResource AppBorder}"
-            BorderThickness="1"
-            Padding="12"
-            SnapsToDevicePixels="True">
+                <!-- ================= HEADER ================= -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.2"/>
-        </Border.Effect>
-
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <DockPanel Grid.Row="0">
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
-                    <Button Click="Pin_Click">
-                        <TextBlock Text="📌"/>
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSelectionMode}" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <Button Style="{StaticResource IconButtonStyle}" Click="DarkMode_Click">
-                        <TextBlock Text="🌙"/>
-                    </Button>
-                    <Button Style="{StaticResource IconButtonStyle}" Click="Setting_Click">
-                        <TextBlock Text="⚙"/>
-                    </Button>
-                    <Button Style="{StaticResource IconButtonStyle}" Click="Close_Click">
-                        <TextBlock Text="❌"/>
-                    </Button>
-                </StackPanel>
-
-                <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding WordText, FallbackValue='Loading...'}"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource PrimaryText}" 
-                                   VerticalAlignment="Center"/>
-
-                        <Button Style="{StaticResource IconButtonStyle}" 
-                                Command="{Binding ReadAloudCommand}"
-                                Margin="8,2,0,0" 
-                                VerticalAlignment="Center"
-                                ToolTip="Read Aloud">
-                            <TextBlock Text="🔊" FontSize="18"/>
-                        </Button>
-                    </StackPanel>
-
-                    <TextBlock Text="{Binding PronounceText, FallbackValue='[...]'}"
-                               FontSize="13"
-                               Foreground="{DynamicResource SecondaryText}"
-                               Margin="0,2,0,0"/>
-                </StackPanel>
-            </DockPanel>
-
-            <TextBlock Grid.Row="1"
-                       Text="Translation / Definition" 
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource AccentColor}" 
-                       Margin="0,10,0,4"/>
-
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="140">
-                <Grid>
-                    <TextBlock Text="{Binding CurrentTranslatedText}"
-                               TextWrapping="Wrap"
+                    <!-- TITLE -->
+                    <TextBlock Text="Translation"
                                FontSize="14"
-                               Foreground="{DynamicResource PrimaryText}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSelectionMode}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource PrimaryText}"
+                               VerticalAlignment="Center"/>
 
-                    <ItemsControl ItemsSource="{Binding WordList}">
-                        <ItemsControl.Style>
-                            <Style TargetType="ItemsControl">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSelectionMode}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ItemsControl.Style>
+                    <!-- READ -->
+                    <Button Grid.Column="1"
+                            Style="{StaticResource MaterialDesignIconButton}"
+                            ToolTip="Read aloud"
+                            Command="{Binding ReadAloudCommand}">
+                        <materialDesign:PackIcon Kind="VolumeHigh"/>
+                    </Button>
 
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
+                    <!-- PIN -->
+                    <Button Grid.Column="2"
+        Style="{StaticResource MaterialDesignIconButton}"
+        ToolTip="Save words"
+        Command="{Binding PinCommand}">
+                        <materialDesign:PackIcon Kind="StarOutline"/>
+                    </Button>
 
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <ToggleButton Content="{Binding Text}"
-                                              IsChecked="{Binding IsSelected}"
-                                              Margin="0,0,3,3"
-                                              Padding="4,2"
-                                              BorderThickness="0"
-                                              Background="Transparent">
-                                    <ToggleButton.Style>
-                                        <Style TargetType="ToggleButton">
-                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
-                                            <Setter Property="Cursor" Value="Hand"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ToggleButton">
-                                                        <Border x:Name="border" 
-                                                                Background="{TemplateBinding Background}" 
-                                                                CornerRadius="4" 
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter />
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBackground}"/>
-                                                            </Trigger>
-                                                            <Trigger Property="IsChecked" Value="True">
-                                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource SelectedBackground}"/>
-                                                                <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
-                                                                <Setter Property="FontWeight" Value="Bold"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </ToggleButton.Style>
-                                </ToggleButton>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+
+                    <!-- SETTINGS -->
+                    <Button Grid.Column="3"
+                            Style="{StaticResource MaterialDesignIconButton}"
+                            ToolTip="Settings"
+                            Command="{Binding SettingsCommand}">
+                        <materialDesign:PackIcon Kind="Cog"/>
+                    </Button>
+
+                    <!-- CLOSE -->
+                    <Button Grid.Column="4"
+                            Style="{StaticResource MaterialDesignIconButton}"
+                            ToolTip="Close"
+                            Command="{Binding CloseCommand}">
+                        <materialDesign:PackIcon Kind="Close"
+                                                 Foreground="{DynamicResource DangerColor}"/>
+                    </Button>
                 </Grid>
-            </ScrollViewer>
 
-        </Grid>
-    </Border>
+                <!-- ================= BODY ================= -->
+                <TextBlock Grid.Row="1"
+                           Margin="0,8,0,0"
+                           Text="{Binding CurrentTranslatedText}"
+                           TextWrapping="Wrap"
+                           FontSize="13"
+                           Foreground="{DynamicResource SecondaryText}"/>
+
+                <!-- ================= LINK ================= -->
+                <TextBlock Grid.Row="2"
+                           Margin="0,10,0,0"
+                           Text="View full translation"
+                           FontSize="13"
+                           Foreground="{DynamicResource PrimaryAccent}"
+                           Cursor="Hand"/>
+
+                <!-- ================= FOOTER ================= -->
+                <Border Grid.Row="3"
+                        Margin="0,10,0,0"
+                        Height="1"
+                        Background="{DynamicResource BorderColor}"/>
+
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>
