@@ -42,5 +42,21 @@ namespace LexiScan.Core.Services
                 return false; 
             }
         }
+
+        public async Task<bool> RegisterAsync(string email, string password, string displayName = "")
+        {
+            try
+            {
+                await _authClient.CreateUserWithEmailAndPasswordAsync(email, password, displayName);
+
+                return true; 
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi đăng ký: " + ex.Message);
+                return false; 
+            }
+        }
+
     }
 }
