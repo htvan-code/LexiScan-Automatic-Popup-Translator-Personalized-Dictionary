@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 namespace LexiScanData
 {
-    internal class LexiScanDbContext : DbContext
+    public class LexiScanDbContext : DbContext
     {
         public DbSet<Sentences> Sentences { get; set; }
+        public DbSet<Words> Words { get; set; }
+        public DbSet<SentenceWord> SentenceWords { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -25,5 +27,11 @@ namespace LexiScanData
 
             optionsBuilder.UseSqlServer(connectionString);
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<SentenceWord>()
+                .HasKey(sw => new { sw.SentenceId, sw.WordId });
+        }
+
     }
 }

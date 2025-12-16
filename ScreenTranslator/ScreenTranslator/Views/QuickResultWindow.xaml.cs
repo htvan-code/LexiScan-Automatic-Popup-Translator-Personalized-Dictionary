@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Threading.Tasks; 
+using LexiScan.Core;
 
 namespace ScreenTranslator
 {
@@ -47,6 +49,14 @@ namespace ScreenTranslator
         {
             txtResult.Text = text;
             ShowPopupMemory();
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                Task.Run(() =>
+                {
+                    AppCoordinator.Instance.ProcessCapturedText(text);
+                });
+            }
         }
 
         public void ShowPopupMemory()

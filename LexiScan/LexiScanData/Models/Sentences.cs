@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LexiScanData.Models
 {
-    internal class Sentences
+    public class Sentences
     {
         public int SentenceId { get; set; }
         public string SourceText { get; set; }
