@@ -3,6 +3,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using LexiScan.Core;
+using LexiScan.Core.Services;
+using LexiScan.Core.Models;
 
 namespace ScreenTranslator
 {
@@ -10,6 +13,7 @@ namespace ScreenTranslator
     {
         private ClipboardHookService _hookService;
         private TrayService _trayService;
+        private AppCoordinator _coordinator;
 
         private int _currentMod = ClipboardHookService.MOD_CONTROL;
         private int _currentKey = 0x20;
@@ -19,22 +23,44 @@ namespace ScreenTranslator
         {
             InitializeComponent();
 
+            var transService = new TranslationService();
+            _coordinator = new AppCoordinator(transService);
+
             _hookService = new ClipboardHookService();
-            _hookService.OnTextCaptured += ShowResult;
-            _hookService.OnError += (msg) => { txtResult.Text = msg; ShowPopupMemory(); };
+            _hookService.OnTextCaptured += SendTextToCoordinator;
+
+            _hookService.OnError += (errorMessage) => { System.Windows.MessageBox.Show(errorMessage); };
 
             _trayService = new TrayService(this);
-
             _trayService.Initialize();
+
+            //this.Visibility = Visibility.Hidden;
+        }
+
+        private async void SendTextToCoordinator(string text)
+        {
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                await _coordinator.HandleClipboardTextAsync(text);
+                System.Windows.MessageBox.Show($"[OUTPUT] Đã bắt được và gửi sang P2 thành công!\nNội dung: {text}");
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
+
             IntPtr handle = new WindowInteropHelper(this).Handle;
-            _hookService.Register(handle, _currentMod, _currentKey);
-            HwndSource source = HwndSource.FromHwnd(handle);
-            source.AddHook(HwndHook);
+            try
+            {
+                _hookService.Register(handle, _currentMod, _currentKey);
+                HwndSource source = HwndSource.FromHwnd(handle);
+                source.AddHook(HwndHook);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("Lỗi đăng ký Hook: " + ex.Message);
+            }
         }
 
         private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -43,27 +69,10 @@ namespace ScreenTranslator
             return IntPtr.Zero;
         }
 
-        private void ShowResult(string text)
-        {
-            txtResult.Text = text;
-            ShowPopupMemory();
-        }
-
-        public void ShowPopupMemory()
+        public void ShowMainWindow()
         {
             this.Visibility = Visibility.Visible;
             this.Show();
-
-            if (!_hasSetPosition)
-            {
-                var screenWidth = SystemParameters.WorkArea.Width;
-                var screenHeight = SystemParameters.WorkArea.Height;
-                this.Left = screenWidth - this.Width - 20;
-                this.Top = screenHeight - this.Height - 20;
-                _hasSetPosition = true;
-            }
-
-            this.Topmost = true;
             this.Activate();
         }
 
@@ -76,7 +85,6 @@ namespace ScreenTranslator
         {
             e.Cancel = true;
             this.Hide();
-            base.OnClosing(e);
         }
     }
 }
