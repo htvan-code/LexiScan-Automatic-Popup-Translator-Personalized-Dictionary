@@ -4,6 +4,7 @@ using LexiScan.Core.Models;
 using LexiScan.Core.Services;
 using System;
 using System.ComponentModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -46,19 +47,51 @@ namespace ScreenTranslator
             {
                 if (result.Status == ServiceStatus.Success)
                 {
-                    System.Windows.MessageBox.Show($"📢 KẾT QUẢ TỪ P2 TRẢ VỀ:\n\n" +
-                                    $"Gốc: {result.OriginalText}\n" +
-                                    $"----------------------\n" +
-                                    $"Dịch: {result.TranslatedText}",
-                                    "Demo Hiển Thị (Giả lập P3)");
+                    StringBuilder sb = new StringBuilder();
+
+                    // HEADER
+                    sb.AppendLine($"📖 {result.OriginalText}");
+
+                    // PHIÊN ÂM (Nếu có)
+                    if (!string.IsNullOrEmpty(result.Phonetic))
+                    {
+                        sb.AppendLine($"/{result.Phonetic}/");
+                    }
+                    else
+                    {
+                        // Fallback: nếu không có phiên âm thì thôi
+                    }
+
+                    sb.AppendLine("-----------------------------");
+
+                    // NGHĨA CHÍNH
+                    sb.AppendLine($"✅ {result.TranslatedText}");
+                    sb.AppendLine();
+
+                    // TỪ ĐIỂN CHI TIẾT (Giống trong ảnh)
+                    if (result.Meanings != null && result.Meanings.Count > 0)
+                    {
+                        foreach (var m in result.Meanings)
+                        {
+                            // In Loại từ: Danh từ (In nghiêng/Đậm giả lập bằng text)
+                            sb.AppendLine($"--- {m.PartOfSpeech} ---");
+
+                            // In các nghĩa, cách nhau bằng dấu phẩy cho gọn giống Google
+                            // Ví dụ: bản văn, nguyên văn, chủ đề
+                            string joinedDefs = string.Join(", ", m.Definitions);
+                            sb.AppendLine(joinedDefs);
+                            sb.AppendLine(); // Xuống dòng cho thoáng
+                        }
+                    }
+
+                    System.Windows.MessageBox.Show(sb.ToString(), "Kết quả dịch");
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show($"⚠️ LỖI XỬ LÝ:\n{result.ErrorMessage}", "P2 Báo Lỗi");
+                    System.Windows.MessageBox.Show($"⚠️ Lỗi: {result.ErrorMessage}");
                 }
             });
         }
-
         private async void SendTextToCoordinator(string text)
         {
             if (!string.IsNullOrWhiteSpace(text))

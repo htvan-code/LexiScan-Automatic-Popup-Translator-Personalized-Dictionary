@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using LexiScan.Core.Models;
 using LexiScan.Core.Enums;
 
@@ -11,123 +11,101 @@ namespace LexiScan.Core.Services
 {
     public class TranslationService
     {
-        private static readonly HttpClient _http = new();
+        private static readonly HttpClient _http;
+
+        static TranslationService()
+        {
+            _http = new HttpClient();
+            _http.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+        }
 
         public async Task<TranslationResult> ProcessTranslationAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
-            {
-                return new TranslationResult { Status = ServiceStatus.InternalError, ErrorMessage = "Không có văn bản để xử lý." };
-            }
+                return new TranslationResult { Status = ServiceStatus.InternalError, ErrorMessage = "Không có văn bản." };
 
             string cleanedText = text.Trim();
-            var type = DetectInputType(cleanedText);
-
-            // 1. Dịch thuật trực tiếp (Google Translate) cho mọi input
-            var result = await TranslateSentence(cleanedText);
-            result.InputType = type;
-
-            // 2. Làm giàu dữ liệu từ điển nếu là từ đơn và dịch thành công
-            if (type == InputType.SingleWord && result.Status == ServiceStatus.Success)
-            {
-                var dictResult = await DictionaryLookup(cleanedText);
-
-                // Chỉ lấy Phonetic và Meanings, không ghi đè TranslatedText
-                result.Phonetic = dictResult.Phonetic;
-                result.Meanings = dictResult.Meanings;
-            }
-
-            return result;
+            return await TranslateWithGoogleFull(cleanedText);
         }
 
-        public InputType DetectInputType(string text)
-        {
-            var wc = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length;
-
-            if (wc == 1)
-            {
-                return InputType.SingleWord;
-            }
-            return InputType.PhraseOrSentence;
-        }
-
-        public async Task<TranslationResult> TranslateSentence(string text, string sl = "en")
+        private async Task<TranslationResult> TranslateWithGoogleFull(string text, string sl = "en", string tl = "vi")
         {
             try
             {
-                var url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl=vi&dt=t&q={Uri.EscapeDataString(text)}";
-                var raw = await _http.GetStringAsync(url);
-                var json = JsonConvert.DeserializeObject<dynamic>(raw);
+                var url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&dt=bd&dt=rm&q={Uri.EscapeDataString(text)}";
 
-                string translated = "";
-                foreach (var seg in json[0])
-                    translated += seg[0];
-
-                return new TranslationResult
-                {
-                    OriginalText = text,
-                    TranslatedText = translated,
-                    InputType = InputType.PhraseOrSentence, // Sẽ được cập nhật lại ở ProcessTranslationAsync
-                    Status = ServiceStatus.Success
-                };
-            }
-            catch (Exception ex)
-            {
-                return new TranslationResult
-                {
-                    OriginalText = text,
-                    InputType = InputType.PhraseOrSentence,
-                    Status = ServiceStatus.NetworkError,
-                    ErrorMessage = $"Lỗi kết nối API dịch: {ex.Message}"
-                };
-            }
-        }
-
-        private async Task<TranslationResult> DictionaryLookup(string word)
-        {
-            try
-            {
-                var url = $"https://api.dictionaryapi.dev/api/v2/entries/en/{word}";
-                var raw = await _http.GetStringAsync(url);
-
-                if (raw.Contains("message"))
-                {
-
-                    return new TranslationResult { OriginalText = word, InputType = InputType.SingleWord, Status = ServiceStatus.NotFound };
-                }
-
-                var data = JsonConvert.DeserializeObject<dynamic[]>(raw);
-                var firstEntry = data.First();
+                var response = await _http.GetStringAsync(url);
+                var json = JArray.Parse(response);
 
                 var result = new TranslationResult
                 {
-                    OriginalText = word,
-                    InputType = InputType.SingleWord,
+                    OriginalText = text,
                     Status = ServiceStatus.Success,
-                    Phonetic = firstEntry.phonetics != null && firstEntry.phonetics.Count > 0 ? (string)firstEntry.phonetics[0].text : null,
+                    InputType = InputType.PhraseOrSentence,
                     Meanings = new List<Meaning>()
                 };
 
-                foreach (var meaningEntry in firstEntry.meanings)
+                // --- 1. LẤY NGHĨA DỊCH CHÍNH ---
+                if (json.Count > 0 && json[0] is JArray mainArray && mainArray.Count > 0 && mainArray[0] is JArray firstItem)
                 {
-                    var partOfSpeech = (string)meaningEntry.partOfSpeech;
-                    foreach (var definitionEntry in meaningEntry.definitions)
-                    {
-                        var definition = (string)definitionEntry.definition;
-                        if (string.IsNullOrWhiteSpace(definition)) continue;
+                    result.TranslatedText = firstItem[0]?.ToString();
+                }
 
-                        List<string> examples = new List<string>();
-                        if (definitionEntry.example != null)
+                // --- 2. LẤY PHIÊN ÂM (ĐÃ FIX LỖI CRASH) ---
+                try
+                {
+                    if (json.Count > 0 && json[0] is JArray loopArray)
+                    {
+                        foreach (var item in loopArray)
                         {
-                            examples.Add((string)definitionEntry.example);
+                            if (item is JArray subArray && subArray.Count >= 3)
+                            {
+                                // Google thường trả về: [null, null, "phiên_âm", null]
+                                var p3 = subArray.Count > 3 ? subArray[3]?.ToString() : null;
+                                var p2 = subArray.Count > 2 ? subArray[2]?.ToString() : null;
+
+                                if (!string.IsNullOrEmpty(p3))
+                                {
+                                    result.Phonetic = p3;
+                                    break;
+                                }
+
+                                // Nếu phần tử đầu tiên là null thì khả năng cao index 2 là phiên âm
+                                if ((subArray[0] == null || subArray[0].Type == JTokenType.Null) && !string.IsNullOrEmpty(p2))
+                                {
+                                    result.Phonetic = p2;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { /* Bỏ qua lỗi phiên âm để chương trình vẫn chạy tiếp */ }
+
+                // --- 3. LẤY ĐỊNH NGHĨA TỪ ĐIỂN ---
+                if (json.Count > 1 && json[1] is JArray dictArray)
+                {
+                    result.InputType = InputType.SingleWord;
+
+                    foreach (var entry in dictArray)
+                    {
+                        var partOfSpeech = entry[0]?.ToString();
+
+                        var meaningObj = new Meaning
+                        {
+                            PartOfSpeech = ConvertPosToVietnamese(partOfSpeech),
+                            Definitions = new List<string>()
+                        };
+
+                        if (entry.Count() > 1 && entry[1] is JArray defsArray)
+                        {
+                            foreach (var def in defsArray)
+                            {
+                                meaningObj.Definitions.Add(def.ToString());
+                            }
                         }
 
-                        result.Meanings.Add(new Meaning
-                        {
-                            PartOfSpeech = partOfSpeech,
-                            Definition = definition,
-                            Examples = examples
-                        });
+                        result.Meanings.Add(meaningObj);
                     }
                 }
 
@@ -137,12 +115,28 @@ namespace LexiScan.Core.Services
             {
                 return new TranslationResult
                 {
-                    OriginalText = word,
-                    InputType = InputType.SingleWord,
+                    OriginalText = text,
                     Status = ServiceStatus.ApiError,
-                    ErrorMessage = $"Lỗi xử lý API từ điển: {ex.Message}"
+                    ErrorMessage = ex.Message
                 };
             }
+        }
+
+        private string ConvertPosToVietnamese(string pos)
+        {
+            if (string.IsNullOrEmpty(pos)) return "";
+            return pos.ToLower() switch
+            {
+                "noun" => "Danh Từ",
+                "verb" => "Động Từ",
+                "adjective" => "Tính Từ",
+                "adverb" => "Trạng Từ",
+                "pronoun" => "Đại Từ",
+                "preposition" => "Giới Từ",
+                "conjunction" => "Liên Từ",
+                "interjection" => "Thán Từ",
+                _ => char.ToUpper(pos[0]) + pos.Substring(1)
+            };
         }
     }
 }
