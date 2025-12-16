@@ -1,13 +1,46 @@
-﻿using System.Threading.Tasks;
-using LexiScan.Core.Models;
+﻿using System;
+using System.Threading.Tasks;
+using Firebase.Auth;         
+using Firebase.Auth.Providers; 
 
 namespace LexiScan.Core.Services
 {
-    public interface IAuthService
+    public class AuthService
     {
-        Task<User> LoginAsync(string email, string password);
-        Task<User> RegisterAsync(string email, string password);
-        void Logout();
-        User CurrentUser { get; }
+        private const string ApiKey = "AIzaSyBtGVdAJxyRcRTk_mJBeYXHK_OHS3HTPQA";
+
+        private const string AuthDomain = "lexiscan-authentication.firebaseapp.com";
+
+        private readonly FirebaseAuthClient _authClient;
+
+        public AuthService()
+        {
+            var config = new FirebaseAuthConfig
+            {
+                ApiKey = ApiKey,
+                AuthDomain = AuthDomain,
+                Providers = new FirebaseAuthProvider[]
+                {
+                    new EmailProvider()
+                }
+            };
+
+            _authClient = new FirebaseAuthClient(config);
+        }
+
+        public async Task<bool> LoginAsync(string email, string password)
+        {
+            try
+            {
+                await _authClient.SignInWithEmailAndPasswordAsync(email, password);
+
+                return true; 
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi đăng nhập: " + ex.Message);
+                return false; 
+            }
+        }
     }
 }
