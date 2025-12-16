@@ -127,14 +127,6 @@ namespace LexiScan.Core.Services
             if (string.IsNullOrEmpty(pos)) return "";
             return pos.ToLower() switch
             {
-                "noun" => "Danh Từ",
-                "verb" => "Động Từ",
-                "adjective" => "Tính Từ",
-                "adverb" => "Trạng Từ",
-                "pronoun" => "Đại Từ",
-                "preposition" => "Giới Từ",
-                "conjunction" => "Liên Từ",
-                "interjection" => "Thán Từ",
                 _ => char.ToUpper(pos[0]) + pos.Substring(1)
             };
         }
