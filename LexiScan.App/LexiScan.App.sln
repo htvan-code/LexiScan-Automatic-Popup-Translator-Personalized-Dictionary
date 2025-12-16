@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanService", "..\LexiS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanUI", "..\LexiScan\LexiScanUI\LexiScanUI.csproj", "{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenTranslator", "..\ScreenTranslator\ScreenTranslator\ScreenTranslator.csproj", "{C1EEF497-DDD2-2653-3358-5C3B100F9D91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan.Core", "..\LexiScann\LexiScan.Core\LexiScan.Core.csproj", "{3CE062AE-F238-2E3C-F741-39C0A881129F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

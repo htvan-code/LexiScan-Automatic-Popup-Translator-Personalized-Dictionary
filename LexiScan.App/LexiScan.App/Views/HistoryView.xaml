@@ -84,7 +84,7 @@
                     <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SearchHistoryTextBoxStyle}"
                                 Width="350"
-                                d:Text="Nhập từ khóa để tìm kiếm..."/>
+                                d:Text="Nhập từ khóa để tìm kiếm trong lịch sử..."/>
                 </StackPanel>
             </Border>
 
@@ -95,7 +95,7 @@
                         Foreground="White"
                         FontSize="12"
                         Padding="15,8"
-                        HorizontalAlignment="Center"/>
+                        HorizontalAlignment="Center" Click="Button_Click"/>
         </Grid>
 
         <Border Grid.Row="2" Padding="10" 
@@ -121,10 +121,8 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Text}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryAccent}"/>
-
-                                <TextBlock Text="{Binding Meaning}" FontSize="12" Foreground="{DynamicResource SecondaryText}" 
-                                           TextTrimming="CharacterEllipsis" MaxWidth="400"/>
+                                <TextBlock Text="{Binding SearchTerm}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryAccent}"/>
+                                <TextBlock Text="{Binding DisplayTime}" FontSize="12" Foreground="{DynamicResource SecondaryText}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -136,7 +134,7 @@
 
                                 <Button Content="&#xE74D;" 
                                            FontFamily="Segoe MDL2 Assets"
-                                           Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteHistoryEntryCommand}"
+                                           Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteItemCommand}"
                                            CommandParameter="{Binding .}"
                                            Style="{StaticResource DeleteIconButtonStyle}"/>
                             </StackPanel>
@@ -145,5 +143,6 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Border>
+
     </Grid>
 </UserControl>

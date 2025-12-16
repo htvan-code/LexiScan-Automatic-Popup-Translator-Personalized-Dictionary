@@ -15,8 +15,10 @@ namespace LexiScan.Core
             _translationService = translationService;
         }
 
+        // 🔔 EVENT bắn kết quả về UI (P1)
         public event Action<TranslationResult>? TranslationCompleted;
 
+        // ENTRY POINT từ P1
         public async Task HandleClipboardTextAsync(string rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText)) return;

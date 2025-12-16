@@ -1,11 +1,13 @@
-﻿using System;
+﻿using LexiScan.Core;
+using LexiScan.Core.Enums;
+using LexiScan.Core.Models;
+using LexiScan.Core.Services;
+using System;
 using System.ComponentModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using LexiScan.Core;
-using LexiScan.Core.Services;
-using LexiScan.Core.Models;
 
 namespace ScreenTranslator
 {
@@ -26,6 +28,8 @@ namespace ScreenTranslator
             var transService = new TranslationService();
             _coordinator = new AppCoordinator(transService);
 
+            _coordinator.TranslationCompleted += OnTranslationResultReceived;
+
             _hookService = new ClipboardHookService();
             _hookService.OnTextCaptured += SendTextToCoordinator;
 
@@ -34,15 +38,55 @@ namespace ScreenTranslator
             _trayService = new TrayService(this);
             _trayService.Initialize();
 
-            //this.Visibility = Visibility.Hidden;
         }
 
+        private void OnTranslationResultReceived(TranslationResult result)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                if (result.Status == ServiceStatus.Success)
+                {
+                    StringBuilder sb = new StringBuilder();
+
+                    sb.AppendLine($"📖 {result.OriginalText}");
+
+                    if (!string.IsNullOrEmpty(result.Phonetic))
+                    {
+                        sb.AppendLine($"/{result.Phonetic}/");
+                    }
+                    else
+                    {
+                    }
+
+                    sb.AppendLine("-----------------------------");
+
+                    sb.AppendLine($"✅ {result.TranslatedText}");
+                    sb.AppendLine();
+                    if (result.Meanings != null && result.Meanings.Count > 0)
+                    {
+                        foreach (var m in result.Meanings)
+                        {
+                            sb.AppendLine($"--- {m.PartOfSpeech} ---");
+
+                            string joinedDefs = string.Join(", ", m.Definitions);
+                            sb.AppendLine(joinedDefs);
+                            sb.AppendLine(); 
+                        }
+                    }
+
+                    System.Windows.MessageBox.Show(sb.ToString(), "Kết quả dịch");
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show($"⚠️ Lỗi: {result.ErrorMessage}");
+                }
+            });
+        }
         private async void SendTextToCoordinator(string text)
         {
             if (!string.IsNullOrWhiteSpace(text))
             {
                 await _coordinator.HandleClipboardTextAsync(text);
-                System.Windows.MessageBox.Show($"[OUTPUT] Đã bắt được và gửi sang P2 thành công!\nNội dung: {text}");
             }
         }
 

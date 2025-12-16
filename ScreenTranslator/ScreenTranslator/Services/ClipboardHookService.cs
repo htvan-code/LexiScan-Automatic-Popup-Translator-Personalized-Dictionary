@@ -76,23 +76,45 @@ namespace ScreenTranslator
         {
             try
             {
-                Clipboard.Clear();
-                SendKeys.SendWait("^c");
-                Thread.Sleep(200);
+                try { Clipboard.Clear(); } catch { }
 
-                if (Clipboard.ContainsText())
+                SendKeys.SendWait("^c");
+
+                Thread.Sleep(100);
+
+                string text = GetClipboardTextWithRetry();
+
+                if (!string.IsNullOrWhiteSpace(text))
                 {
-                    OnTextCaptured?.Invoke(Clipboard.GetText());
+                    OnTextCaptured?.Invoke(text);
                 }
                 else
                 {
-                    OnError?.Invoke("Clipboard rỗng (Không copy được).");
+                    System.Diagnostics.Debug.WriteLine("Clipboard rỗng hoặc bị khóa.");
                 }
             }
             catch (Exception ex)
             {
-                OnError?.Invoke("Lỗi: " + ex.Message);
+                OnError?.Invoke("Lỗi Copy: " + ex.Message);
             }
+        }
+        private string GetClipboardTextWithRetry()
+        {
+            for (int i = 0; i < 10; i++) 
+            {
+                try
+                {
+                    if (Clipboard.ContainsText())
+                    {
+                        return Clipboard.GetText(); 
+                    }
+                }
+                catch (System.Runtime.InteropServices.ExternalException)
+                {
+                    Thread.Sleep(50);
+                }
+            }
+            return string.Empty; 
         }
     }
 }

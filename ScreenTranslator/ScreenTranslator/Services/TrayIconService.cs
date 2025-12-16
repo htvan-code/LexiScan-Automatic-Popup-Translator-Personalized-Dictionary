@@ -8,13 +8,12 @@ namespace ScreenTranslator
 {
     public class TrayService
     {
-        private WinForms.NotifyIcon? _notifyIcon;
+        private WinForms.NotifyIcon _notifyIcon;
         private Window _mainWindow;
 
         public TrayService(Window window)
         {
             _mainWindow = window;
-            _notifyIcon = new NotifyIcon();
         }
 
         public void Initialize()
