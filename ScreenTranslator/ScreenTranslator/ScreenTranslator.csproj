@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\LexiScann\LexiScan.Core\LexiScan.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Components\app_icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

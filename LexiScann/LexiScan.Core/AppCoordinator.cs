@@ -19,7 +19,7 @@ namespace LexiScan.Core
         public event Action<TranslationResult>? TranslationCompleted;
 
         // ENTRY POINT từ P1
-        public async Task HandleCapturedTextAsync(string rawText)
+        public async Task HandleClipboardTextAsync(string rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText)) return;
 
