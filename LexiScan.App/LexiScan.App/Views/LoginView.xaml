@@ -15,7 +15,9 @@
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
         FontFamily="{DynamicResource MaterialDesignFont}">
-
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Window.DataContext>
         <vm:LoginViewModel/>
     </Window.DataContext>
@@ -49,47 +51,107 @@
 
             <Grid Grid.Column="1">
                 <Button Command="{Binding CloseCommand}"
-                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,10,10,0"
-                        Style="{StaticResource MaterialDesignIconForegroundButton}"
-                        ToolTip="Đóng">
+            HorizontalAlignment="Right" VerticalAlignment="Top"
+            Margin="0,10,10,0"
+            Style="{StaticResource MaterialDesignIconForegroundButton}"
+            ToolTip="Đóng" Panel.ZIndex="1">
                     <materialDesign:PackIcon Kind="Close" Width="25" Height="25" Foreground="#AAAAAA"/>
                 </Button>
 
-                <StackPanel VerticalAlignment="Center" Margin="50">
+                <StackPanel VerticalAlignment="Center" Margin="50"
+                Visibility="{Binding IsLoginVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+
                     <TextBlock Text="Đăng Nhập" FontSize="32" FontWeight="Bold" Foreground="#E91E63" Margin="0,0,0,10"/>
                     <TextBlock Text="Chào mừng bạn quay trở lại!" FontSize="14" Foreground="#888" Margin="0,0,0,40"/>
 
                     <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                             materialDesign:HintAssist.Hint="Tên đăng nhập"
-                             materialDesign:TextFieldAssist.HasClearButton="True"
-                             FontSize="16" Margin="0,0,0,20"
-                             Foreground="White"
-                             BorderBrush="#E91E63"
-                             materialDesign:HintAssist.Foreground="#E91E63"/>
+                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                 materialDesign:HintAssist.Hint="EMAIL"
+                 materialDesign:TextFieldAssist.HasClearButton="True"
+                 FontSize="16" Margin="0,0,0,20"
+                 Foreground="White" BorderBrush="#E91E63"
+                 materialDesign:HintAssist.Foreground="#E91E63"/>
 
                     <PasswordBox x:Name="UserPasswordBox"
-                                 Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
-                                 materialDesign:HintAssist.Hint="Mật khẩu"
-                                 FontSize="16" Margin="0,0,0,30"
-                                 Foreground="White"
-                                 BorderBrush="#E91E63"
-                                 materialDesign:HintAssist.Foreground="#E91E63"/>
+                     Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
+                     materialDesign:HintAssist.Hint="Mật khẩu"
+                     FontSize="16" Margin="0,0,0,10"
+                     Foreground="White" BorderBrush="#E91E63"
+                     materialDesign:HintAssist.Foreground="#E91E63"/>
+
+                    <TextBlock Text="Quên mật khẩu?" 
+                   HorizontalAlignment="Right" 
+                   Foreground="#888" Cursor="Hand" 
+                   TextDecorations="Underline" Margin="0,0,0,30"/>
 
                     <Button Command="{Binding LoginCommand}"
-                            CommandParameter="{Binding ElementName=UserPasswordBox}"
-                            Content="ĐĂNG NHẬP"
-                            Height="50"
-                            FontSize="16"
-                            FontWeight="Bold"
-                            materialDesign:ButtonAssist.CornerRadius="25"
-                            Background="#E91E63" BorderThickness="0"
-                            Margin="0,0,0,20"/>
+                CommandParameter="{Binding ElementName=UserPasswordBox}"
+                Content="ĐĂNG NHẬP"
+                Height="50" FontSize="16" FontWeight="Bold"
+                materialDesign:ButtonAssist.CornerRadius="25"
+                Background="#E91E63" BorderThickness="0"
+                Margin="0,0,0,20"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="Chưa có tài khoản? " Foreground="#888"/>
-                        <TextBlock Text="Đăng ký ngay" Foreground="#E91E63" FontWeight="Bold" Cursor="Hand" TextDecorations="Underline"/>
+                        <TextBlock Text="Đăng ký ngay" 
+                       Foreground="#E91E63" FontWeight="Bold" 
+                       Cursor="Hand" TextDecorations="Underline">
+                            <TextBlock.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding SwitchToSignUpCommand}"/>
+                            </TextBlock.InputBindings>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel VerticalAlignment="Center" Margin="50,20,50,20"
+                Visibility="{Binding IsSignUpVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+                    <TextBlock Text="Đăng Ký" FontSize="32" FontWeight="Bold" Foreground="#E91E63" Margin="0,0,0,10"/>
+                    <TextBlock Text="Tạo tài khoản mới miễn phí" FontSize="14" Foreground="#888" Margin="0,0,0,20"/>
+
+                    <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                 materialDesign:HintAssist.Hint="TÊN NGƯỜI DÙNG"
+                 FontSize="16" Margin="0,0,0,15"
+                 Foreground="White" BorderBrush="#E91E63"
+                 materialDesign:HintAssist.Foreground="#E91E63"/>
+
+                    <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                 materialDesign:HintAssist.Hint="EMAIL"
+                 FontSize="16" Margin="0,0,0,15"
+                 Foreground="White" BorderBrush="#E91E63"
+                 materialDesign:HintAssist.Foreground="#E91E63"/>
+
+                    <PasswordBox x:Name="RegPasswordBox"
+                     Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
+                     materialDesign:HintAssist.Hint="Mật khẩu"
+                     FontSize="16" Margin="0,0,0,15"
+                     Foreground="White" BorderBrush="#E91E63"
+                     materialDesign:HintAssist.Foreground="#E91E63"/>
+
+                    <PasswordBox x:Name="RegConfirmPasswordBox"
+                     Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
+                     materialDesign:HintAssist.Hint="Xác nhận mật khẩu"
+                     FontSize="16" Margin="0,0,0,30"
+                     Foreground="White" BorderBrush="#E91E63"
+                     materialDesign:HintAssist.Foreground="#E91E63"/>
+
+                    <Button Command="{Binding RegisterCommand}"
+                Content="ĐĂNG KÝ TÀI KHOẢN"
+                Height="50" FontSize="16" FontWeight="Bold"
+                materialDesign:ButtonAssist.CornerRadius="25"
+                Background="#E91E63" BorderThickness="0"
+                Margin="0,0,0,20"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Đã có tài khoản? " Foreground="#888"/>
+                        <TextBlock Text="Đăng nhập ngay" 
+                       Foreground="#E91E63" FontWeight="Bold" 
+                       Cursor="Hand" TextDecorations="Underline">
+                            <TextBlock.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding SwitchToLoginCommand}"/>
+                            </TextBlock.InputBindings>
+                        </TextBlock>
                     </StackPanel>
 
                 </StackPanel>
