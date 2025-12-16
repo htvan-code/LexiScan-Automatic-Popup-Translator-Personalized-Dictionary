@@ -19,6 +19,9 @@ namespace LexiScanUI.ViewModels
             _dbService = new DatabaseServices();
             _ttsService = new TtsService();
 
+
+            CurrentSentenceId = 1;
+            CurrentTranslatedText = "Học lập trình C#";
             PinCommand = new RelayCommand(ExecutePin);
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
             SettingsCommand = new RelayCommand(ExecuteSettings);
