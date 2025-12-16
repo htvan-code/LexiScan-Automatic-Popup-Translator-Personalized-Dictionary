@@ -1,65 +1,85 @@
 ﻿// File: ViewModels/HistoryViewModel.cs
 
+using LexiScan.App.Commands;
+using LexiScanData;
+using LexiScanData.Models;
+// --- DÒNG BẠN ĐÃ THÊM ---
+using LexiScanData.Services;
 using System;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
-using LexiScan.App.Commands;
 using System.ComponentModel;
+using System.Linq; // Để sắp xếp hoặc xóa
 using System.Runtime.CompilerServices;
-using System.Linq; // Cần thiết để xóa một phần tử cụ thể
+using System.Windows.Input;
+// -------------------------
 
 namespace LexiScan.App.ViewModels
 {
+    // CẦN XÓA HOẶC BỎ QUA CLASS HistoryEntry NỘI BỘ NÀY
+    // public class HistoryEntry { ... } 
+
     // Kế thừa từ BaseViewModel
     public class HistoryViewModel : BaseViewModel
     {
-        // Model đơn giản cho một mục lịch sử
-        public class HistoryEntry
-        {
-            // Khắc phục CS8618: Khởi tạo với string.Empty
-            public string SearchTerm { get; set; } = string.Empty;
-            public DateTime Timestamp { get; set; }
-            public string DisplayTime => Timestamp.ToString("HH:mm - dd/MM/yyyy");
-        }
+        // 1. KHAI BÁO SERVICE (Đấu nối với project LexiScanData/P4)
+        private readonly LexiScanDbContext _dbService;
 
-        // ObservableCollection tự động thông báo khi thêm/xóa/sắp xếp item
-        public ObservableCollection<HistoryEntry> HistoryEntries { get; set; }
-        public ICommand ClearHistoryCommand { get; } // Dùng `get;` để tuân thủ ReadOnly
-        public ICommand DeleteHistoryEntryCommand { get; } // Dùng `get;` để tuân thủ ReadOnly
+        // 2. DÙNG MODEL THẬT (Word) CHO COLLECTION
+        public ObservableCollection<Word> HistoryEntries { get; set; } // <<<<<<<< Dùng Word
+        public ICommand ClearHistoryCommand { get; }
+        public ICommand DeleteHistoryEntryCommand { get; }
 
         public HistoryViewModel()
         {
-            HistoryEntries = new ObservableCollection<HistoryEntry>();
+            // 3. KHỞI TẠO SERVICE
+            _dbService = new LexiScanDbContext();
+            HistoryEntries = new ObservableCollection<Word>();
 
-            // Khắc phục CS0246: RelayCommand đã được tham chiếu đúng
             ClearHistoryCommand = new RelayCommand(ExecuteClearHistory);
-            // DeleteHistoryEntryCommand chấp nhận tham số (HistoryEntry)
+            // DeleteHistoryEntryCommand chấp nhận tham số (Word)
             DeleteHistoryEntryCommand = new RelayCommand(ExecuteDeleteHistoryEntry);
 
-            LoadPlaceholderData();
+            // 4. GỌI HÀM LOAD THẬT
+            LoadHistoryFromDb();
         }
 
-        private void LoadPlaceholderData()
+        // 4.1 HÀM LOAD DỮ LIỆU THẬT TỪ DB
+        private void LoadHistoryFromDb()
         {
-            // Thêm một số dữ liệu mẫu để kiểm tra giao diện
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "mitosis", Timestamp = DateTime.Now.AddHours(-1) });
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "paradigm shift", Timestamp = DateTime.Now.AddHours(-5) });
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "infrastructure", Timestamp = DateTime.Now.AddDays(-1) });
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "commitment", Timestamp = DateTime.Now.AddDays(-2) });
+            // Giả sử P4 có hàm GetAllWords() trong Service
+            var wordsFromDb = _dbService.GetAllWords();
+
+            HistoryEntries.Clear();
+            // Thường sắp xếp ngược lại (mới nhất lên đầu)
+            foreach (var word in wordsFromDb.OrderByDescending(w => w.WordId))
+            {
+                HistoryEntries.Add(word);
+            }
         }
 
-        // Khắc phục cảnh báo unused parameter bằng cách sử dụng dấu gạch dưới `_`
+        // CẦN XÓA LoadPlaceholderData()
+
+        // 5.1 LOGIC XÓA HẾT
         private void ExecuteClearHistory(object? _)
         {
+            // BƯỚC 1: XÓA TRONG DATABASE
+            _dbService.ClearAllWords();
+
+            // BƯỚC 2: XÓA TRÊN UI
             HistoryEntries.Clear();
         }
 
-        // Khắc phục cảnh báo unused parameter và sử dụng object?
+        // 5.2 LOGIC XÓA MỘT MỤC
         private void ExecuteDeleteHistoryEntry(object? parameter)
         {
-            if (parameter is HistoryEntry entry)
+            // Cast tham số sang Word Model thật
+            if (parameter is Word word)
             {
-                HistoryEntries.Remove(entry);
+                // BƯỚC 1: XÓA TRONG DATABASE
+                _dbService.DeleteWord(word.WordId);
+
+                // BƯỚC 2: XÓA TRÊN UI
+                HistoryEntries.Remove(word);
             }
         }
     }
