@@ -1,11 +1,12 @@
-﻿using System;
+﻿using LexiScan.Core;
+using LexiScan.Core.Enums;
+using LexiScan.Core.Models;
+using LexiScan.Core.Services;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using LexiScan.Core;
-using LexiScan.Core.Services;
-using LexiScan.Core.Models;
 
 namespace ScreenTranslator
 {
@@ -26,6 +27,8 @@ namespace ScreenTranslator
             var transService = new TranslationService();
             _coordinator = new AppCoordinator(transService);
 
+            _coordinator.TranslationCompleted += OnTranslationResultReceived;
+
             _hookService = new ClipboardHookService();
             _hookService.OnTextCaptured += SendTextToCoordinator;
 
@@ -34,7 +37,26 @@ namespace ScreenTranslator
             _trayService = new TrayService(this);
             _trayService.Initialize();
 
-            this.Visibility = Visibility.Hidden;
+            //this.Visibility = Visibility.Hidden;
+        }
+
+        private void OnTranslationResultReceived(TranslationResult result)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                if (result.Status == ServiceStatus.Success)
+                {
+                    System.Windows.MessageBox.Show($"📢 KẾT QUẢ TỪ P2 TRẢ VỀ:\n\n" +
+                                    $"Gốc: {result.OriginalText}\n" +
+                                    $"----------------------\n" +
+                                    $"Dịch: {result.TranslatedText}",
+                                    "Demo Hiển Thị (Giả lập P3)");
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show($"⚠️ LỖI XỬ LÝ:\n{result.ErrorMessage}", "P2 Báo Lỗi");
+                }
+            });
         }
 
         private async void SendTextToCoordinator(string text)
@@ -42,7 +64,6 @@ namespace ScreenTranslator
             if (!string.IsNullOrWhiteSpace(text))
             {
                 await _coordinator.HandleClipboardTextAsync(text);
-                System.Windows.MessageBox.Show($"[OUTPUT] Đã bắt được và gửi sang P2 thành công!\nNội dung: {text}");
             }
         }
 
