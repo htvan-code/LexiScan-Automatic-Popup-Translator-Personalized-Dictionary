@@ -23,11 +23,21 @@ namespace LexiScan.Core.Services
             string cleanedText = text.Trim();
             var type = DetectInputType(cleanedText);
 
-            return type switch
+            // 1. Dịch thuật trực tiếp (Google Translate) cho mọi input
+            var result = await TranslateSentence(cleanedText);
+            result.InputType = type;
+
+            // 2. Làm giàu dữ liệu từ điển nếu là từ đơn và dịch thành công
+            if (type == InputType.SingleWord && result.Status == ServiceStatus.Success)
             {
-                InputType.SingleWord => await DictionaryLookup(cleanedText),
-                _ => await TranslateSentence(cleanedText)
-            };
+                var dictResult = await DictionaryLookup(cleanedText);
+
+                // Chỉ lấy Phonetic và Meanings, không ghi đè TranslatedText
+                result.Phonetic = dictResult.Phonetic;
+                result.Meanings = dictResult.Meanings;
+            }
+
+            return result;
         }
 
         public InputType DetectInputType(string text)
@@ -40,16 +50,16 @@ namespace LexiScan.Core.Services
             }
             return InputType.PhraseOrSentence;
         }
-        private async Task<TranslationResult> TranslateSentence(string text)
+
+        public async Task<TranslationResult> TranslateSentence(string text, string sl = "en")
         {
             try
             {
-                var url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q={Uri.EscapeDataString(text)}";
+                var url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl=vi&dt=t&q={Uri.EscapeDataString(text)}";
                 var raw = await _http.GetStringAsync(url);
                 var json = JsonConvert.DeserializeObject<dynamic>(raw);
 
                 string translated = "";
-                // Ghép các phân đoạn dịch lại
                 foreach (var seg in json[0])
                     translated += seg[0];
 
@@ -57,7 +67,7 @@ namespace LexiScan.Core.Services
                 {
                     OriginalText = text,
                     TranslatedText = translated,
-                    InputType = InputType.PhraseOrSentence,
+                    InputType = InputType.PhraseOrSentence, // Sẽ được cập nhật lại ở ProcessTranslationAsync
                     Status = ServiceStatus.Success
                 };
             }
@@ -73,7 +83,6 @@ namespace LexiScan.Core.Services
             }
         }
 
-        // 3. Hàm Tra Từ Điển (Sử dụng API dictionaryapi.dev)
         private async Task<TranslationResult> DictionaryLookup(string word)
         {
             try
@@ -81,16 +90,10 @@ namespace LexiScan.Core.Services
                 var url = $"https://api.dictionaryapi.dev/api/v2/entries/en/{word}";
                 var raw = await _http.GetStringAsync(url);
 
-                // API trả về JSON chứa lỗi khi không tìm thấy
                 if (raw.Contains("message"))
                 {
-                    return new TranslationResult
-                    {
-                        OriginalText = word,
-                        InputType = InputType.SingleWord,
-                        Status = ServiceStatus.NotFound,
-                        ErrorMessage = "Không tìm thấy từ này trong từ điển."
-                    };
+
+                    return new TranslationResult { OriginalText = word, InputType = InputType.SingleWord, Status = ServiceStatus.NotFound };
                 }
 
                 var data = JsonConvert.DeserializeObject<dynamic[]>(raw);
@@ -108,10 +111,8 @@ namespace LexiScan.Core.Services
                 foreach (var meaningEntry in firstEntry.meanings)
                 {
                     var partOfSpeech = (string)meaningEntry.partOfSpeech;
-
                     foreach (var definitionEntry in meaningEntry.definitions)
                     {
-
                         var definition = (string)definitionEntry.definition;
                         if (string.IsNullOrWhiteSpace(definition)) continue;
 
@@ -120,7 +121,7 @@ namespace LexiScan.Core.Services
                         {
                             examples.Add((string)definitionEntry.example);
                         }
-                        
+
                         result.Meanings.Add(new Meaning
                         {
                             PartOfSpeech = partOfSpeech,
@@ -129,7 +130,6 @@ namespace LexiScan.Core.Services
                         });
                     }
                 }
-                result.TranslatedText = result.Meanings.FirstOrDefault()?.Definition ?? "Không có nghĩa dịch";
 
                 return result;
             }
