@@ -34,7 +34,7 @@ namespace ScreenTranslator
             _trayService = new TrayService(this);
             _trayService.Initialize();
 
-            //this.Visibility = Visibility.Hidden;
+            this.Visibility = Visibility.Hidden;
         }
 
         private async void SendTextToCoordinator(string text)
