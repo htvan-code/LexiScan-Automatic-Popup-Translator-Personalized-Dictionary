@@ -38,7 +38,6 @@ namespace ScreenTranslator
             _trayService = new TrayService(this);
             _trayService.Initialize();
 
-            //this.Visibility = Visibility.Hidden;
         }
 
         private void OnTranslationResultReceived(TranslationResult result)
@@ -49,38 +48,29 @@ namespace ScreenTranslator
                 {
                     StringBuilder sb = new StringBuilder();
 
-                    // HEADER
                     sb.AppendLine($"📖 {result.OriginalText}");
 
-                    // PHIÊN ÂM (Nếu có)
                     if (!string.IsNullOrEmpty(result.Phonetic))
                     {
                         sb.AppendLine($"/{result.Phonetic}/");
                     }
                     else
                     {
-                        // Fallback: nếu không có phiên âm thì thôi
                     }
 
                     sb.AppendLine("-----------------------------");
 
-                    // NGHĨA CHÍNH
                     sb.AppendLine($"✅ {result.TranslatedText}");
                     sb.AppendLine();
-
-                    // TỪ ĐIỂN CHI TIẾT (Giống trong ảnh)
                     if (result.Meanings != null && result.Meanings.Count > 0)
                     {
                         foreach (var m in result.Meanings)
                         {
-                            // In Loại từ: Danh từ (In nghiêng/Đậm giả lập bằng text)
                             sb.AppendLine($"--- {m.PartOfSpeech} ---");
 
-                            // In các nghĩa, cách nhau bằng dấu phẩy cho gọn giống Google
-                            // Ví dụ: bản văn, nguyên văn, chủ đề
                             string joinedDefs = string.Join(", ", m.Definitions);
                             sb.AppendLine(joinedDefs);
-                            sb.AppendLine(); // Xuống dòng cho thoáng
+                            sb.AppendLine(); 
                         }
                     }
 
