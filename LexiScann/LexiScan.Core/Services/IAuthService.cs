@@ -62,14 +62,13 @@ namespace LexiScan.Core.Services
         {
             try
             {
-                // Hàm này bảo Firebase: "Ê, gửi email đổi pass cho ông này hộ tôi"
                 await _authClient.ResetEmailPasswordAsync(email);
                 return true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Lỗi gửi email reset: " + ex.Message);
-                return false; // Thường lỗi do email không tồn tại hoặc sai định dạng
+                return false; 
             }
         }
 
