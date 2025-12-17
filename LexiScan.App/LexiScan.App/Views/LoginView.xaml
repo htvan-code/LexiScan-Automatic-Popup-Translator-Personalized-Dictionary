@@ -66,7 +66,7 @@
 
                     <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                             materialDesign:HintAssist.Hint="EMAIL"
+                             materialDesign:HintAssist.Hint="Email"
                              materialDesign:TextFieldAssist.HasClearButton="True"
                              FontSize="16" Margin="0,0,0,20"
                              Foreground="White" BorderBrush="#E91E63"
@@ -116,7 +116,7 @@
 
                     <TextBox Text="{Binding RegEmail, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                             materialDesign:HintAssist.Hint="EMAIL"
+                             materialDesign:HintAssist.Hint="Email"
                              FontSize="16" Margin="0,0,0,15"
                              Foreground="White" BorderBrush="#E91E63"
                              materialDesign:HintAssist.Foreground="#E91E63"/>
