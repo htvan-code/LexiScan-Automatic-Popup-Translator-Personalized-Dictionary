@@ -129,7 +129,14 @@
                                 <TextBlock Text="Cài đặt"/>
                             </StackPanel>
                         </RadioButton>
-
+                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" 
+                                     Command="{Binding LogoutCommand}"
+                                     Margin="0,5,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE7E8;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="Đăng xuất"/>
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" 

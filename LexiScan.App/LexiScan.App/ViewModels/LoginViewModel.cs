@@ -1,7 +1,6 @@
-﻿using LexiScan.App; // <--- QUAN TRỌNG: Dòng này giúp tìm thấy MainWindow
+﻿using LexiScan.App; // Giúp tìm thấy MainWindow
 using LexiScan.App.Commands;
-using LexiScan.App.Services; // Đảm bảo namespace này khớp với file AuthService.cs của bạn
-using LexiScan.Core.Services;
+using LexiScan.Core.Services; // Namespace chứa AuthService
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,7 +28,6 @@ namespace LexiScan.App.ViewModels
             set { _isSignUpVisible = value; OnPropertyChanged(); }
         }
 
-        // Data Binding
         private string _username;
         public string Username
         {
@@ -67,7 +65,7 @@ namespace LexiScan.App.ViewModels
             ForgotPasswordCommand = new RelayCommand(ExecuteForgotPassword);
         }
 
-        // --- 1. Đăng nhập & Mở MainWindow ---
+        // --- 1. Đăng nhập & Lưu Token & Mở MainWindow ---
         private async void ExecuteLogin(object? parameter)
         {
             var passwordBox = parameter as PasswordBox;
@@ -79,20 +77,20 @@ namespace LexiScan.App.ViewModels
                 return;
             }
 
-            // Gọi AuthService để đăng nhập
-            bool isSuccess = await _authService.LoginAsync(Username, password);
+            // [MỚI] Gọi hàm lấy Token (Thay vì chỉ LoginAsync trả về bool)
+            // Lưu ý: Đảm bảo bạn đã cập nhật AuthService có hàm này như hướng dẫn trước
+            string token = await _authService.LoginAndGetTokenAsync(Username, password);
 
-            if (isSuccess)
+            // Kiểm tra nếu có Token (nghĩa là đăng nhập thành công)
+            if (!string.IsNullOrEmpty(token))
             {
-                // --- PHẦN QUAN TRỌNG: CHUYỂN MÀN HÌNH ---
+                // [MỚI] Lưu Token vào Settings của máy
+                LexiScan.App.Properties.Settings.Default.UserToken = token;
+                LexiScan.App.Properties.Settings.Default.Save(); // Bắt buộc phải Save
 
-                // 1. Khởi tạo màn hình chính
+                // --- CHUYỂN MÀN HÌNH ---
                 var mainWindow = new MainWindow();
-
-                // 2. Hiển thị màn hình chính
                 mainWindow.Show();
-
-                // 3. Đóng màn hình đăng nhập hiện tại
                 CloseWindow();
             }
             else
@@ -101,7 +99,7 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        // --- 2. Đăng ký (Chỉ dùng Email) ---
+        // --- 2. Đăng ký (Giữ nguyên) ---
         private async void ExecuteRegister(object? parameter)
         {
             if (string.IsNullOrWhiteSpace(RegEmail))
@@ -133,7 +131,7 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        // --- 3. Quên mật khẩu ---
+        // --- 3. Quên mật khẩu (Giữ nguyên) ---
         private async void ExecuteForgotPassword(object? parameter)
         {
             if (string.IsNullOrEmpty(Username))
@@ -153,7 +151,6 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        // Hàm hỗ trợ đóng cửa sổ hiện tại
         private void CloseWindow()
         {
             foreach (Window window in Application.Current.Windows)
