@@ -161,13 +161,17 @@ namespace LexiScanUI.ViewModels
         // ========================
         private void ExecuteReadAloud(object? parameter)
         {
-            string textToRead = parameter as string ?? CurrentTranslatedText;
+            // Ưu tiên đọc từ gốc (tiếng Anh)
+            string textToRead = !string.IsNullOrWhiteSpace(CurrentWord)
+                ? CurrentWord
+                : CurrentTranslatedText;
 
             if (!string.IsNullOrWhiteSpace(textToRead))
             {
                 _ttsService.ReadText(textToRead);
             }
         }
+
 
         private void ExecuteSettings(object? parameter)
         {

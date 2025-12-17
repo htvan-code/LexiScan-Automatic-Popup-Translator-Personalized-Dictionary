@@ -1,4 +1,5 @@
-﻿using System.Speech.Synthesis; // Dùng thư viện chuẩn của .NET
+﻿using System.Globalization;
+using System.Speech.Synthesis;
 
 namespace LexiScanService
 {
@@ -9,13 +10,22 @@ namespace LexiScanService
         public TtsService()
         {
             _synthesizer = new SpeechSynthesizer();
+            _synthesizer.SetOutputToDefaultAudioDevice();
+
+            // 🔥 ÉP GIỌNG TIẾNG ANH
+            _synthesizer.SelectVoiceByHints(
+                VoiceGender.NotSet,
+                VoiceAge.NotSet,
+                0,
+                new CultureInfo("en-US")
+            );
         }
 
         public void ReadText(string text)
         {
-            if (!string.IsNullOrEmpty(text))
+            if (!string.IsNullOrWhiteSpace(text))
             {
-                // Gọi hàm SpeakAsync của System.Speech
+                _synthesizer.SpeakAsyncCancelAll();
                 _synthesizer.SpeakAsync(text);
             }
         }

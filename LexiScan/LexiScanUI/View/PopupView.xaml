@@ -12,6 +12,7 @@
         AllowsTransparency="True"
         Background="Transparent">
 
+    <!-- ================= RESOURCES ================= -->
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -35,6 +36,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- ================= HEADER ================= -->
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -44,6 +46,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
+                    <!-- WORD + PHONETIC -->
                     <StackPanel Orientation="Vertical">
                         <TextBlock Text="{Binding CurrentWord}"
                                    FontSize="16"
@@ -57,6 +60,7 @@
                                    Margin="0,2,0,0"/>
                     </StackPanel>
 
+                    <!-- 🔊 READ -->
                     <Button Grid.Column="1"
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Read aloud"
@@ -64,13 +68,34 @@
                         <materialDesign:PackIcon Kind="VolumeHigh"/>
                     </Button>
 
+                    <!-- ⭐ PIN (ĐÃ SỬA) -->
                     <Button Grid.Column="2"
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Save word"
                             Command="{Binding PinCommand}">
-                        <materialDesign:PackIcon Kind="StarOutline"/>
+
+                        <materialDesign:PackIcon Width="20" Height="20">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <!-- MẶC ĐỊNH -->
+                                    <Setter Property="Kind" Value="StarOutline"/>
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource SecondaryText}"/>
+
+                                    <!-- ĐÃ GHIM -->
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                            <Setter Property="Kind" Value="Star"/>
+                                            <Setter Property="Foreground" Value="#FFD700"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+
                     </Button>
 
+                    <!-- ⚙ SETTINGS -->
                     <Button Grid.Column="3"
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Settings"
@@ -78,6 +103,7 @@
                         <materialDesign:PackIcon Kind="Cog"/>
                     </Button>
 
+                    <!-- ❌ CLOSE -->
                     <Button Grid.Column="4"
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Close"
@@ -87,6 +113,7 @@
                     </Button>
                 </Grid>
 
+                <!-- ================= CONTENT ================= -->
                 <ScrollViewer Grid.Row="1"
                               Margin="0,10,0,0"
                               VerticalScrollBarVisibility="Auto">
@@ -109,17 +136,17 @@
                                                    Foreground="{DynamicResource PrimaryText}"/>
 
                                         <TextBlock Text="{Binding DefinitionsText}"
-           FontSize="13"
-           TextWrapping="Wrap"
-           Foreground="{DynamicResource SecondaryText}"
-           Margin="10,2,0,0"/>
-
+                                                   FontSize="13"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource SecondaryText}"
+                                                   Margin="10,2,0,0"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
                 </ScrollViewer>
+
             </Grid>
         </Border>
     </Grid>
