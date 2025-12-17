@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LexiScann\LexiScan.Core\LexiScan.Core.csproj" />
+    <ProjectReference Include="..\..\ScreenTranslator\ScreenTranslator\ScreenTranslator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
