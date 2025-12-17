@@ -86,9 +86,24 @@ namespace ScreenTranslator
 
         private void ShowMainWindow()
         {
-            _mainWindow.Visibility = Visibility.Visible;
-            _mainWindow.Show();
-            _mainWindow.Activate();
+            if (_mainWindow != null)
+            {
+                // 1. Nếu cửa sổ đang bị thu nhỏ, phải khôi phục lại kích thước bình thường
+                if (_mainWindow.WindowState == WindowState.Minimized)
+                {
+                    _mainWindow.WindowState = WindowState.Normal;
+                }
+
+                // 2. Hiện cửa sổ
+                _mainWindow.Visibility = Visibility.Visible;
+                _mainWindow.Show();
+
+                // 3. Đưa cửa sổ lên trên cùng (Active)
+                _mainWindow.Activate();
+                _mainWindow.Topmost = true;  // Mẹo: Bật Topmost
+                _mainWindow.Topmost = false; // Tắt ngay để người dùng còn bấm sang cửa sổ khác được
+                _mainWindow.Focus();
+            }
         }
 
         private void SetStartup(bool enable)

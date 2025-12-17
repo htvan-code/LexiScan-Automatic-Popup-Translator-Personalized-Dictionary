@@ -1,37 +1,27 @@
-﻿// LexiScan.App/MainWindow.xaml.cs
-
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using LexiScan.App.ViewModels;
 using System.Windows.Input;
-// Xóa: using LexiScan.App.Services; 
+using LexiScan.App.ViewModels;
+using ScreenTranslator; // <--- QUAN TRỌNG: Thêm dòng này để dùng TrayService
 
 namespace LexiScan.App
 {
     public partial class MainWindow : Window
     {
-        // Xóa các khai báo URI không cần thiết
-        // private const string LightThemeUri = "Themes/LightTheme.xaml";
-        // private const string DarkThemeUri = "Themes/DarkTheme.xaml";
+        // 1. Khai báo biến để giữ TrayService hoạt động
+        private TrayService _trayService;
 
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = new MainViewModel();
 
-            // Xóa logic ThemeService và LoadTheme
-            // ThemeService.Instance.ThemeChanged += OnThemeChanged;
-            // LoadTheme(DarkThemeUri); 
+            // 2. KHỞI TẠO TRAY SERVICE
+            // Truyền 'this' (cửa sổ hiện tại) vào để TrayService biết cửa sổ nào cần hiện lên
+            _trayService = new TrayService(this);
+            _trayService.Initialize();
         }
-
-        // Xóa các phương thức liên quan đến Theme
-        /*
-        private void OnThemeChanged(string themeName) { ... }
-        private void LoadTheme(string themeUri) { ... }
-        protected override void OnClosed(EventArgs e) { ... } 
-        */
-
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -43,7 +33,10 @@ namespace LexiScan.App
 
         private void CloseApp_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            // 3. SỬA NÚT ĐÓNG THÀNH ẨN
+            // Nếu dùng Shutdown() thì App tắt luôn, mất cả icon dưới khay.
+            // Dùng Hide() để ẩn giao diện đi nhưng App vẫn chạy ngầm.
+            this.Hide();
         }
     }
 }
