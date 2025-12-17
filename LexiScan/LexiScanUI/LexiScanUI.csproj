@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LexiScan.App\LexiScan.App\LexiScan.App.csproj" />
+    <ProjectReference Include="..\..\LexiScann\LexiScan.Core\LexiScan.Core.csproj" />
     <ProjectReference Include="..\LexiScanData\LexiScanData.csproj" />
     <ProjectReference Include="..\LexiScanService\LexiScanService.csproj" />
   </ItemGroup>

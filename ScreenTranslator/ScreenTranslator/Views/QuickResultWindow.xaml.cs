@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using LexiScanUI.View;
 
 namespace ScreenTranslator
 {
@@ -16,6 +17,7 @@ namespace ScreenTranslator
         private ClipboardHookService _hookService;
         private TrayService _trayService;
         private AppCoordinator _coordinator;
+        private PopupView _popupWindow;//them
 
         private int _currentMod = ClipboardHookService.MOD_CONTROL;
         private int _currentKey = 0x20;
@@ -38,6 +40,7 @@ namespace ScreenTranslator
             _trayService = new TrayService(this);
             _trayService.Initialize();
 
+            _popupWindow = new PopupView();//them
         }
 
         private void OnTranslationResultReceived(TranslationResult result)
@@ -46,39 +49,15 @@ namespace ScreenTranslator
             {
                 if (result.Status == ServiceStatus.Success)
                 {
-                    StringBuilder sb = new StringBuilder();
-
-                    sb.AppendLine($"📖 {result.OriginalText}");
-
-                    if (!string.IsNullOrEmpty(result.Phonetic))
+                    if (_popupWindow == null || !_popupWindow.IsLoaded)
                     {
-                        sb.AppendLine($"/{result.Phonetic}/");
-                    }
-                    else
-                    {
+                        _popupWindow = new PopupView();
                     }
 
-                    sb.AppendLine("-----------------------------");
+                    _popupWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    _popupWindow.Topmost = true; // Luôn hiện trên cùng
 
-                    sb.AppendLine($"✅ {result.TranslatedText}");
-                    sb.AppendLine();
-                    if (result.Meanings != null && result.Meanings.Count > 0)
-                    {
-                        foreach (var m in result.Meanings)
-                        {
-                            sb.AppendLine($"--- {m.PartOfSpeech} ---");
-
-                            string joinedDefs = string.Join(", ", m.Definitions);
-                            sb.AppendLine(joinedDefs);
-                            sb.AppendLine(); 
-                        }
-                    }
-
-                    System.Windows.MessageBox.Show(sb.ToString(), "Kết quả dịch");
-                }
-                else
-                {
-                    System.Windows.MessageBox.Show($"⚠️ Lỗi: {result.ErrorMessage}");
+                    _popupWindow.ShowResult(result);
                 }
             });
         }
@@ -127,6 +106,10 @@ namespace ScreenTranslator
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            if (_popupWindow != null && _popupWindow.IsLoaded)
+            {
+                _popupWindow.Close();
+            }
             e.Cancel = true;
             this.Hide();
         }

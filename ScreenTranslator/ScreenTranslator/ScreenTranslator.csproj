@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LexiScann\LexiScan.Core\LexiScan.Core.csproj" />
+    <ProjectReference Include="..\..\LexiScan\LexiScanUI\LexiScanUI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

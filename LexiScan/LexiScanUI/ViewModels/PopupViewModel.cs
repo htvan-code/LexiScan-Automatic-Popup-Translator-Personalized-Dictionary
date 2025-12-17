@@ -1,19 +1,33 @@
 ﻿using LexiScan.App.ViewModels;
-using LexiScanData.Services; // Add this using directive if DatabaseServices is in this namespace
+using LexiScanData.Services; 
 using LexiScanService;
 using LexiScanUI.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-
+using LexiScan.Core.Models; 
 namespace LexiScanUI.ViewModels
 {
     public class PopupViewModel : INotifyPropertyChanged
     {
+        private string _currentWord;
+        public string CurrentWord
+        {
+            get => _currentWord;
+            set { _currentWord = value; OnPropertyChanged(); }
+        }
+        private string _phonetic;
+        public string Phonetic
+        {
+            get => _phonetic;
+            set { _phonetic = value; OnPropertyChanged(); }
+        }
+
         private readonly DatabaseServices _dbService;
         private readonly TtsService _ttsService;
 
+        public ObservableCollection<Meaning> Meanings { get; } = new ObservableCollection<Meaning>();
         public PopupViewModel()
         {
             _dbService = new DatabaseServices();
@@ -27,7 +41,26 @@ namespace LexiScanUI.ViewModels
             SettingsCommand = new RelayCommand(ExecuteSettings);
             CloseCommand = new RelayCommand(ExecuteClose);
         }
+        public void LoadTranslationData(TranslationResult result)
+        {
+            if (result == null) return;
 
+            CurrentWord = result.OriginalText; 
+            CurrentTranslatedText = result.TranslatedText ?? string.Empty;
+            Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : string.Empty;
+
+            Meanings.Clear();
+            if (result.Meanings != null)
+            {
+                foreach (var m in result.Meanings)
+                {
+                    Meanings.Add(m);
+                }
+            }
+            IsPinned = false;
+            IsSelectionMode = false;
+            PrepareWordsForSelection();
+        }
         public int CurrentSentenceId { get; set; } = 1;
 
         private string _currentTranslatedText =
@@ -172,6 +205,5 @@ namespace LexiScanUI.ViewModels
                 }
             }
         }
-
     }
 }
