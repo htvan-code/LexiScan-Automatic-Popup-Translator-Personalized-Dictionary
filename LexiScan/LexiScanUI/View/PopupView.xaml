@@ -108,24 +108,12 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{DynamicResource PrimaryText}"/>
 
-                                        <ItemsControl ItemsSource="{Binding Definitions}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid Margin="10,2,0,0">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="• " Foreground="{DynamicResource SecondaryText}"/>
-                                                        <TextBlock Grid.Column="1" 
-                                                                   Text="{Binding}"
-                                                                   TextWrapping="Wrap"
-                                                                   FontSize="13"
-                                                                   Foreground="{DynamicResource SecondaryText}"/>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                        <TextBlock Text="{Binding DefinitionsText}"
+           FontSize="13"
+           TextWrapping="Wrap"
+           Foreground="{DynamicResource SecondaryText}"
+           Margin="10,2,0,0"/>
+
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
