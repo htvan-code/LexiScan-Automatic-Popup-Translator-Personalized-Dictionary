@@ -1,39 +1,31 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 using LexiScanUI.ViewModels;
+using LexiScan.Core.Models;
 
 namespace LexiScanUI.View
 {
-    public partial class PopupView : UserControl
+    public partial class PopupView : Window
     {
         public PopupView()
         {
             InitializeComponent();
+            // Khởi tạo ViewModel và gán vào DataContext
+            this.DataContext = new PopupViewModel();
         }
 
-        // Helper lấy ViewModel
+        // Helper lấy ViewModel nhanh
         private PopupViewModel? ViewModel => DataContext as PopupViewModel;
 
-        // ========================
-        // PIN
-        // ========================
-        private void Pin_Click(object sender, RoutedEventArgs e)
+        // Hàm nhận kết quả dịch từ MainWindow
+        public void ShowResult(TranslationResult result)
         {
-            if (ViewModel?.PinCommand.CanExecute(null) == true)
+            if (ViewModel != null)
             {
-                ViewModel.PinCommand.Execute(null);
+                ViewModel.LoadTranslationData(result);
             }
-        }
 
-        // ========================
-        // SETTINGS
-        // ========================
-        private void Setting_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel?.SettingsCommand.CanExecute(null) == true)
-            {
-                ViewModel.SettingsCommand.Execute(null);
-            }
+            this.Show();
+            this.Activate(); 
         }
 
         // ========================
@@ -41,7 +33,7 @@ namespace LexiScanUI.View
         // ========================
         private void Close_Click(object sender, RoutedEventArgs e)
         {
-            Window.GetWindow(this)?.Close();
+            this.Close();
         }
     }
 }

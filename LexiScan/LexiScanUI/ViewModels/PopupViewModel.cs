@@ -1,12 +1,12 @@
 ﻿using LexiScan.App.ViewModels;
-using LexiScanData.Services; // Add this using directive if DatabaseServices is in this namespace
+using LexiScanData.Services; 
 using LexiScanService;
 using LexiScanUI.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-
+using LexiScan.Core.Models; 
 namespace LexiScanUI.ViewModels
 {
     public class PopupViewModel : INotifyPropertyChanged
@@ -26,6 +26,20 @@ namespace LexiScanUI.ViewModels
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
             SettingsCommand = new RelayCommand(ExecuteSettings);
             CloseCommand = new RelayCommand(ExecuteClose);
+        }
+        public void LoadTranslationData(TranslationResult result)
+        {
+            if (result == null) return;
+
+            // Cập nhật text dịch lên màn hình (nếu null thì thay bằng chuỗi rỗng)
+            CurrentTranslatedText = result.TranslatedText ?? string.Empty;
+
+            // Reset trạng thái: Chưa ghim và Tắt chế độ chọn từ
+            IsPinned = false;
+            IsSelectionMode = false;
+
+            // Gọi hàm tách từ để chuẩn bị cho việc bôi đen/ghim sau này
+            PrepareWordsForSelection();
         }
 
         public int CurrentSentenceId { get; set; } = 1;
@@ -172,6 +186,5 @@ namespace LexiScanUI.ViewModels
                 }
             }
         }
-
     }
 }
