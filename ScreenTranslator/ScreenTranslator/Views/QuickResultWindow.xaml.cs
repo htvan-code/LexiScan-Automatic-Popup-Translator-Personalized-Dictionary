@@ -53,12 +53,11 @@ namespace ScreenTranslator
                     {
                         _popupWindow = new PopupView();
                     }
+
+                    _popupWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    _popupWindow.Topmost = true; // Luôn hiện trên cùng
+
                     _popupWindow.ShowResult(result);
-                }
-                else
-                {
-                    // Nếu lỗi thì vẫn hiện MessageBox báo lỗi (hoặc sau này hiện lên popup luôn tùy em)
-                    System.Windows.MessageBox.Show($"⚠️ Lỗi: {result.ErrorMessage}");
                 }
             });
         }

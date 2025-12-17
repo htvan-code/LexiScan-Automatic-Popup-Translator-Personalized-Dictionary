@@ -11,9 +11,23 @@ namespace LexiScanUI.ViewModels
 {
     public class PopupViewModel : INotifyPropertyChanged
     {
+        private string _currentWord;
+        public string CurrentWord
+        {
+            get => _currentWord;
+            set { _currentWord = value; OnPropertyChanged(); }
+        }
+        private string _phonetic;
+        public string Phonetic
+        {
+            get => _phonetic;
+            set { _phonetic = value; OnPropertyChanged(); }
+        }
+
         private readonly DatabaseServices _dbService;
         private readonly TtsService _ttsService;
 
+        public ObservableCollection<Meaning> Meanings { get; } = new ObservableCollection<Meaning>();
         public PopupViewModel()
         {
             _dbService = new DatabaseServices();
@@ -31,17 +45,22 @@ namespace LexiScanUI.ViewModels
         {
             if (result == null) return;
 
-            // Cập nhật text dịch lên màn hình (nếu null thì thay bằng chuỗi rỗng)
+            CurrentWord = result.OriginalText; 
             CurrentTranslatedText = result.TranslatedText ?? string.Empty;
+            Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : string.Empty;
 
-            // Reset trạng thái: Chưa ghim và Tắt chế độ chọn từ
+            Meanings.Clear();
+            if (result.Meanings != null)
+            {
+                foreach (var m in result.Meanings)
+                {
+                    Meanings.Add(m);
+                }
+            }
             IsPinned = false;
             IsSelectionMode = false;
-
-            // Gọi hàm tách từ để chuẩn bị cho việc bôi đen/ghim sau này
             PrepareWordsForSelection();
         }
-
         public int CurrentSentenceId { get; set; } = 1;
 
         private string _currentTranslatedText =

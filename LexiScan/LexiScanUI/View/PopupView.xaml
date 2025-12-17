@@ -5,33 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Height="220"
-        Width="360"
+        Height="280"
+        Width="380"
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
         Background="Transparent">
 
-    <!-- RESOURCES -->
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-
-                <!-- Material Design -->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml"/>
-
-                <!-- Theme từ LexiScan.App -->
                 <ResourceDictionary Source="pack://application:,,,/LexiScan.App;component/Themes/DarkTheme.xaml"/>
-
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
 
-    <!-- ROOT -->
     <Grid Background="{DynamicResource AppBackground}">
-
-        <!-- CARD -->
         <Border Background="{DynamicResource CardBackground}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
@@ -41,12 +32,9 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- ================= HEADER ================= -->
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -56,11 +44,18 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Translation"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource PrimaryText}"
-                               VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="{Binding CurrentWord}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryText}"/>
+
+                        <TextBlock Text="{Binding Phonetic}"
+                                   FontSize="13"
+                                   FontStyle="Italic"
+                                   Foreground="{DynamicResource SecondaryText}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
 
                     <Button Grid.Column="1"
                             Style="{StaticResource MaterialDesignToolButton}"
@@ -71,7 +66,7 @@
 
                     <Button Grid.Column="2"
                             Style="{StaticResource MaterialDesignToolButton}"
-                            ToolTip="Save words"
+                            ToolTip="Save word"
                             Command="{Binding PinCommand}">
                         <materialDesign:PackIcon Kind="StarOutline"/>
                     </Button>
@@ -92,28 +87,51 @@
                     </Button>
                 </Grid>
 
-                <!-- ================= BODY ================= -->
-                <TextBlock Grid.Row="1"
-                           Margin="0,8,0,0"
-                           Text="{Binding CurrentTranslatedText}"
-                           TextWrapping="Wrap"
-                           FontSize="13"
-                           Foreground="{DynamicResource SecondaryText}"/>
+                <ScrollViewer Grid.Row="1"
+                              Margin="0,10,0,0"
+                              VerticalScrollBarVisibility="Auto">
 
-                <!-- ================= LINK ================= -->
-                <TextBlock Grid.Row="2"
-                           Margin="0,10,0,0"
-                           Text="View full translation"
-                           FontSize="13"
-                           Foreground="{DynamicResource PrimaryAccent}"
-                           Cursor="Hand"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding CurrentTranslatedText}" 
+                                   FontSize="14" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource PrimaryAccent}"
+                                   Margin="0,0,0,8"
+                                   TextWrapping="Wrap"/>
 
-                <!-- ================= FOOTER ================= -->
-                <Border Grid.Row="3"
-                        Margin="0,10,0,0"
-                        Height="1"
-                        Background="{DynamicResource BorderColor}"/>
+                        <ItemsControl ItemsSource="{Binding Meanings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,8,0,0">
+                                        <TextBlock Text="{Binding PartOfSpeech}"
+                                                   FontStyle="Italic"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryText}"/>
 
+                                        <ItemsControl ItemsSource="{Binding Definitions}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="10,2,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="• " Foreground="{DynamicResource SecondaryText}"/>
+                                                        <TextBlock Grid.Column="1" 
+                                                                   Text="{Binding}"
+                                                                   TextWrapping="Wrap"
+                                                                   FontSize="13"
+                                                                   Foreground="{DynamicResource SecondaryText}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Border>
     </Grid>
