@@ -129,7 +129,7 @@ namespace LexiScan.Core.Services
             try
             {
                 // API gợi ý của Google: trả về mảng các từ liên quan
-                string url = $"https://suggestqueries.google.com/complete/search?client=firefox&q={Uri.EscapeDataString(prefix)}";
+                string url = $"https://translate.googleapis.com/complete/search?client=dictionary-chrome-ex&sl=en&q={Uri.EscapeDataString(prefix)}";
 
                 var response = await _http.GetStringAsync(url);
                 var json = JArray.Parse(response);
