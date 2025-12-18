@@ -350,6 +350,9 @@
                                       Style="{StaticResource StandardCheckBoxStyle}"
                                       IsChecked="{Binding CurrentSettings.IsAutoReadEnabled}"/>
 
+                            <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" 
+                                      Style="{StaticResource StandardCheckBoxStyle}"
+                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/>
                         </StackPanel>
                     </Border>
                 </GroupBox>
@@ -388,9 +391,6 @@
                                              Width="84"/>
                             </StackPanel>
 
-                            <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" 
-                                      Style="{StaticResource StandardCheckBoxStyle}"
-                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/>
 
                         </StackPanel>
                     </Border>
