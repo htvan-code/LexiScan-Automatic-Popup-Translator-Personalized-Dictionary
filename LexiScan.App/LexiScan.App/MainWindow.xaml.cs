@@ -77,7 +77,7 @@ namespace LexiScan.App
         // Hàm lọc tin nhắn hệ thống để bắt sự kiện bấm phím
         private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            _hookService.ProcessWindowMessage(msg, wParam.ToInt32());
+            _hookService.ProcessWindowMessage(msg, (int)wParam);
             return IntPtr.Zero;
         }
 
@@ -158,6 +158,25 @@ namespace LexiScan.App
             {
                 this.DragMove();
             }
+        }
+        // Trong file MainWindow.xaml.cs
+        public void ShowMainWindow()
+        {
+            // 1. Khôi phục kích thước nếu đang thu nhỏ
+            if (this.WindowState == WindowState.Minimized)
+            {
+                this.WindowState = WindowState.Normal;
+            }
+
+            // 2. Hiện cửa sổ
+            this.Visibility = Visibility.Visible;
+            this.Show();
+
+            // 3. Đưa lên trên cùng
+            this.Activate();
+            this.Topmost = true;
+            this.Topmost = false;
+            this.Focus();
         }
     }
 }
