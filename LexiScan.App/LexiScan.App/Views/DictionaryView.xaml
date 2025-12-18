@@ -23,23 +23,16 @@
             <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                        <Border Background="{TemplateBinding Background}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Opacity" Value="0.8"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
         <Style x:Key="ListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
@@ -48,19 +41,12 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                        <Border x:Name="Border" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true"
-                                Background="{TemplateBinding Background}"
-                                Cursor="Hand">
+                        <Border x:Name="Border" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" Cursor="Hand">
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderColor}"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
-                                <Setter TargetName="Border" Property="BorderThickness" Value="2,0,0,0"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -75,20 +61,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Panel.ZIndex="1">
+            <TextBlock Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,15" Foreground="{DynamicResource PrimaryAccent}"/>
 
-            <TextBlock Grid.Row="0" Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" 
-                       Margin="0,0,0,15" Foreground="{DynamicResource PrimaryAccent}"/>
-
-            <Border Grid.Row="1" CornerRadius="18" 
-                    Background="{DynamicResource CardBackground}" 
-                    BorderBrush="{DynamicResource BorderColor}" 
-                    BorderThickness="1" Grid.ZIndex="2" Name="SearchBorder" Margin="0" Height="45">
+            <Border CornerRadius="18" Background="{DynamicResource CardBackground}" 
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Height="45">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -96,92 +73,30 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Width="45" Height="45" Style="{StaticResource IconButtonStyle}"
-                            Command="{Binding SearchCommand}">
+                    <Button Grid.Column="0" Width="45" Style="{StaticResource IconButtonStyle}" Command="{Binding SearchCommand}">
                         <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24"/>
                     </Button>
 
-                    <TextBox x:Name="SearchTextBox" Grid.Column="1"
+                    <TextBox x:Name="SearchTextBox" Grid.Column="1" 
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource SearchTextBoxStyle}"
+                             Style="{StaticResource SearchTextBoxStyle}" 
                              HorizontalAlignment="Stretch" VerticalAlignment="Center">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
                         </TextBox.InputBindings>
                     </TextBox>
 
-                    <Button Grid.Column="2" x:Name="SearchButton" Width="45" Height="45" Style="{StaticResource IconButtonStyle}"
-                            Command="{Binding StartVoiceSearchCommand}">
+                    <Button Grid.Column="2" Width="45" Style="{StaticResource IconButtonStyle}" Command="{Binding StartVoiceSearchCommand}">
                         <materialDesign:PackIcon Kind="Microphone" Width="20" Height="20"/>
                     </Button>
                 </Grid>
             </Border>
+        </StackPanel>
 
-            <Border Grid.Row="2" Name="SearchHistoryPopup" 
-                    Background="{DynamicResource CardBackground}" 
-                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,1,1"
-                    CornerRadius="0,0,10,10" Margin="15,-5,15,0" Padding="0,5,0,5"
-                    Grid.ZIndex="1">
-
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding ElementName=SearchTextBox, Path=IsKeyboardFocused}" Value="True"/>
-
-                                    <Condition Binding="{Binding ElementName=SuggestionListBox, Path=HasItems}" Value="True"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </MultiDataTrigger>
-
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-
-                <StackPanel>
-                    <ListBox x:Name="SuggestionListBox"
-                             ItemsSource="{Binding SuggestionList}" 
-                             SelectedItem="{Binding SelectedSuggestion}"
-                             BorderThickness="0" Background="Transparent" MaxHeight="250" 
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             ItemContainerStyle="{StaticResource ListBoxItemStyle}">
-
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="ClockTimeThreeOutline" 
-                                                             Width="16" Height="16" 
-                                                             Foreground="{DynamicResource SecondaryText}" 
-                                                             VerticalAlignment="Center"
-                                                             Margin="0,0,10,0"/>
-
-                                    <TextBlock Grid.Column="1" Text="{Binding}" 
-                                               FontWeight="Regular" FontSize="15" 
-                                               Foreground="{DynamicResource PrimaryText}"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Border Grid.Row="1" Margin="0,20,0,0" 
-                Padding="20" 
-                Background="{DynamicResource CardBackground}"
-                CornerRadius="12"
-                VerticalAlignment="Top">
+        <Border Grid.Row="1" Panel.ZIndex="0" 
+                Margin="0,20,0,0" Padding="20" 
+                Background="{DynamicResource CardBackground}" 
+                CornerRadius="12" VerticalAlignment="Top">
             <StackPanel>
                 <Grid Margin="0,0,0,15">
                     <Grid.ColumnDefinitions>
@@ -190,19 +105,12 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{Binding SearchText, TargetNullValue='[Từ vựng]'}" 
-                                   FontSize="32" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}"/>
-
-                        <TextBlock Text="{Binding PhoneticText, TargetNullValue='/.../'}" 
-                                   FontSize="18" Foreground="{DynamicResource SecondaryText}" 
-                                   FontStyle="Italic" Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding DisplayWord, TargetNullValue='[Từ vựng]'}" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}"/>
+                        <TextBlock Text="{Binding PhoneticText, TargetNullValue='/.../'}" FontSize="18" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic" Margin="0,5,0,0"/>
                     </StackPanel>
 
-                    <Border Grid.Column="1" CornerRadius="20" Width="40" Height="40" 
-                            Background="{DynamicResource PrimaryAccent}" VerticalAlignment="Center">
-                        <Button Background="Transparent" BorderThickness="0" 
-                                Style="{StaticResource IconButtonStyle}" Foreground="White"
-                                Command="{Binding SpeakResultCommand}">
+                    <Border Grid.Column="1" CornerRadius="20" Width="40" Height="40" Background="{DynamicResource PrimaryAccent}" VerticalAlignment="Center">
+                        <Button Background="Transparent" Style="{StaticResource IconButtonStyle}" Foreground="White" Command="{Binding SpeakResultCommand}">
                             <materialDesign:PackIcon Kind="VolumeHigh" Width="22" Height="22"/>
                         </Button>
                     </Border>
@@ -210,13 +118,57 @@
 
                 <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,0,0,15"/>
 
-                <TextBlock Text="Định nghĩa:" FontSize="16" FontWeight="SemiBold" 
-                           Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,8"/>
-
-                <TextBlock Text="{Binding DefinitionText, TargetNullValue='...'}"
-                           TextWrapping="Wrap" FontSize="16" LineHeight="24"
-                           Foreground="{DynamicResource SecondaryText}"/>
+                <TextBlock Text="Định nghĩa:" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,8"/>
+                <TextBlock Text="{Binding DefinitionText, TargetNullValue='...'}" TextWrapping="Wrap" FontSize="16" LineHeight="24" Foreground="{DynamicResource SecondaryText}"/>
             </StackPanel>
         </Border>
+
+        <Border Grid.Row="1" x:Name="SearchHistoryPopup"
+                VerticalAlignment="Top"
+                Margin="15,-5,15,0" 
+                Background="{DynamicResource CardBackground}" 
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,1,1"
+                CornerRadius="0,0,10,10" Padding="0,5"
+                Panel.ZIndex="999">
+
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ElementName=SearchTextBox, Path=IsKeyboardFocused}" Value="True"/>
+                                <Condition Binding="{Binding ElementName=SuggestionListBox, Path=HasItems}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </MultiDataTrigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <ListBox x:Name="SuggestionListBox" 
+                     ItemsSource="{Binding SuggestionList}" 
+                     SelectedItem="{Binding SelectedSuggestion}"
+                     BorderThickness="0" Background="Transparent" MaxHeight="250" 
+                     ItemContainerStyle="{StaticResource ListBoxItemStyle}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Grid.Column="0" Kind="ClockTimeThreeOutline" Foreground="{DynamicResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding}" FontWeight="Regular" FontSize="15" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
     </Grid>
 </UserControl>

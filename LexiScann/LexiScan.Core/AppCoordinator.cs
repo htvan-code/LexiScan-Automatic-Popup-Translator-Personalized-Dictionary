@@ -49,6 +49,9 @@ namespace LexiScan.Core
                 var result = await _translationService.ProcessTranslationAsync(text.Trim());
 
                 SearchResultReady?.Invoke(result);
+
+                // [SỬA] THÊM DÒNG NÀY ĐỂ BÁO CHO DICTIONARY VIEW HIỆN KẾT QUẢ
+                TranslationCompleted?.Invoke(result);
             }
             catch (Exception ex)
             {
@@ -59,6 +62,8 @@ namespace LexiScan.Core
                     ErrorMessage = ex.Message
                 };
                 SearchResultReady?.Invoke(errorResult);
+                // Có thể gọi TranslationCompleted ở đây nếu muốn hiện lỗi lên màn hình chính
+                TranslationCompleted?.Invoke(errorResult);
             }
         }
 

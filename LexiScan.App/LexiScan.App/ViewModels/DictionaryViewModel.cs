@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel; // [CẦN THÊM] Để dùng ObservableCollection
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LexiScan.App.Commands;
 using LexiScan.Core;
@@ -10,37 +10,37 @@ namespace LexiScan.App.ViewModels
     {
         private readonly AppCoordinator _coordinator;
         private string _searchText;
+        private string _displayWord; // Dùng biến này để hiện ở khung kết quả (tránh nhảy chữ khi đang gõ)
         private string _definitionText;
         private string _phoneticText;
-
-        // [MỚI] Biến để xử lý item được chọn trong ListBox gợi ý
         private string _selectedSuggestion;
 
         public DictionaryViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
-            _coordinator.VoiceSearchCompleted += OnVoiceSearchCompleted;
+
+            // Đăng ký nhận kết quả dịch
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
 
-            // Khởi tạo danh sách gợi ý rỗng
             SuggestionList = new ObservableCollection<string>();
 
-            // Command cho nút Enter hoặc nút Kính lúp
+            // Lệnh khi nhấn Enter hoặc nút Kính lúp
             SearchCommand = new RelayCommand(async (o) =>
             {
-                // Khi bấm Enter/Search -> Ẩn gợi ý và tìm nghĩa
-                SuggestionList.Clear();
+                if (string.IsNullOrWhiteSpace(SearchText)) return;
+
+                SuggestionList.Clear(); // Xóa list để ẩn giao diện gợi ý
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
             StartVoiceSearchCommand = new RelayCommand((o) => _coordinator.StartVoiceSearch());
-            SpeakResultCommand = new RelayCommand((o) => _coordinator.Speak(SearchText, 1.0, "US"));
+
+            // Đọc từ đang hiển thị kết quả
+            SpeakResultCommand = new RelayCommand((o) => _coordinator.Speak(DisplayWord, 1.0, "US"));
         }
 
-        // [MỚI] Danh sách gợi ý binding ra ListBox
         public ObservableCollection<string> SuggestionList { get; set; }
 
-        // Trong DictionaryViewModel.cs
         public string SearchText
         {
             get => _searchText;
@@ -51,13 +51,19 @@ namespace LexiScan.App.ViewModels
                     _searchText = value;
                     OnPropertyChanged();
 
-                    // [QUAN TRỌNG] Gọi hàm load gợi ý ngay khi gõ phím
-                    LoadSuggestions(_searchText);
+                    // Logic: Có chữ -> Load gợi ý. Không chữ -> Xóa gợi ý.
+                    if (!string.IsNullOrWhiteSpace(_searchText))
+                    {
+                        LoadSuggestions(_searchText);
+                    }
+                    else
+                    {
+                        SuggestionList.Clear();
+                    }
                 }
             }
         }
 
-        // [LOGIC MỚI] Khi người dùng click chọn 1 dòng trong ListBox
         public string SelectedSuggestion
         {
             get => _selectedSuggestion;
@@ -66,41 +72,22 @@ namespace LexiScan.App.ViewModels
                 _selectedSuggestion = value;
                 OnPropertyChanged();
 
-                if (!string.IsNullOrEmpty(_selectedSuggestion))
+                // Khi người dùng click chọn từ gợi ý
+                if (!string.IsNullOrEmpty(value))
                 {
-                    // 1. Điền từ đã chọn vào ô tìm kiếm
-                    _searchText = _selectedSuggestion;
-                    OnPropertyChanged(nameof(SearchText));
-
-                    // 2. Xóa danh sách gợi ý để ẩn Popup đi
-                    SuggestionList.Clear();
-
-                    // 3. Bây giờ mới thực sự gọi hàm tìm nghĩa (hiện chi tiết bên dưới)
-                    _coordinator.ExecuteSearchAsync(_selectedSuggestion);
+                    SearchText = value;
+                    SuggestionList.Clear(); // Ẩn dropdown ngay lập tức
+                    _coordinator.ExecuteSearchAsync(value); // Tìm nghĩa luôn
                 }
             }
         }
 
-        // Hàm gọi API lấy gợi ý (Google Suggest)
-        private async void LoadSuggestions(string query)
+        // Biến hiển thị tên từ vựng ở khung kết quả dưới
+        public string DisplayWord
         {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                SuggestionList.Clear();
-                return;
-            }
-
-            // Gọi qua AppCoordinator (bạn đã có hàm GetRecommendWordsAsync trong AppCoordinator ở các bước trước)
-            var suggestions = await _coordinator.GetRecommendWordsAsync(query);
-
-            SuggestionList.Clear();
-            foreach (var item in suggestions)
-            {
-                SuggestionList.Add(item);
-            }
+            get => _displayWord;
+            set { _displayWord = value; OnPropertyChanged(); }
         }
-
-        // ... (Các phần DefinitionText, PhoneticText, Commands giữ nguyên) ...
 
         public string DefinitionText
         {
@@ -118,18 +105,30 @@ namespace LexiScan.App.ViewModels
         public ICommand StartVoiceSearchCommand { get; }
         public ICommand SpeakResultCommand { get; }
 
-        private void OnVoiceSearchCompleted(string text)
+        private async void LoadSuggestions(string query)
         {
-            SearchText = text;
-            _coordinator.ExecuteSearchAsync(text);
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                SuggestionList.Clear();
+                return;
+            }
+
+            // Gọi API lấy gợi ý
+            var suggestions = await _coordinator.GetRecommendWordsAsync(query);
+
+            // Cập nhật UI (Bắt buộc dùng Dispatcher để an toàn luồng)
+            System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                SuggestionList.Clear();
+                foreach (var s in suggestions) SuggestionList.Add(s);
+            });
         }
 
-        // Nhận kết quả từ Coordinator trả về để hiển thị
         private void OnTranslationResultReceived(TranslationResult result)
         {
+            // Cập nhật dữ liệu để View hiển thị
+            DisplayWord = result.OriginalText;
             DefinitionText = result.TranslatedText;
-            // Giả sử model TranslationResult của bạn có trường Phonetic
-            // PhoneticText = result.Phonetic; 
+            PhoneticText = result.Phonetic;
         }
     }
 }

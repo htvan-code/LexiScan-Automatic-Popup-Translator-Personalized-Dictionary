@@ -151,24 +151,39 @@ namespace LexiScan.Core.Services
         // =================== Suggestion ===================
         public async Task<List<string>> GetGoogleSuggestionsAsync(string prefix)
         {
-            if (string.IsNullOrWhiteSpace(prefix))
-                return new List<string>();
+            if (string.IsNullOrWhiteSpace(prefix)) return new List<string>();
 
             try
             {
-                string url =
-                    $"https://suggestqueries.google.com/complete/search?client=firefox&q={Uri.EscapeDataString(prefix)}";
-                var response = await _http.GetStringAsync(url);
-                var json = JArray.Parse(response);
+                // [SỬA ĐỔI] Dùng Datamuse API để gợi ý chuẩn từ điển hơn
+                string url = $"https://api.datamuse.com/words?sp={Uri.EscapeDataString(prefix)}*&md=f&max=10";
 
-                if (json.Count > 1 && json[1] is JArray arr)
-                    return arr.Select(x => x.ToString()).Take(5).ToList();
+                var response = await _http.GetStringAsync(url);
+                var jsonArray = JArray.Parse(response);
+
+                // Datamuse trả về dạng: [{"word": "hello", "score": ...}, {"word": "help", ...}]
+                // Nên ta cần lấy thuộc tính "word" của từng object
+                var suggestions = new List<string>();
+
+                foreach (var item in jsonArray)
+                {
+                    // Lấy từ khóa trong thuộc tính "word"
+                    var word = item["word"]?.ToString();
+                    if (!string.IsNullOrEmpty(word))
+                    {
+                        suggestions.Add(word);
+                    }
+                }
+
+                return suggestions.Take(5).ToList();
             }
-            catch { }
+            catch
+            {
+                // Lỗi thì trả về rỗng
+            }
 
             return new List<string>();
         }
-
         // =================== Helpers ===================
         private string ConvertPosToVietnamese(string pos)
         {

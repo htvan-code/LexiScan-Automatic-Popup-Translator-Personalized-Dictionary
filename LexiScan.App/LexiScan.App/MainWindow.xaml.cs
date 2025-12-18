@@ -88,7 +88,10 @@ namespace LexiScan.App
             {
                 if (result.Status == ServiceStatus.Success)
                 {
-                    if (_popupWindow == null || !IsWindowOpen(_popupWindow))
+                    // [SỬA] COMMENT HOẶC XÓA ĐOẠN CODE NÀY ĐI
+                    // Vì DictionaryView đã tự lo việc hiển thị rồi, không cần MainWindow bật popup nữa.
+
+                    /* if (_popupWindow == null || !IsWindowOpen(_popupWindow))
                     {
                         _popupWindow = new PopupView();
                     }
@@ -98,6 +101,7 @@ namespace LexiScan.App
                     _popupWindow.Show();
                     _popupWindow.Activate();
                     _popupWindow.ShowResult(result);
+                    */
                 }
             });
         }
