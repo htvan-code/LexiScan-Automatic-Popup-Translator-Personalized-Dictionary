@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics; // [MỚI] Để dùng Process.Start (Khởi động lại app)
-using System.Windows;       // [MỚI] Để dùng MessageBox và Application
+using System.Diagnostics;
+using System.Windows;
 using System.Windows.Input;
 using LexiScan.App.Commands;
+using LexiScan.Core; // [QUAN TRỌNG] Thêm dòng này để dùng AppCoordinator
 
 namespace LexiScan.App.ViewModels
 {
     public class MainViewModel : BaseViewModel
     {
-        // Khởi tạo các ViewModel con (Singleton)
-        private readonly DictionaryViewModel _dictionaryVM = new DictionaryViewModel();
+        // [SỬA ĐỔI] Không khởi tạo DictionaryViewModel ngay tại đây nữa
+        // Vì nó cần tham số coordinator, ta sẽ khởi tạo nó trong Constructor
+        private readonly DictionaryViewModel _dictionaryVM;
+
+        // Các ViewModel khác chưa cần Coordinator thì cứ giữ nguyên
         private readonly PersonalDictionaryViewModel _personalDictionaryVM = new PersonalDictionaryViewModel();
         private readonly HistoryViewModel _historyVM = new HistoryViewModel();
         private readonly TranslationViewModel _translationVM = new TranslationViewModel();
@@ -18,7 +22,6 @@ namespace LexiScan.App.ViewModels
 
         private BaseViewModel? _currentView;
 
-        // Thuộc tính bind với ContentControl trong MainWindow
         public BaseViewModel? CurrentView
         {
             get => _currentView;
@@ -33,16 +36,18 @@ namespace LexiScan.App.ViewModels
         }
 
         public ICommand NavigateCommand { get; }
-        public ICommand LogoutCommand { get; } // [MỚI] Khai báo lệnh Đăng xuất
+        public ICommand LogoutCommand { get; }
 
-        public MainViewModel()
+        // [SỬA ĐỔI] Constructor phải nhận vào AppCoordinator
+        public MainViewModel(AppCoordinator coordinator)
         {
-            NavigateCommand = new RelayCommand(Navigate);
+            // [SỬA ĐỔI] Khởi tạo DictionaryViewModel và truyền coordinator vào
+            _dictionaryVM = new DictionaryViewModel(coordinator);
 
-            // [MỚI] Khởi tạo lệnh Đăng xuất
+            NavigateCommand = new RelayCommand(Navigate);
             LogoutCommand = new RelayCommand(ExecuteLogout);
 
-            // Mặc định hiển thị Trang chủ (DictionaryView) khi mở app
+            // Mặc định hiển thị Trang chủ
             CurrentView = _dictionaryVM;
         }
 
@@ -51,11 +56,10 @@ namespace LexiScan.App.ViewModels
             string? viewName = parameter as string;
             if (string.IsNullOrEmpty(viewName)) return;
 
-            // Logic chuyển đổi View dựa trên CommandParameter từ RadioButton
             CurrentView = viewName switch
             {
                 "Home" => _dictionaryVM,
-                "Dictionary" => _personalDictionaryVM,
+                "Dictionary" => _personalDictionaryVM, // Lưu ý: Logic cũ của bạn map Dictionary -> Personal, bạn có thể chỉnh lại nếu muốn
                 "PersonalDictionary" => _personalDictionaryVM,
                 "History" => _historyVM,
                 "Translation" => _translationVM,
@@ -64,19 +68,18 @@ namespace LexiScan.App.ViewModels
             };
         }
 
-        // [MỚI] Logic xử lý Đăng xuất
         private void ExecuteLogout(object? parameter)
         {
             var result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
-                // Bước 1: Xóa Token đã lưu trong Settings
+                // Bước 1: Xóa Token
+                // Lưu ý: Đảm bảo bạn đã có Properties.Settings trong project App
                 LexiScan.App.Properties.Settings.Default.UserToken = "";
                 LexiScan.App.Properties.Settings.Default.Save();
 
                 // Bước 2: Tự động khởi động lại ứng dụng
-                // Lệnh này sẽ lấy đường dẫn file .exe hiện tại và chạy lại nó
                 string? appPath = Environment.ProcessPath;
                 if (!string.IsNullOrEmpty(appPath))
                 {
