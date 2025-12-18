@@ -10,16 +10,58 @@ namespace LexiScan.Core
     {
         private readonly TranslationService _translationService;
         private readonly VoicetoText _voiceToTextService;
+        private readonly TtsService _ttsService;
 
+        // Event cho P3 (Main App) nhận data chi tiết để hiện lên giao diện chính
+        public event Action<TranslationResult>? SearchResultReady;
+        
+        // Event cho P3 điền chữ từ Micro vào ô Search (Chú đã có)
         public event Action<string>? VoiceSearchCompleted;
-        public AppCoordinator(TranslationService translationService, VoicetoText voiceToTextService)
+
+        public AppCoordinator(TranslationService translationService, VoicetoText voiceToTextService, TtsService ttsService)
         {
             _translationService = translationService;
             _voiceToTextService = voiceToTextService;
+            _ttsService = ttsService;
             _voiceToTextService.TextRecognized += (text) =>
             {
                 VoiceSearchCompleted?.Invoke(text);
             };
+        }
+
+        public void Speak(string text, double speed, string accent)
+        {
+            // speed: thường từ 0.5 đến 2.0
+            // accent: "US" hoặc "UK"
+            _ttsService.Speak(text, speed, accent); //
+        }
+        public async Task<List<string>> GetRecommendWordsAsync(string prefix)
+        {
+            return await _translationService.GetGoogleSuggestionsAsync(prefix);
+        }
+
+        public async Task ExecuteSearchAsync(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+
+            try
+            {
+                var result = await _translationService.ProcessTranslationAsync(text.Trim());
+
+                SearchResultReady?.Invoke(result);
+
+                TranslationCompleted?.Invoke(result);
+            }
+            catch (Exception ex)
+            {
+                var errorResult = new TranslationResult
+                {
+                    OriginalText = text,
+                    Status = ServiceStatus.ApiError,
+                    ErrorMessage = ex.Message
+                };
+                SearchResultReady?.Invoke(errorResult);
+            }
         }
 
         public event Action<TranslationResult>? TranslationCompleted;

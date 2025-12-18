@@ -122,6 +122,29 @@ namespace LexiScan.Core.Services
             }
         }
 
+        public async Task<List<string>> GetGoogleSuggestionsAsync(string prefix)
+        {
+            if (string.IsNullOrWhiteSpace(prefix)) return new List<string>();
+
+            try
+            {
+                // API gợi ý của Google: trả về mảng các từ liên quan
+                string url = $"https://suggestqueries.google.com/complete/search?client=firefox&q={Uri.EscapeDataString(prefix)}";
+
+                var response = await _http.GetStringAsync(url);
+                var json = JArray.Parse(response);
+
+                // Cấu trúc JSON trả về: ["keyword", ["suggestion1", "suggestion2", ...]]
+                if (json.Count > 1 && json[1] is JArray suggestions)
+                {
+                    return suggestions.Select(s => s.ToString()).Take(5).ToList();
+                }
+            }
+            catch { /* Lỗi mạng thì im lặng trả về list rỗng */ }
+
+            return new List<string>();
+        }
+
         private string ConvertPosToVietnamese(string pos)
         {
             if (string.IsNullOrEmpty(pos)) return "";

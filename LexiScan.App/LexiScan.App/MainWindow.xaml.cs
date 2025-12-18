@@ -36,7 +36,8 @@ namespace LexiScan.App
             // A. Dịch vụ dịch thuật & điều phối
             var transService = new TranslationService();
             var voiceService = new VoicetoText();
-            _coordinator = new AppCoordinator(transService, voiceService);
+            var ttsService = new TtsService();
+            _coordinator = new AppCoordinator(transService, voiceService, ttsService);
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
 
             // B. Dịch vụ bắt phím tắt & Clipboard
