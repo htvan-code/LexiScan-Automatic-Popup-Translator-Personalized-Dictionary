@@ -60,7 +60,7 @@ namespace LexiScan.App
             this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             // Kiểm tra Token đăng nhập
-            string savedToken = LexiScan.App.Properties.Settings.Default.UserToken;
+            string savedToken = LexiScan.App.Properties.Settings.Default.UserId;
             if (!string.IsNullOrEmpty(savedToken))
             {
                 StartMainWindow();

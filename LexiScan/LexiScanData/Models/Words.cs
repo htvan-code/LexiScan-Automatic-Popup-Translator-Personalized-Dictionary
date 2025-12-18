@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LexiScanData.Models
+﻿namespace LexiScanData.Models
 {
     public class Words
     {
-        public int WordId { get; set; }
+        // [QUAN TRỌNG] Đổi từ int sang string
+        public string WordId { get; set; }
+
         public string Text { get; set; } = string.Empty;
     }
 }
-

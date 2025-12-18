@@ -76,7 +76,7 @@ namespace LexiScan.App.ViewModels
             {
                 // Bước 1: Xóa Token
                 // Lưu ý: Đảm bảo bạn đã có Properties.Settings trong project App
-                LexiScan.App.Properties.Settings.Default.UserToken = "";
+                LexiScan.App.Properties.Settings.Default.UserId = "";
                 LexiScan.App.Properties.Settings.Default.Save();
 
                 // Bước 2: Tự động khởi động lại ứng dụng

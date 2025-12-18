@@ -26,12 +26,12 @@ namespace LexiScan.App.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string UserToken {
+        public string UserId {
             get {
-                return ((string)(this["UserToken"]));
+                return ((string)(this["UserId"]));
             }
             set {
-                this["UserToken"] = value;
+                this["UserId"] = value;
             }
         }
     }

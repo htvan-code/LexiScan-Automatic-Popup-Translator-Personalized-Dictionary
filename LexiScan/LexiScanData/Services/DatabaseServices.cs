@@ -1,90 +1,140 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Firebase.Database;
+using Firebase.Database.Query;
 using LexiScanData.Models;
-
 
 namespace LexiScanData.Services
 {
     public class DatabaseServices
     {
-        private readonly LexiScanDbContext _context;
+        // Link Database của bạn
+        private const string DbUrl = "https://lexiscan-authentication-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
-        public DatabaseServices()
+        private readonly FirebaseClient _client;
+        private readonly string _userId;
+
+        // BẮT BUỘC: Phải có UserId để biết đang thao tác trên tài khoản nào
+        public DatabaseServices(string userId)
         {
-            _context = new LexiScanDbContext();
+            _client = new FirebaseClient(DbUrl);
+            _userId = userId;
         }
-        // LexiScanData/Services/DatabaseServices.cs
 
-        public bool TogglePinStatus(int sentenceId)
+        // 1. GHIM / BỎ GHIM (Toggle Pin)
+        // Thay đổi: int sentenceId -> string sentenceId
+        public async Task<bool> TogglePinStatusAsync(string sentenceId)
         {
-            var sentence = _context.Sentences.Find(sentenceId);
-
-            if (sentence != null)
+            try
             {
-                sentence.IsPinned = !sentence.IsPinned;
-                _context.SaveChanges();
-                return sentence.IsPinned;
-            }
-            return false;
-        }
-        public void DeleteHistory(string word)
-        {
-            var recordsToDelete = _context.Sentences
-                                        .Where(s => s.SourceText == word)
-                                        .ToList();
+                // Đường dẫn tới thuộc tính IsPinned của câu đó
+                var targetNode = _client
+                    .Child("users")
+                    .Child(_userId)
+                    .Child("history")
+                    .Child(sentenceId);
 
-            if (recordsToDelete.Any())
-            {
-                _context.Sentences.RemoveRange(recordsToDelete);
-                _context.SaveChanges();
-            }
-        }
-        public void TestConnection()
-        {
-            using var context = new LexiScanDbContext();
-            int count = context.Sentences.Count();
-        }
-        public void SavePinnedWords(int sentenceId, List<string> words)
-        {
-            using var context = new LexiScanDbContext();
+                // Lấy câu hiện tại để xem trạng thái cũ
+                var sentence = await targetNode.OnceSingleAsync<Sentences>();
 
-            // 1. Lấy câu
-            var sentence = context.Sentences.Find(sentenceId);
-            if (sentence == null) return;
-
-            sentence.IsPinned = true;
-
-            foreach (var wordText in words)
-            {
-                // 2. Kiểm tra từ đã tồn tại chưa
-                var word = context.Words.FirstOrDefault(w => w.Text == wordText);
-
-                if (word == null)
+                if (sentence != null)
                 {
-                    word = new Words { Text = wordText };
-                    context.Words.Add(word);
-                    context.SaveChanges();
-                }
+                    bool newStatus = !sentence.IsPinned;
 
-                // 3. Gắn từ với câu
-                bool exists = context.SentenceWords.Any(sw =>
-                    sw.SentenceId == sentenceId && sw.WordId == word.WordId);
+                    // Chỉ update đúng 1 trường IsPinned (dùng Patch để không ghi đè cả object)
+                    await targetNode.PatchAsync(new { IsPinned = newStatus });
 
-                if (!exists)
-                {
-                    context.SentenceWords.Add(new SentenceWord
-                    {
-                        SentenceId = sentenceId,
-                        WordId = word.WordId
-                    });
+                    return newStatus;
                 }
+                return false;
             }
-
-            context.SaveChanges();
+            catch
+            {
+                return false;
+            }
         }
 
+        // 2. XÓA LỊCH SỬ DỰA TRÊN TỪ GỐC
+        public async Task DeleteHistoryAsync(string sourceTextWord)
+        {
+            // Firebase không hỗ trợ "DELETE WHERE..." như SQL.
+            // Cách làm: Tải list về -> Lọc -> Xóa từng cái (hoặc dùng Query của Firebase để lọc)
+
+            var historyNode = _client.Child("users").Child(_userId).Child("history");
+
+            // Lấy toàn bộ lịch sử (hoặc lọc sơ bộ)
+            var items = await historyNode.OnceAsync<Sentences>();
+
+            // Tìm những node có SourceText trùng khớp
+            var itemsToDelete = items
+                .Where(i => i.Object.SourceText.Equals(sourceTextWord, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // Xóa từng node tìm được
+            foreach (var item in itemsToDelete)
+            {
+                await historyNode.Child(item.Key).DeleteAsync();
+            }
+        }
+
+        // 3. KIỂM TRA KẾT NỐI (Đơn giản là thử đọc 1 cái gì đó)
+        public async Task<bool> TestConnectionAsync()
+        {
+            try
+            {
+                // Thử đọc data rác, nếu không lỗi Exception nghĩa là kết nối OK
+                await _client.Child("test_connection").OnceSingleAsync<object>();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // 4. LƯU CÂU VÀO CÁC TỪ ĐƯỢC CHỌN (Quan trọng nhất)
+        // Thay đổi: Logic Many-to-Many cũ -> Logic Cây thư mục mới
+        public async Task SavePinnedWordsAsync(string sentenceId, List<string> selectedWords)
+        {
+            // B1: Lấy thông tin chi tiết của câu gốc từ History
+            var sentenceNode = _client.Child("users").Child(_userId).Child("history").Child(sentenceId);
+            var sentenceObj = await sentenceNode.OnceSingleAsync<Sentences>();
+
+            if (sentenceObj == null) return;
+
+            // B2: Cập nhật trạng thái câu gốc thành Đã Ghim (IsPinned = true)
+            if (!sentenceObj.IsPinned)
+            {
+                await sentenceNode.PatchAsync(new { IsPinned = true });
+            }
+
+            // B3: Tạo object "Câu ví dụ" để lưu vào danh sách từ vựng
+            var exampleData = new WordExample
+            {
+                OriginalSentence = sentenceObj.SourceText,
+                TranslatedMeaning = sentenceObj.TranslatedText,
+                SavedDate = DateTime.Now
+            };
+
+            // B4: Duyệt qua danh sách từ người dùng chọn và lưu
+            foreach (var wordText in selectedWords)
+            {
+                if (string.IsNullOrWhiteSpace(wordText)) continue;
+
+                string cleanWord = wordText.Trim().ToLower();
+
+                // Lưu vào đường dẫn: users/{uid}/vocab/{từ}/examples/
+                // Firebase tự động tạo nhánh "từ" nếu nó chưa tồn tại -> Không cần check null
+                await _client
+                    .Child("users")
+                    .Child(_userId)
+                    .Child("vocab")
+                    .Child(cleanWord)
+                    .Child("examples")
+                    .PostAsync(exampleData);
+            }
+        }
     }
 }

@@ -57,16 +57,20 @@ namespace LexiScan.App.ViewModels
                 return;
             }
 
-            string token = await _authService.LoginAndGetTokenAsync(Username, password);
+            var user = await _authService.LoginAndGetUserAsync(Username, password);
 
-            if (!string.IsNullOrEmpty(token))
+            if (user != null)
             {
-                // 1. Lưu token
-                LexiScan.App.Properties.Settings.Default.UserToken = token;
+                // 2. LƯU TOKEN (Để tự động đăng nhập lần sau)
+                LexiScan.App.Properties.Settings.Default.UserId = user.Credential.RefreshToken;
+
+                // 3. LƯU USER ID (CÁI NÀY QUAN TRỌNG ĐỂ LẤY DATA)
+                // (Nếu chưa có biến UserId trong Settings, bạn nhớ vào Project Properties -> Settings thêm vào nhé)
+                LexiScan.App.Properties.Settings.Default.UserId = user.Uid;
+
                 LexiScan.App.Properties.Settings.Default.Save();
 
-                // 2. QUAN TRỌNG: Gọi hàm đóng cửa sổ và TRUYỀN TRUE
-                // (Báo cho App.xaml.cs biết là: "Ê, đăng nhập xong rồi, mở Main đi!")
+                // 4. Báo thành công -> App.xaml.cs sẽ nhận tín hiệu này để mở MainWindow
                 CloseWindow(true);
             }
             else

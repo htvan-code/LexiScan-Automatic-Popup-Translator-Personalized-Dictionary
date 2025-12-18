@@ -16,7 +16,6 @@ namespace LexiScanUI.ViewModels
     public class PopupViewModel : BaseViewModel
     {
         private readonly TranslationService _translator;
-        private readonly DatabaseServices _dbService;
         private readonly UiTts _ttsService;
 
 
@@ -70,7 +69,6 @@ namespace LexiScanUI.ViewModels
         public PopupViewModel()
         {
             _translator = new TranslationService();
-            _dbService = new DatabaseServices();
             _ttsService = new UiTts();
 
 

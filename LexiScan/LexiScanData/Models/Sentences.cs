@@ -1,19 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LexiScanData.Models
 {
     public class Sentences
     {
-        public int SentenceId { get; set; }
+        // [QUAN TRỌNG] Đổi từ int sang string để khớp với Firebase Key
+        public string SentenceId { get; set; }
+
         public string SourceText { get; set; }
+
         public string TranslatedText { get; set; }
+
         public DateTime CreatedDate { get; set; }
 
-        // Cột mới để hỗ trợ "pinned" [cite: 31, 32]
+        // Dòng này bạn đã có, nhưng hãy đảm bảo đã bấm Ctrl+S để lưu file
         public bool IsPinned { get; set; } = false;
     }
 }
