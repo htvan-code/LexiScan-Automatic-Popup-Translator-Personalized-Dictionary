@@ -9,16 +9,21 @@ namespace LexiScan.Core
     public class AppCoordinator
     {
         private readonly TranslationService _translationService;
+        private readonly VoicetoText _voiceToTextService;
 
-        public AppCoordinator(TranslationService translationService)
+        public event Action<string>? VoiceSearchCompleted;
+        public AppCoordinator(TranslationService translationService, VoicetoText voiceToTextService)
         {
             _translationService = translationService;
+            _voiceToTextService = voiceToTextService;
+            _voiceToTextService.TextRecognized += (text) =>
+            {
+                VoiceSearchCompleted?.Invoke(text);
+            };
         }
 
-        // 🔔 EVENT bắn kết quả về UI (P1)
         public event Action<TranslationResult>? TranslationCompleted;
 
-        // ENTRY POINT từ P1
         public async Task HandleClipboardTextAsync(string rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText)) return;
@@ -39,6 +44,10 @@ namespace LexiScan.Core
                     ErrorMessage = ex.Message
                 });
             }
+        }
+        public void StartVoiceSearch()
+        {
+            _voiceToTextService.StartListening();
         }
     }
 }
