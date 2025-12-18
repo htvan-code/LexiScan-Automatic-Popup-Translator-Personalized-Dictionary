@@ -49,8 +49,6 @@ namespace LexiScan.Core
                 var result = await _translationService.ProcessTranslationAsync(text.Trim());
 
                 SearchResultReady?.Invoke(result);
-
-                TranslationCompleted?.Invoke(result);
             }
             catch (Exception ex)
             {

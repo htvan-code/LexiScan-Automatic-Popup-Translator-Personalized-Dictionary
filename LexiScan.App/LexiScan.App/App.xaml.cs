@@ -1,7 +1,10 @@
 ﻿using System;
-using System.Threading; // [QUAN TRỌNG] Để dùng EventWaitHandle và Thread
+using System.Threading; // Để dùng EventWaitHandle và Thread
 using System.Windows;
 using LexiScan.App.Views;
+using LexiScan.App.ViewModels; // [THÊM] Để dùng MainViewModel
+using LexiScan.Core;           // [THÊM] Để dùng AppCoordinator
+using LexiScan.Core.Services;  // [THÊM] Để dùng các Services
 
 namespace LexiScan.App
 {
@@ -13,6 +16,9 @@ namespace LexiScan.App
 
         private EventWaitHandle _eventWaitHandle;
         private Mutex _mutex;
+
+        // [THÊM] Biến lưu trữ Coordinator để dùng chung
+        private AppCoordinator _coordinator;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -38,6 +44,15 @@ namespace LexiScan.App
             // ============================================================
             base.OnStartup(e);
 
+            // [QUAN TRỌNG - BƯỚC 1] Khởi tạo hệ thống Service & Coordinator TẠI ĐÂY
+            // Chúng ta phải tạo nó trước khi mở bất kỳ cửa sổ nào
+            var ttsService = new TtsService();
+            var voiceService = new VoicetoText();
+            var translationService = new TranslationService();
+
+            _coordinator = new AppCoordinator(translationService, voiceService, ttsService);
+
+
             // A. Tạo luồng lắng nghe tín hiệu (để chờ bị đánh thức)
             StartSignalListener();
 
@@ -56,37 +71,34 @@ namespace LexiScan.App
             }
         }
 
-        // --- HÀM LẮNG NGHE TÍN HIỆU TỪ APP KHÁC ---
+        // --- HÀM LẮNG NGHE TÍN HIỆU TỪ APP KHÁC (Giữ nguyên) ---
         private void StartSignalListener()
         {
-            // Tạo một luồng riêng để chờ tín hiệu, tránh treo giao diện chính
             Thread thread = new Thread(() =>
             {
                 while (true)
                 {
-                    // Chờ tín hiệu từ bản copy khác gửi tới
                     _eventWaitHandle.WaitOne();
-
-                    // Khi nhận được tín hiệu -> Nhờ Dispatcher (luồng chính) mở giao diện
                     this.Dispatcher.Invoke(() =>
                     {
                         var mainWindow = this.MainWindow as MainWindow;
                         if (mainWindow != null)
                         {
-                            // Gọi hàm hiển thị trong MainWindow
                             mainWindow.ShowMainWindow();
                         }
                     });
                 }
             });
 
-            thread.IsBackground = true; // Để luồng này tự tắt khi App tắt
+            thread.IsBackground = true;
             thread.Start();
         }
 
         public void ShowLoginWindow()
         {
             LoginView loginWindow = new LoginView();
+            // LoginView có thể cần ViewModel riêng hoặc xử lý code-behind đơn giản
+            // Nếu Login thành công thì gọi StartMainWindow()
             if (loginWindow.ShowDialog() == true)
             {
                 StartMainWindow();
@@ -97,9 +109,17 @@ namespace LexiScan.App
             }
         }
 
+        // [QUAN TRỌNG - BƯỚC 2] Sửa hàm khởi động MainWindow
         private void StartMainWindow()
         {
-            MainWindow main = new MainWindow();
+            // Tạo ViewModel và truyền coordinator vào
+            var mainVM = new MainViewModel(_coordinator);
+
+            // Tạo MainWindow và truyền coordinator vào (để dùng cho Hotkey/Clipboard)
+            MainWindow main = new MainWindow(_coordinator);
+
+            // Gán DataContext
+            main.DataContext = mainVM;
 
             // Gán MainWindow của Application để luồng lắng nghe có thể tìm thấy
             this.MainWindow = main;
@@ -107,7 +127,7 @@ namespace LexiScan.App
             main.Show();
         }
 
-        // Hàm đổi Theme cũ giữ nguyên
+        // Hàm đổi Theme (Giữ nguyên)
         public static void ChangeTheme(bool isDark)
         {
             var mergedDicts = Current.Resources.MergedDictionaries;
