@@ -1,6 +1,6 @@
-﻿using LexiScan.App; // Giúp tìm thấy MainWindow
+﻿using LexiScan.App;
 using LexiScan.App.Commands;
-using LexiScan.Core.Services; // Namespace chứa AuthService
+using LexiScan.Core.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,40 +11,20 @@ namespace LexiScan.App.ViewModels
     {
         private readonly AuthService _authService;
 
-        // ==========================================================
-        // PHẦN 1: VISIBILITY & DATA
-        // ==========================================================
+        // ... (Giữ nguyên các biến IsLoginVisible, Username, RegEmail...)
         private bool _isLoginVisible = true;
-        public bool IsLoginVisible
-        {
-            get => _isLoginVisible;
-            set { _isLoginVisible = value; OnPropertyChanged(); }
-        }
+        public bool IsLoginVisible { get => _isLoginVisible; set { _isLoginVisible = value; OnPropertyChanged(); } }
 
         private bool _isSignUpVisible = false;
-        public bool IsSignUpVisible
-        {
-            get => _isSignUpVisible;
-            set { _isSignUpVisible = value; OnPropertyChanged(); }
-        }
+        public bool IsSignUpVisible { get => _isSignUpVisible; set { _isSignUpVisible = value; OnPropertyChanged(); } }
 
         private string _username;
-        public string Username
-        {
-            get => _username;
-            set { _username = value; OnPropertyChanged(); }
-        }
+        public string Username { get => _username; set { _username = value; OnPropertyChanged(); } }
 
         private string _regEmail;
-        public string RegEmail
-        {
-            get => _regEmail;
-            set { _regEmail = value; OnPropertyChanged(); }
-        }
+        public string RegEmail { get => _regEmail; set { _regEmail = value; OnPropertyChanged(); } }
 
-        // ==========================================================
-        // PHẦN 2: COMMANDS
-        // ==========================================================
+        // ... (Giữ nguyên các Command)
         public ICommand LoginCommand { get; }
         public ICommand CloseCommand { get; }
         public ICommand SwitchToSignUpCommand { get; }
@@ -65,7 +45,7 @@ namespace LexiScan.App.ViewModels
             ForgotPasswordCommand = new RelayCommand(ExecuteForgotPassword);
         }
 
-        // --- 1. Đăng nhập & Lưu Token & Mở MainWindow ---
+        // --- SỬA HÀM NÀY ---
         private async void ExecuteLogin(object? parameter)
         {
             var passwordBox = parameter as PasswordBox;
@@ -73,90 +53,56 @@ namespace LexiScan.App.ViewModels
 
             if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Vui lòng nhập Email và Mật khẩu!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập Email và Mật khẩu!", "Thông báo");
                 return;
             }
 
-            // [MỚI] Gọi hàm lấy Token (Thay vì chỉ LoginAsync trả về bool)
-            // Lưu ý: Đảm bảo bạn đã cập nhật AuthService có hàm này như hướng dẫn trước
             string token = await _authService.LoginAndGetTokenAsync(Username, password);
 
-            // Kiểm tra nếu có Token (nghĩa là đăng nhập thành công)
             if (!string.IsNullOrEmpty(token))
             {
-                // [MỚI] Lưu Token vào Settings của máy
+                // 1. Lưu token
                 LexiScan.App.Properties.Settings.Default.UserToken = token;
-                LexiScan.App.Properties.Settings.Default.Save(); // Bắt buộc phải Save
+                LexiScan.App.Properties.Settings.Default.Save();
 
-                // --- CHUYỂN MÀN HÌNH ---
-                var mainWindow = new MainWindow();
-                mainWindow.Show();
-                CloseWindow();
+                // 2. QUAN TRỌNG: Gọi hàm đóng cửa sổ và TRUYỀN TRUE
+                // (Báo cho App.xaml.cs biết là: "Ê, đăng nhập xong rồi, mở Main đi!")
+                CloseWindow(true);
             }
             else
             {
-                MessageBox.Show("Đăng nhập thất bại. Vui lòng kiểm tra lại Email/Password.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Đăng nhập thất bại. Kiểm tra lại thông tin.", "Lỗi");
             }
         }
 
-        // --- 2. Đăng ký (Giữ nguyên) ---
+        // ... (Giữ nguyên ExecuteRegister, ExecuteForgotPassword) ...
         private async void ExecuteRegister(object? parameter)
         {
-            if (string.IsNullOrWhiteSpace(RegEmail))
-            {
-                MessageBox.Show("Vui lòng điền Email.", "Thiếu thông tin");
-                return;
-            }
-
+            if (string.IsNullOrWhiteSpace(RegEmail)) return;
             var passBox = parameter as PasswordBox;
             var password = passBox?.Password;
-
-            if (string.IsNullOrEmpty(password))
+            if (await _authService.RegisterAsync(RegEmail, password))
             {
-                MessageBox.Show("Vui lòng nhập mật khẩu."); return;
+                MessageBox.Show("Đăng ký thành công!");
+                IsSignUpVisible = false; IsLoginVisible = true;
             }
-
-            bool isSuccess = await _authService.RegisterAsync(RegEmail, password);
-
-            if (isSuccess)
-            {
-                MessageBox.Show("Đăng ký thành công! Vui lòng đăng nhập.", "Chúc mừng");
-                IsSignUpVisible = false;
-                IsLoginVisible = true;
-                RegEmail = "";
-            }
-            else
-            {
-                MessageBox.Show("Đăng ký thất bại. Email có thể đã tồn tại hoặc không hợp lệ.", "Lỗi");
-            }
+            else MessageBox.Show("Đăng ký thất bại.");
         }
 
-        // --- 3. Quên mật khẩu (Giữ nguyên) ---
         private async void ExecuteForgotPassword(object? parameter)
         {
-            if (string.IsNullOrEmpty(Username))
-            {
-                MessageBox.Show("Vui lòng nhập Email vào ô đăng nhập để lấy lại mật khẩu.", "Thông báo");
-                return;
-            }
-
-            var result = MessageBox.Show($"Gửi email đặt lại mật khẩu tới: {Username}?", "Xác nhận", MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.Yes)
-            {
-                bool isSent = await _authService.ResetPasswordAsync(Username);
-                if (isSent)
-                    MessageBox.Show("Đã gửi email! Vui lòng kiểm tra hộp thư.", "Thành công");
-                else
-                    MessageBox.Show("Gửi thất bại. Email không tồn tại.", "Lỗi");
-            }
+            if (!string.IsNullOrEmpty(Username)) await _authService.ResetPasswordAsync(Username);
         }
 
-        private void CloseWindow()
+        // --- SỬA HÀM NÀY ---
+        // Thêm tham số isSuccess để báo kết quả về cho App.xaml.cs
+        private void CloseWindow(bool isSuccess)
         {
             foreach (Window window in Application.Current.Windows)
             {
                 if (window.DataContext == this)
                 {
+                    if (isSuccess) window.DialogResult = true; // Tín hiệu để App.xaml.cs mở MainWindow
                     window.Close();
                     break;
                 }

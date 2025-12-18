@@ -13,41 +13,41 @@ namespace LexiScan.App
         {
             base.OnStartup(e);
 
-            // 1. Lấy Token đã lưu trong máy
-            // Lưu ý: Đảm bảo bạn đã tạo biến UserToken trong Properties -> Settings như hướng dẫn trước
+            // QUAN TRỌNG: Ngăn app tự tắt khi đóng LoginView để chuyển sang MainWindow
+            this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+            // Kiểm tra ghi nhớ tài khoản
             string savedToken = LexiScan.App.Properties.Settings.Default.UserToken;
 
-            // 2. Kiểm tra Token
             if (!string.IsNullOrEmpty(savedToken))
             {
-                // === TRƯỜNG HỢP CÓ TOKEN: VÀO THẲNG MÀN HÌNH CHÍNH ===
-                // (Bỏ qua màn hình đăng nhập)
-                MainWindow main = new MainWindow();
-                main.Show();
+                StartMainWindow();
             }
             else
             {
-                // === TRƯỜNG HỢP KHÔNG CÓ TOKEN: HIỆN LOGIN ===
-                LoginView loginWindow = new LoginView();
-
-                // ShowDialog sẽ chặn dòng code chạy tiếp cho đến khi cửa sổ Login đóng lại
-                var result = loginWindow.ShowDialog();
-
-                // Kiểm tra kết quả trả về từ LoginView (được set trong code-behind của LoginView)
-                if (result == true)
-                {
-                    // Đăng nhập thành công -> Mở Main
-                    MainWindow main = new MainWindow();
-                    main.Show();
-                }
-                else
-                {
-                    // Người dùng tắt bảng Login -> Tắt luôn App
-                    Shutdown();
-                }
+                ShowLoginWindow();
             }
         }
 
+        public void ShowLoginWindow()
+        {
+            LoginView loginWindow = new LoginView();
+            // Nếu LoginViewModel gọi window.DialogResult = true
+            if (loginWindow.ShowDialog() == true)
+            {
+                StartMainWindow();
+            }
+            else
+            {
+                Shutdown(); // Thoát hẳn nếu người dùng tắt bảng login
+            }
+        }
+
+        private void StartMainWindow()
+        {
+            MainWindow main = new MainWindow();
+            main.Show();
+        }
         // ============================================================
         // PHẦN 2: HÀM ĐỔI THEME (CODE CŨ CỦA BẠN - GIỮ NGUYÊN)
         // ============================================================

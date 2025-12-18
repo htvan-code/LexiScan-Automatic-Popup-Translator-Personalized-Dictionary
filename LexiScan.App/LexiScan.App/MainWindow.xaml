@@ -5,9 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
         xmlns:view="clr-namespace:LexiScan.App.Views" 
-        
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
-        
         mc:Ignorable="d"
         Title="LexiScan"
         Height="600"
@@ -47,7 +45,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="ButtonBorder" CornerRadius="5" Background="{TemplateBinding Background}">
+                        <Border x:Name="ButtonBorder" CornerRadius="0" Background="{TemplateBinding Background}">
                             <ContentPresenter Margin="{TemplateBinding Padding}" 
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
@@ -65,11 +63,14 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
     </Window.Resources>
 
     <Grid>
-        <Border Background="{DynamicResource AppBackground}" CornerRadius="20">
+        <Border Background="{DynamicResource AppBackground}" 
+                CornerRadius="0" 
+                BorderThickness="1" 
+                BorderBrush="{DynamicResource BorderColor}">
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="220"/>
@@ -77,10 +78,9 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid Grid.Column="0">
-                    <Border Background="{DynamicResource CardBackground}" CornerRadius="20,0,0,20" />
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="0" />
 
                     <StackPanel Margin="15,20,15,20">
-
                         <materialDesign:PackIcon Kind="BookAlphabet" 
                                                  Width="48" Height="48" 
                                                  Foreground="{DynamicResource PrimaryAccent}" 
@@ -129,6 +129,7 @@
                                 <TextBlock Text="Cài đặt"/>
                             </StackPanel>
                         </RadioButton>
+
                         <RadioButton Style="{StaticResource SidebarNavigationStyle}" 
                                      Command="{Binding LogoutCommand}"
                                      Margin="0,5,0,0">
@@ -150,19 +151,18 @@
                                    Foreground="{DynamicResource PrimaryText}"
                                    VerticalAlignment="Center" 
                                    Margin="0,0,10,0" HorizontalAlignment="Center"/>
-
                         <TextBlock Text="How to use " 
                                    FontSize="14" 
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryText}"
                                    VerticalAlignment="Center"/>
-
                     </StackPanel>
-
                 </Grid>
 
-                <Grid Grid.Column="1" >
-                    <ContentControl Content="{Binding CurrentView}" Foreground="{DynamicResource PrimaryText}" />
+                <Grid Grid.Column="1">
+                    <Border Background="Transparent" CornerRadius="0" ClipToBounds="True">
+                        <ContentControl Content="{Binding CurrentView}" Foreground="{DynamicResource PrimaryText}" />
+                    </Border>
                 </Grid>
 
                 <Button x:Name="CloseApp"
@@ -184,7 +184,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="0">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                     </ControlTemplate>
