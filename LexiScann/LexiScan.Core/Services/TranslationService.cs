@@ -16,23 +16,34 @@ namespace LexiScan.Core.Services
         static TranslationService()
         {
             _http = new HttpClient();
-            _http.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+            _http.DefaultRequestHeaders.Add(
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            );
         }
 
         public async Task<TranslationResult> ProcessTranslationAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
-                return new TranslationResult { Status = ServiceStatus.InternalError, ErrorMessage = "Không có văn bản." };
+            {
+                return new TranslationResult
+                {
+                    Status = ServiceStatus.InternalError,
+                    ErrorMessage = "Không có văn bản."
+                };
+            }
 
-            string cleanedText = text.Trim();
-            return await TranslateWithGoogleFull(cleanedText);
+            string cleaned = text.Trim();
+            return await TranslateWithGoogleFull(cleaned);
         }
 
-        private async Task<TranslationResult> TranslateWithGoogleFull(string text, string sl = "en", string tl = "vi")
+        private async Task<TranslationResult> TranslateWithGoogleFull(
+            string text, string sl = "en", string tl = "vi")
         {
             try
             {
-                var url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&dt=bd&dt=rm&q={Uri.EscapeDataString(text)}";
+                var url =
+                    $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&dt=bd&dt=rm&q={Uri.EscapeDataString(text)}";
 
                 var response = await _http.GetStringAsync(url);
                 var json = JArray.Parse(response);
@@ -41,71 +52,86 @@ namespace LexiScan.Core.Services
                 {
                     OriginalText = text,
                     Status = ServiceStatus.Success,
-                    InputType = InputType.PhraseOrSentence,
                     Meanings = new List<Meaning>()
                 };
 
-                // --- 1. LẤY NGHĨA DỊCH CHÍNH ---
-                if (json.Count > 0 && json[0] is JArray mainArray && mainArray.Count > 0 && mainArray[0] is JArray firstItem)
+                // ========= XÁC ĐỊNH LOẠI INPUT =========
+                result.InputType = text.Contains(" ")
+                    ? InputType.PhraseOrSentence
+                    : InputType.SingleWord;
+
+                // ========= 1. LẤY NGHĨA DỊCH =========
+                if (json.Count > 0 &&
+                    json[0] is JArray arr0 &&
+                    arr0.Count > 0 &&
+                    arr0[0] is JArray inner0)
                 {
-                    result.TranslatedText = firstItem[0]?.ToString();
+                    result.TranslatedText = inner0[0]?.ToString();
                 }
 
-                // --- 2. LẤY PHIÊN ÂM (ĐÃ FIX LỖI CRASH) ---
+                // ========= 2. LẤY PHIÊN ÂM TỪ dt=rm =========
                 try
                 {
-                    if (json.Count > 0 && json[0] is JArray loopArray)
+                    if (json.Count > 0 && json[0] is JArray phoneticArray)
                     {
-                        foreach (var item in loopArray)
+                        foreach (var row in phoneticArray)
                         {
-                            if (item is JArray subArray && subArray.Count >= 3)
+                            if (row is JArray sub && sub.Count >= 3)
                             {
-                                // Google thường trả về: [null, null, "phiên_âm", null]
-                                var p3 = subArray.Count > 3 ? subArray[3]?.ToString() : null;
-                                var p2 = subArray.Count > 2 ? subArray[2]?.ToString() : null;
+                                var p3 = sub.Count > 3 ? sub[3]?.ToString() : null;
+                                var p2 = sub.Count > 2 ? sub[2]?.ToString() : null;
 
                                 if (!string.IsNullOrEmpty(p3))
                                 {
-                                    result.Phonetic = p3;
+                                    result.Phonetic = CleanPhonetic(p3);
                                     break;
                                 }
 
-                                // Nếu phần tử đầu tiên là null thì khả năng cao index 2 là phiên âm
-                                if ((subArray[0] == null || subArray[0].Type == JTokenType.Null) && !string.IsNullOrEmpty(p2))
+                                if ((sub[0] == null || sub[0].Type == JTokenType.Null)
+                                    && !string.IsNullOrEmpty(p2))
                                 {
-                                    result.Phonetic = p2;
+                                    result.Phonetic = CleanPhonetic(p2);
                                     break;
                                 }
                             }
                         }
                     }
                 }
-                catch { /* Bỏ qua lỗi phiên âm để chương trình vẫn chạy tiếp */ }
+                catch { }
 
-                // --- 3. LẤY ĐỊNH NGHĨA TỪ ĐIỂN ---
-                if (json.Count > 1 && json[1] is JArray dictArray)
+                // ========= 2.2 FALLBACK PHIÊN ÂM =========
+                if (string.IsNullOrEmpty(result.Phonetic))
+                {
+                    try
+                    {
+                        var alt = json[0]?[1]?[3]?.ToString();
+                        if (!string.IsNullOrEmpty(alt))
+                            result.Phonetic = CleanPhonetic(alt);
+                    }
+                    catch { }
+                }
+
+                // ========= 3. LẤY ĐỊNH NGHĨA TỪ ĐIỂN =========
+                if (!text.Contains(" ") && json.Count > 1 && json[1] is JArray dictArray)
                 {
                     result.InputType = InputType.SingleWord;
 
                     foreach (var entry in dictArray)
                     {
-                        var partOfSpeech = entry[0]?.ToString();
-
-                        var meaningObj = new Meaning
+                        var pos = entry[0]?.ToString();
+                        var m = new Meaning
                         {
-                            PartOfSpeech = ConvertPosToVietnamese(partOfSpeech),
+                            PartOfSpeech = ConvertPosToVietnamese(pos),
                             Definitions = new List<string>()
                         };
 
-                        if (entry.Count() > 1 && entry[1] is JArray defsArray)
+                        if (entry.Count() > 1 && entry[1] is JArray defArr)
                         {
-                            foreach (var def in defsArray)
-                            {
-                                meaningObj.Definitions.Add(def.ToString());
-                            }
+                            foreach (var d in defArr)
+                                m.Definitions.Add(d.ToString());
                         }
 
-                        result.Meanings.Add(meaningObj);
+                        result.Meanings.Add(m);
                     }
                 }
 
@@ -122,36 +148,39 @@ namespace LexiScan.Core.Services
             }
         }
 
+        // =================== Suggestion ===================
         public async Task<List<string>> GetGoogleSuggestionsAsync(string prefix)
         {
-            if (string.IsNullOrWhiteSpace(prefix)) return new List<string>();
+            if (string.IsNullOrWhiteSpace(prefix))
+                return new List<string>();
 
             try
             {
-                // API gợi ý của Google: trả về mảng các từ liên quan
-                string url = $"https://suggestqueries.google.com/complete/search?client=firefox&q={Uri.EscapeDataString(prefix)}";
-
+                string url =
+                    $"https://suggestqueries.google.com/complete/search?client=firefox&q={Uri.EscapeDataString(prefix)}";
                 var response = await _http.GetStringAsync(url);
                 var json = JArray.Parse(response);
 
-                // Cấu trúc JSON trả về: ["keyword", ["suggestion1", "suggestion2", ...]]
-                if (json.Count > 1 && json[1] is JArray suggestions)
-                {
-                    return suggestions.Select(s => s.ToString()).Take(5).ToList();
-                }
+                if (json.Count > 1 && json[1] is JArray arr)
+                    return arr.Select(x => x.ToString()).Take(5).ToList();
             }
-            catch { /* Lỗi mạng thì im lặng trả về list rỗng */ }
+            catch { }
 
             return new List<string>();
         }
 
+        // =================== Helpers ===================
         private string ConvertPosToVietnamese(string pos)
         {
-            if (string.IsNullOrEmpty(pos)) return "";
-            return pos.ToLower() switch
-            {
-                _ => char.ToUpper(pos[0]) + pos.Substring(1)
-            };
+            if (string.IsNullOrEmpty(pos))
+                return "";
+            return char.ToUpper(pos[0]) + pos.Substring(1);
+        }
+
+        private string CleanPhonetic(string p)
+        {
+            if (string.IsNullOrEmpty(p)) return "";
+            return p.Replace("/", "").Trim();
         }
     }
 }

@@ -1,43 +1,45 @@
-﻿using LexiScanData.Services;
+﻿using LexiScan.Core.Models;
+using LexiScan.Core.Services;
+using LexiScanData.Services;
 using LexiScanService;
 using LexiScanUI.Helpers;
+using System;
 using System.Collections.ObjectModel;
-using System.Linq; // Cần thêm cái này cho .Where().Select()
+using System.Threading.Tasks;
 using System.Windows.Input;
-using LexiScan.Core.Models;
+using CoreTts = LexiScan.Core.Services.TtsService;
+using InputKind = LexiScan.Core.Enums.InputType;
+using UiTts = LexiScanService.TtsService;
 
 namespace LexiScanUI.ViewModels
 {
-    // 1. Kế thừa BaseViewModel thay vì INotifyPropertyChanged
     public class PopupViewModel : BaseViewModel
     {
-        // ... Các Property giữ nguyên ...
-        private string _currentWord;
+        private readonly TranslationService _translator;
+        private readonly DatabaseServices _dbService;
+        private readonly UiTts _ttsService;
+
+
+        // ===================== PROPERTIES =====================
+        private string _currentWord = "";
         public string CurrentWord
         {
             get => _currentWord;
-            set { _currentWord = value; OnPropertyChanged(); } // Dùng hàm của BaseViewModel
+            set { _currentWord = value; OnPropertyChanged(); }
         }
 
-        private string _phonetic;
+        private string _phonetic = "";
         public string Phonetic
         {
             get => _phonetic;
             set { _phonetic = value; OnPropertyChanged(); }
         }
 
-        private string _currentTranslatedText = "Đây là bản dịch thuần tiếng Việt...";
+        private string _currentTranslatedText = "";
         public string CurrentTranslatedText
         {
             get => _currentTranslatedText;
             set { _currentTranslatedText = value; OnPropertyChanged(); }
-        }
-
-        private bool _isPinned;
-        public bool IsPinned
-        {
-            get => _isPinned;
-            set { _isPinned = value; OnPropertyChanged(); }
         }
 
         private bool _isSelectionMode;
@@ -47,107 +49,128 @@ namespace LexiScanUI.ViewModels
             set { _isSelectionMode = value; OnPropertyChanged(); }
         }
 
-        // Services & Collections
-        private readonly DatabaseServices _dbService;
-        private readonly TtsService _ttsService;
-        public ObservableCollection<Meaning> Meanings { get; } = new ObservableCollection<Meaning>();
-        public ObservableCollection<SelectableWord> WordList { get; } = new ObservableCollection<SelectableWord>();
+        private string _originalSentence = "";
+        public string OriginalSentence
+        {
+            get => _originalSentence;
+            set { _originalSentence = value; OnPropertyChanged(); }
+        }
 
-        public int CurrentSentenceId { get; set; } = 1;
+        public ObservableCollection<Meaning> Meanings { get; } = new();
+        public ObservableCollection<SelectableWord> WordList { get; } = new();
 
-        // Commands
+        // ===================== COMMANDS =====================
         public ICommand PinCommand { get; }
         public ICommand ReadAloudCommand { get; }
         public ICommand SettingsCommand { get; }
         public ICommand CloseCommand { get; }
+        public ICommand ClickWordCommand { get; }
 
-        // Constructor
+        // ===================== CONSTRUCTOR =====================
         public PopupViewModel()
         {
+            _translator = new TranslationService();
             _dbService = new DatabaseServices();
-            _ttsService = new TtsService();
+            _ttsService = new UiTts();
 
-            CurrentSentenceId = 1;
-            CurrentTranslatedText = "Học lập trình C#";
 
             PinCommand = new RelayCommand(ExecutePin);
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
             SettingsCommand = new RelayCommand(ExecuteSettings);
             CloseCommand = new RelayCommand(ExecuteClose);
+            ClickWordCommand = new RelayCommand(ExecuteClickWord);
         }
 
-        // ... Giữ nguyên các hàm logic (LoadTranslationData, ExecutePin, v.v.) ...
-
+        // ===================== LOAD TRANSLATION =====================
         public void LoadTranslationData(TranslationResult result)
         {
             if (result == null) return;
-            CurrentWord = result.OriginalText;
-            CurrentTranslatedText = result.TranslatedText ?? string.Empty;
-            Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : string.Empty;
+
+            // store original English sentence
+            OriginalSentence = result.OriginalText ?? "";
+
+            // header show English
+            CurrentWord = result.OriginalText ?? "";
+
+            // show Vietnamese
+            CurrentTranslatedText = result.TranslatedText ?? "";
+
+            // show phonetic only for single word
+            Phonetic = (result.InputType == InputKind.SingleWord && !string.IsNullOrEmpty(result.Phonetic))
+                ? $"/{result.Phonetic}/"
+                : "";
+
+            // meanings only for word
+            Meanings.Clear();
+            if (result.InputType == InputKind.SingleWord && result.Meanings != null)
+            {
+                foreach (var m in result.Meanings)
+                    Meanings.Add(m);
+            }
+
+            // prepare selectable words for sentence
+            PrepareWordsForSelection();
+        }
+
+        // ===================== PIN TOGGLE =====================
+        private void ExecutePin(object? parameter)
+        {
+            IsSelectionMode = !IsSelectionMode;
+        }
+
+        // ===================== WORD SPLIT =====================
+        private void PrepareWordsForSelection()
+        {
+            WordList.Clear();
+            if (string.IsNullOrWhiteSpace(OriginalSentence))
+                return;
+
+            var parts = OriginalSentence.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var w in parts)
+            {
+                var clean = w.Trim(',', '.', '?', '!', ';', ':');
+                if (!string.IsNullOrWhiteSpace(clean))
+                    WordList.Add(new SelectableWord(clean, ClickWordCommand));
+            }
+        }
+
+        // ===================== CLICK WORD TO TRANSLATE =====================
+        private async void ExecuteClickWord(object? parameter)
+        {
+            if (parameter is not string word)
+                return;
+
+            var result = await _translator.ProcessTranslationAsync(word);
+
+            CurrentWord = result.OriginalText ?? word;
+
+            Phonetic = !string.IsNullOrEmpty(result.Phonetic)
+                ? $"/{result.Phonetic}/"
+                : "";
 
             Meanings.Clear();
             if (result.Meanings != null)
             {
-                foreach (var m in result.Meanings) Meanings.Add(m);
-            }
-            IsPinned = false;
-            IsSelectionMode = false;
-            PrepareWordsForSelection();
-        }
-
-        private void ExecutePin(object? parameter)
-        {
-            if (!IsSelectionMode)
-            {
-                PrepareWordsForSelection();
-                IsSelectionMode = true;
-            }
-            else
-            {
-                var selectedWords = WordList.Where(w => w.IsSelected).Select(w => w.Text).ToList();
-                if (selectedWords.Any())
-                {
-                    _dbService.SavePinnedWords(CurrentSentenceId, selectedWords);
-                    IsPinned = true;
-                }
-                IsSelectionMode = false;
+                foreach (var m in result.Meanings)
+                    Meanings.Add(m);
             }
         }
 
-        private void PrepareWordsForSelection()
-        {
-            WordList.Clear();
-            if (string.IsNullOrWhiteSpace(CurrentTranslatedText)) return;
-            var words = CurrentTranslatedText.Split(' ');
-            foreach (var word in words) WordList.Add(new SelectableWord(word));
-        }
-
+        // ===================== READ ALOUD =====================
         private void ExecuteReadAloud(object? parameter)
         {
-            // Ưu tiên đọc từ gốc (tiếng Anh)
-            string textToRead = !string.IsNullOrWhiteSpace(CurrentWord)
-                ? CurrentWord
-                : CurrentTranslatedText;
-
-            if (!string.IsNullOrWhiteSpace(textToRead))
-            {
-                _ttsService.ReadText(textToRead);
-            }
+            var txt = !string.IsNullOrWhiteSpace(CurrentWord) ? CurrentWord : CurrentTranslatedText;
+            if (!string.IsNullOrWhiteSpace(txt))
+                _ttsService.ReadText(txt);
         }
 
-
-        private void ExecuteSettings(object? parameter)
-        {
-            // Mở cửa sổ settings (Person khác xử lý)
-        }
+        private void ExecuteSettings(object? parameter) { }
 
         private void ExecuteClose(object? parameter)
         {
             IsSelectionMode = false;
             WordList.Clear();
         }
-
-        // ĐÃ XÓA: class PopupViewModels thừa ở dưới đáy
-        // ĐÃ XÓA: public event PropertyChangedEventHandler và OnPropertyChanged (vì đã có ở BaseViewModel)
     }
 }

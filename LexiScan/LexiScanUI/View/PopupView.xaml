@@ -5,25 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Height="280"
-        Width="380"
+        Height="320"
+        Width="420"
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
         Background="Transparent">
 
-    <!-- ================= RESOURCES ================= -->
     <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/LexiScanUI;component/View/DarkTheme.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
     </Window.Resources>
 
-    <Grid Background="{DynamicResource AppBackground}">
+    <Grid Background="{DynamicResource AppBackground}"
+          MouseLeftButtonDown="DragArea_MouseLeftButtonDown">
         <Border Background="{DynamicResource CardBackground}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
@@ -49,12 +43,12 @@
                     <!-- WORD + PHONETIC -->
                     <StackPanel Orientation="Vertical">
                         <TextBlock Text="{Binding CurrentWord}"
-                                   FontSize="16"
+                                   FontSize="18"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryText}"/>
 
                         <TextBlock Text="{Binding Phonetic}"
-                                   FontSize="13"
+                                   FontSize="14"
                                    FontStyle="Italic"
                                    Foreground="{DynamicResource SecondaryText}"
                                    Margin="0,2,0,0"/>
@@ -68,23 +62,21 @@
                         <materialDesign:PackIcon Kind="VolumeHigh"/>
                     </Button>
 
-                    <!-- ⭐ PIN (ĐÃ SỬA) -->
+                    <!-- ⭐ PIN -->
                     <Button Grid.Column="2"
                             Style="{StaticResource MaterialDesignToolButton}"
-                            ToolTip="Save word"
+                            ToolTip="Select Words"
                             Command="{Binding PinCommand}">
 
                         <materialDesign:PackIcon Width="20" Height="20">
                             <materialDesign:PackIcon.Style>
                                 <Style TargetType="materialDesign:PackIcon">
-                                    <!-- MẶC ĐỊNH -->
                                     <Setter Property="Kind" Value="StarOutline"/>
                                     <Setter Property="Foreground"
                                             Value="{DynamicResource SecondaryText}"/>
 
-                                    <!-- ĐÃ GHIM -->
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                        <DataTrigger Binding="{Binding IsSelectionMode}" Value="True">
                                             <Setter Property="Kind" Value="Star"/>
                                             <Setter Property="Foreground" Value="#FFD700"/>
                                         </DataTrigger>
@@ -119,17 +111,56 @@
                               VerticalScrollBarVisibility="Auto">
 
                     <StackPanel>
+
+                        <!-- 🔥 TRANSLATED SENTENCE -->
                         <TextBlock Text="{Binding CurrentTranslatedText}" 
-                                   FontSize="14" 
+                                   FontSize="15" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource PrimaryAccent}"
-                                   Margin="0,0,0,8"
+                                   Margin="0,0,0,12"
                                    TextWrapping="Wrap"/>
 
+                        <!-- 🟢 WORD BUTTONS — ONLY SHOW WHEN IsSelectionMode = TRUE -->
+                        <Border Background="{DynamicResource CardBackground}"
+        CornerRadius="6"
+        Padding="6"
+        Margin="0,0,0,8"
+        Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}">
+                            <ItemsControl ItemsSource="{Binding WordList}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding Text}"
+                        Command="{Binding ClickCommand}"
+                        CommandParameter="{Binding Text}"
+                        Margin="4"
+                        Padding="6"
+                        Background="#E91E63"
+                        Foreground="White"
+                        BorderBrush="Transparent"
+                        FontSize="13"
+                        FontWeight="SemiBold"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+
+
+
+                        <!-- SEPARATOR only show when selecting -->
+                        <Separator Margin="4,10"
+                                   Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}"/>
+
+                        <!-- 🟡 DEFINITIONS -->
                         <ItemsControl ItemsSource="{Binding Meanings}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="0,8,0,0">
+                                    <StackPanel Margin="0,6,0,0">
                                         <TextBlock Text="{Binding PartOfSpeech}"
                                                    FontStyle="Italic"
                                                    FontWeight="SemiBold"
@@ -144,9 +175,9 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
                     </StackPanel>
                 </ScrollViewer>
-
             </Grid>
         </Border>
     </Grid>
