@@ -11,8 +11,8 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Pink.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Secondary/MaterialDesignColor.Lime.xaml" />
 
-                <ResourceDictionary Source="pack://application:,,,/LexiScan.App;component/Themes/DarkTheme.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/LexiScan.App;component/Themes/ScrollBarStyle.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/LexiScan;component/Themes/DarkTheme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/LexiScan;component/Themes/ScrollBarStyle.xaml"/>
 
                 <ResourceDictionary Source="pack://application:,,,/ScreenTranslator;component/Components/TrayMenu.xaml"/>
                 
