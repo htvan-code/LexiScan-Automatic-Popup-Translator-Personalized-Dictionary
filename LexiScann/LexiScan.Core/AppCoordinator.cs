@@ -1,4 +1,4 @@
-﻿using LexiScan.Core.Enums;
+using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
 using LexiScan.Core.Services;
 using System;
