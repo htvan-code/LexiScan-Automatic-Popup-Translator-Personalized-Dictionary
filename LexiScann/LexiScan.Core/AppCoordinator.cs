@@ -4,7 +4,6 @@ using LexiScan.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-// KHÔNG dùng using LexiScan.App... ở đây
 
 namespace LexiScan.Core
 {
@@ -17,6 +16,7 @@ namespace LexiScan.Core
         public event Action<TranslationResult>? SearchResultReady;
         public event Action<string>? VoiceSearchCompleted;
         public event Action<TranslationResult>? TranslationCompleted;
+        public event Action<string>? TranslationVoiceRecognized;
 
         public AppCoordinator(TranslationService translationService, VoicetoText voiceToTextService, TtsService ttsService)
         {
@@ -27,17 +27,14 @@ namespace LexiScan.Core
             _voiceToTextService.TextRecognized += (text) =>
             {
                 VoiceSearchCompleted?.Invoke(text);
+                TranslationVoiceRecognized?.Invoke(text);
             };
         }
 
-        // --- HÀM PHÁT ÂM (CHỈ GIỮ LẠI BẢN GỐC) ---
         public void Speak(string text, double speed, string accent)
         {
-            // accent truyền vào là "en-US" hoặc "en-GB"
             _ttsService.Speak(text, speed, accent);
         }
-
-        // --- CÁC HÀM TRA CỨU ---
         public async Task<List<string>> GetRecommendWordsAsync(string prefix)
         {
             return await _translationService.GetGoogleSuggestionsAsync(prefix);

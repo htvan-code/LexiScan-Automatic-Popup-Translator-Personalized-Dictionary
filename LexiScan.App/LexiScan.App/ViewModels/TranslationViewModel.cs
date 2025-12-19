@@ -1,4 +1,6 @@
 ﻿using LexiScan.App.ViewModels;
+using LexiScan.Core;
+using System.Windows.Input;
 // ... các using khác
 
 namespace LexiScan.App.ViewModels
@@ -7,6 +9,9 @@ namespace LexiScan.App.ViewModels
     {
         private string _sourceText = "";
         private int _currentCharCount = 0;
+        private readonly AppCoordinator _coordinator;
+
+        public ICommand StartVoiceCommand { get; }
 
         // Property đếm số ký tự
         public int CurrentCharCount

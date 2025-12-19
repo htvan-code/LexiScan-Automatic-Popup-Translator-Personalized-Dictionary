@@ -86,9 +86,56 @@
                         </TextBox.InputBindings>
                     </TextBox>
 
-                    <Button Grid.Column="2" Width="45" Style="{StaticResource IconButtonStyle}" Command="{Binding StartVoiceSearchCommand}">
-                        <materialDesign:PackIcon Kind="Microphone" Width="20" Height="20"/>
-                    </Button>
+                    <Grid Grid.Column="2" Width="45" Height="45">
+                        <Ellipse x:Name="VoicePulse" 
+                                 Fill="{DynamicResource PrimaryAccent}" 
+                                 Width="25" Height="25" 
+                                 Opacity="0" 
+                                 IsHitTestVisible="False"
+                                 HorizontalAlignment="Center" 
+                                 VerticalAlignment="Center">    
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Name="PulseStoryboard">
+                                                    <Storyboard RepeatBehavior="Forever">
+                                                        <DoubleAnimation Storyboard.TargetProperty="Width" From="25" To="55" Duration="0:0:0.8"/>
+                                                        <DoubleAnimation Storyboard.TargetProperty="Height" From="25" To="55" Duration="0:0:0.8"/>
+                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.6" To="0" Duration="0:0:0.8"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="PulseStoryboard"/>
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+
+                        <Button Style="{StaticResource IconButtonStyle}" 
+                                Command="{Binding StartVoiceSearchCommand}"
+                                Width="45" Height="45"
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center">     
+                            <materialDesign:PackIcon Kind="Microphone" Width="20" Height="20">
+                                <materialDesign:PackIcon.Style>
+                                    <Style TargetType="materialDesign:PackIcon">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                                <Setter Property="Opacity" Value="0.4"/>
+                                                <Setter Property="Foreground" Value="Red"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </materialDesign:PackIcon.Style>
+                            </materialDesign:PackIcon>
+                        </Button>
+                    </Grid>
                 </Grid>
             </Border>
         </StackPanel>
