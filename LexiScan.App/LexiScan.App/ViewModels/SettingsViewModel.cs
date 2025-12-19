@@ -31,7 +31,7 @@ namespace LexiScan.App.ViewModels
             SaveCommand = new RelayCommand(SaveSettings);
             CancelCommand = new RelayCommand(CancelChanges);
 
-            // Các command khác (để trống logic theo code cũ của bạn)
+            // Các command khác
             ExportDataCommand = new RelayCommand(_ => { });
             ChangeHotkeyCommand = new RelayCommand(_ => { });
         }
@@ -164,43 +164,59 @@ namespace LexiScan.App.ViewModels
             CheckIfDirty();
         }
 
-        // --- HÀM ĐỔI MÀU (KHÔNG DÙNG MATERIAL DESIGN LIBRARY) ---
+        // --- HÀM ĐỔI MÀU (CÁCH MỚI - ĐƠN GIẢN HƠN) ---
         private void ApplyTheme(bool isDark)
         {
             var app = Application.Current;
             if (app == null) return;
 
-            // Đảm bảo tên Project đúng là LexiScan.App
-            string lightThemeUri = "pack://application:,,,/LexiScan.App;component/Themes/LightTheme.xaml";
-            string darkThemeUri = "pack://application:,,,/LexiScan.App;component/Themes/DarkTheme.xaml";
+            // 1. Xác định tên Assembly (Tên Project)
+            // Hãy kiểm tra xem Project bạn tên là "LexiScan" hay "LexiScan.App"
+            // Dựa vào App.xaml của bạn, có vẻ tên là "LexiScan" (không có .App)
+            string assemblyName = "LexiScan";
 
-            string uriToAdd = isDark ? darkThemeUri : lightThemeUri;
-            string uriToRemove = isDark ? lightThemeUri : darkThemeUri;
+            // 2. Xác định đường dẫn file mới
+            string themePath = isDark ? "Themes/DarkTheme.xaml" : "Themes/LightTheme.xaml";
+            string newUriString = $"pack://application:,,,/{assemblyName};component/{themePath}";
 
-            // Gỡ theme cũ
-            var existingDictionary = app.Resources.MergedDictionaries
-                                        .FirstOrDefault(d => d.Source != null && d.Source.OriginalString == uriToRemove);
-            if (existingDictionary != null)
+            try
             {
-                app.Resources.MergedDictionaries.Remove(existingDictionary);
+                // 3. Tìm xem trong App.xaml đã có file Theme nào chưa (Light hoặc Dark)
+                ResourceDictionary? existingThemeDict = null;
+
+                foreach (var dict in app.Resources.MergedDictionaries)
+                {
+                    if (dict.Source != null &&
+                       (dict.Source.OriginalString.Contains("Themes/LightTheme.xaml") ||
+                        dict.Source.OriginalString.Contains("Themes/DarkTheme.xaml")))
+                    {
+                        existingThemeDict = dict;
+                        break;
+                    }
+                }
+
+                // 4. Tạo dictionary mới
+                var newThemeDict = new ResourceDictionary
+                {
+                    Source = new Uri(newUriString, UriKind.Absolute)
+                };
+
+                // 5. Thực hiện thay thế
+                if (existingThemeDict != null)
+                {
+                    // Nếu tìm thấy cái cũ -> Xóa cái cũ, thêm cái mới
+                    app.Resources.MergedDictionaries.Remove(existingThemeDict);
+                    app.Resources.MergedDictionaries.Add(newThemeDict);
+                }
+                else
+                {
+                    // Nếu chưa có -> Thêm mới vào
+                    app.Resources.MergedDictionaries.Add(newThemeDict);
+                }
             }
-
-            // Thêm theme mới (nếu chưa có)
-            var newDictionaryExists = app.Resources.MergedDictionaries
-                                         .Any(d => d.Source != null && d.Source.OriginalString == uriToAdd);
-
-            if (!newDictionaryExists)
+            catch (Exception ex)
             {
-                try
-                {
-                    var newDict = new ResourceDictionary { Source = new Uri(uriToAdd) };
-                    app.Resources.MergedDictionaries.Add(newDict);
-                }
-                catch (Exception ex)
-                {
-                    // Lỗi này thường do chưa tạo file LightTheme.xaml hoặc sai tên Project
-                    System.Diagnostics.Debug.WriteLine($"Theme Error: {ex.Message}");
-                }
+                MessageBox.Show($"Lỗi đổi màu: {ex.Message}\n\nKiểm tra lại tên Project trong biến 'assemblyName'.", "Lỗi Theme");
             }
         }
     }
