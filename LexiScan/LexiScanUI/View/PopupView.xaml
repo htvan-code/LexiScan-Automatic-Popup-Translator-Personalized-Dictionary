@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Height="320"
         Width="420"
+        SizeToContent="Height"
+        MaxHeight="600"
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
@@ -16,21 +17,30 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
     </Window.Resources>
 
-    <Grid Background="{DynamicResource AppBackground}"
+    <!-- nền phải trong suốt -->
+    <Grid Background="Transparent"
           MouseLeftButtonDown="DragArea_MouseLeftButtonDown">
+
+        <!-- card popup -->
         <Border Background="{DynamicResource CardBackground}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
-                CornerRadius="12"
+                CornerRadius="20"
                 Padding="12">
+
+            <!-- bóng trôi nổi -->
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="25" ShadowDepth="0" Opacity="0.28"/>
+            </Border.Effect>
 
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- ================= HEADER ================= -->
+                <!-- ===================== HEADER ===================== -->
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -41,11 +51,13 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- WORD + PHONETIC -->
-                    <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Vertical" Margin="0,0,6,0">
                         <TextBlock Text="{Binding CurrentWord}"
                                    FontSize="18"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource PrimaryText}"/>
+                                   Foreground="{DynamicResource PrimaryText}"
+                                   TextWrapping="Wrap"
+                                   Width="300"/>
 
                         <TextBlock Text="{Binding Phonetic}"
                                    FontSize="14"
@@ -67,7 +79,6 @@
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Select Words"
                             Command="{Binding PinCommand}">
-
                         <materialDesign:PackIcon Width="20" Height="20">
                             <materialDesign:PackIcon.Style>
                                 <Style TargetType="materialDesign:PackIcon">
@@ -84,7 +95,6 @@
                                 </Style>
                             </materialDesign:PackIcon.Style>
                         </materialDesign:PackIcon>
-
                     </Button>
 
                     <!-- ⚙ SETTINGS -->
@@ -105,27 +115,30 @@
                     </Button>
                 </Grid>
 
-                <!-- ================= CONTENT ================= -->
-                <ScrollViewer Grid.Row="1"
-                              Margin="0,10,0,0"
-                              VerticalScrollBarVisibility="Auto">
+                <!-- ===================== VIETNAMESE TEXT ===================== -->
+                <TextBlock Grid.Row="1"
+                           Text="{Binding CurrentTranslatedText}" 
+                           FontSize="15" 
+                           FontWeight="SemiBold" 
+                           Foreground="{DynamicResource PrimaryAccent}"
+                           Margin="0,10,0,10"
+                           TextWrapping="Wrap"
+                           Width="380"/>
+
+                <!-- ===================== MAIN CONTENT ===================== -->
+                <ScrollViewer Grid.Row="2"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,6,0,0">
 
                     <StackPanel>
 
-                        <!-- 🔥 TRANSLATED SENTENCE -->
-                        <TextBlock Text="{Binding CurrentTranslatedText}" 
-                                   FontSize="15" 
-                                   FontWeight="SemiBold" 
-                                   Foreground="{DynamicResource PrimaryAccent}"
-                                   Margin="0,0,0,12"
-                                   TextWrapping="Wrap"/>
-
-                        <!-- 🟢 WORD BUTTONS — ONLY SHOW WHEN IsSelectionMode = TRUE -->
+                        <!-- 🟢 WORD BUTTONS -->
                         <Border Background="{DynamicResource CardBackground}"
-        CornerRadius="6"
-        Padding="6"
-        Margin="0,0,0,8"
-        Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}">
+                                CornerRadius="10"
+                                Padding="6"
+                                Margin="0,0,0,8"
+                                Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}">
+
                             <ItemsControl ItemsSource="{Binding WordList}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -136,24 +149,22 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button Content="{Binding Text}"
-                        Command="{Binding ClickCommand}"
-                        CommandParameter="{Binding Text}"
-                        Margin="4"
-                        Padding="6"
-                        Background="#E91E63"
-                        Foreground="White"
-                        BorderBrush="Transparent"
-                        FontSize="13"
-                        FontWeight="SemiBold"/>
+                                                Command="{Binding ClickCommand}"
+                                                CommandParameter="{Binding Text}"
+                                                Margin="4"
+                                                Padding="6"
+                                                Background="#E91E63"
+                                                Foreground="White"
+                                                BorderBrush="Transparent"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Border>
 
-
-
-                        <!-- SEPARATOR only show when selecting -->
-                        <Separator Margin="4,10"
+                        <!-- separator -->
+                        <Separator Margin="4,4"
                                    Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}"/>
 
                         <!-- 🟡 DEFINITIONS -->
@@ -178,6 +189,7 @@
 
                     </StackPanel>
                 </ScrollViewer>
+
             </Grid>
         </Border>
     </Grid>
