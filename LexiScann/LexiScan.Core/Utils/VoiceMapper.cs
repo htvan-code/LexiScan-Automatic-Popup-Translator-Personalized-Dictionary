@@ -6,8 +6,8 @@
         {
             return accent switch
             {
-                "UK" => "Microsoft Hazel Desktop",
-                "US" => "Microsoft Zira Desktop",
+                "en-GB" => "Microsoft Hazel Desktop", // Giọng Anh - Anh
+                "en-US" => "Microsoft Zira Desktop",  // Giọng Anh - Mỹ
                 _ => null
             };
         }
