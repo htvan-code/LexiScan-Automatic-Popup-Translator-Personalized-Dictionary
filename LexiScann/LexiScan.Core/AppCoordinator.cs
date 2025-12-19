@@ -12,17 +12,22 @@ namespace LexiScan.Core
         private readonly VoicetoText _voiceToTextService;
         private readonly TtsService _ttsService;
 
-        // Event cho P3 (Main App) nhận data chi tiết để hiện lên giao diện chính
         public event Action<TranslationResult>? SearchResultReady;
         
         // Event cho P3 điền chữ từ Micro vào ô Search (Chú đã có)
         public event Action<string>? VoiceSearchCompleted;
+        public event Action? VoiceRecognitionStarted;
+        public event Action? VoiceRecognitionEnded;
 
         public AppCoordinator(TranslationService translationService, VoicetoText voiceToTextService, TtsService ttsService)
         {
             _translationService = translationService;
             _voiceToTextService = voiceToTextService;
             _ttsService = ttsService;
+
+            _voiceToTextService.SpeechStarted += () => VoiceRecognitionStarted?.Invoke();
+            _voiceToTextService.SpeechEnded += () => VoiceRecognitionEnded?.Invoke();
+
             _voiceToTextService.TextRecognized += (text) =>
             {
                 VoiceSearchCompleted?.Invoke(text);

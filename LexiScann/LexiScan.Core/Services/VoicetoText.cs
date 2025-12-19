@@ -9,16 +9,22 @@ namespace LexiScan.Core.Services
         private readonly SpeechRecognitionEngine _recognizer;
         public event Action<string> TextRecognized;
         public event Action<string> ErrorOccurred;
-       public VoicetoText()
-       {
-            try
-            {     
-                _recognizer = new SpeechRecognitionEngine(new CultureInfo("en-US"));
 
+        public event Action SpeechStarted;
+        public event Action SpeechEnded;
+        public VoicetoText()
+        {
+            try
+            {
+                _recognizer = new SpeechRecognitionEngine(new CultureInfo("en-US"));
                 _recognizer.LoadGrammar(new DictationGrammar());
+
+                // Khi máy bắt đầu nhận diện thấy có tiếng người nói
+                _recognizer.SpeechDetected += (s, e) => SpeechStarted?.Invoke();
 
                 _recognizer.SpeechRecognized += (s, e) =>
                 {
+                    SpeechEnded?.Invoke(); // Báo cho P3 tắt hiệu ứng nháy
                     if (e.Result != null && e.Result.Confidence > 0.5)
                     {
                         TextRecognized?.Invoke(e.Result.Text);
@@ -28,11 +34,14 @@ namespace LexiScan.Core.Services
                         ErrorOccurred?.Invoke("Âm thanh không rõ ràng, vui lòng thử lại.");
                     }
                 };
+
+                // Trường hợp người dùng bấm nhưng không nói gì hoặc lỗi engine
+                _recognizer.RecognizeCompleted += (s, e) => SpeechEnded?.Invoke();
+
                 _recognizer.SetInputToDefaultAudioDevice();
             }
             catch (Exception ex)
             {
-                // Nếu máy chưa cài gói ngôn ngữ English, nó sẽ văng Exception ở đây
                 Console.WriteLine("Lỗi khởi tạo VoiceToText: " + ex.Message);
             }
         }
@@ -44,6 +53,7 @@ namespace LexiScan.Core.Services
             }
             catch (Exception ex)
             {
+                SpeechEnded?.Invoke();
                 ErrorOccurred?.Invoke("Không thể khởi động Micro: " + ex.Message);
             }
         }
@@ -56,7 +66,7 @@ namespace LexiScan.Core.Services
         {
             if (_recognizer != null)
             {
-                _recognizer.Dispose(); // Giải phóng Micro cho các ứng dụng khác dùng
+                _recognizer.Dispose();
             }
         }
     }
