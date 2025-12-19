@@ -17,18 +17,15 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
     </Window.Resources>
 
-    <!-- nền phải trong suốt -->
     <Grid Background="Transparent"
           MouseLeftButtonDown="DragArea_MouseLeftButtonDown">
 
-        <!-- card popup -->
         <Border Background="{DynamicResource CardBackground}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="20"
                 Padding="12">
 
-            <!-- bóng trôi nổi -->
             <Border.Effect>
                 <DropShadowEffect BlurRadius="25" ShadowDepth="0" Opacity="0.28"/>
             </Border.Effect>
@@ -44,6 +41,7 @@
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
@@ -74,7 +72,7 @@
                         <materialDesign:PackIcon Kind="VolumeHigh"/>
                     </Button>
 
-                    <!-- ⭐ PIN -->
+                    <!-- ⭐ SELECT MODE -->
                     <Button Grid.Column="2"
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Select Words"
@@ -85,7 +83,6 @@
                                     <Setter Property="Kind" Value="StarOutline"/>
                                     <Setter Property="Foreground"
                                             Value="{DynamicResource SecondaryText}"/>
-
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsSelectionMode}" Value="True">
                                             <Setter Property="Kind" Value="Star"/>
@@ -97,8 +94,31 @@
                         </materialDesign:PackIcon>
                     </Button>
 
-                    <!-- ⚙ SETTINGS -->
+                    <!-- 📌 PIN REAL TO FIREBASE -->
                     <Button Grid.Column="3"
+                            Style="{StaticResource MaterialDesignToolButton}"
+                            ToolTip="Pin word"
+                            Command="{Binding PinToFirebaseCommand}">
+                        <materialDesign:PackIcon Width="20" Height="20">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Setter Property="Kind" Value="PinOutline"/>
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource SecondaryText}"/>
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                            <Setter Property="Kind" Value="Pin"/>
+                                            <Setter Property="Foreground" Value="#FFEB3B"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+                    </Button>
+
+                    <!-- ⚙ SETTINGS -->
+                    <Button Grid.Column="4"
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Settings"
                             Command="{Binding SettingsCommand}">
@@ -106,7 +126,7 @@
                     </Button>
 
                     <!-- ❌ CLOSE -->
-                    <Button Grid.Column="4"
+                    <Button Grid.Column="5"
                             Style="{StaticResource MaterialDesignToolButton}"
                             ToolTip="Close"
                             Click="Close_Click">
@@ -163,7 +183,6 @@
                             </ItemsControl>
                         </Border>
 
-                        <!-- separator -->
                         <Separator Margin="4,4"
                                    Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}"/>
 
