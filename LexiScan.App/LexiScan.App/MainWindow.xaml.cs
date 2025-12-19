@@ -86,12 +86,12 @@ namespace LexiScan.App
         {
             this.Dispatcher.Invoke(() =>
             {
+                if (!result.IsFromClipboard)
+                {
+                    return;
+                }
                 if (result.Status == ServiceStatus.Success)
                 {
-                    if (this.IsActive)
-                    {
-                        return;
-                    }
                     if (_popupWindow == null || !IsWindowOpen(_popupWindow))
                     {
                         _popupWindow = new PopupView();
@@ -102,7 +102,6 @@ namespace LexiScan.App
                     _popupWindow.Show();
                     _popupWindow.Activate();
                     _popupWindow.ShowResult(result);
-                    
                 }
             });
         }

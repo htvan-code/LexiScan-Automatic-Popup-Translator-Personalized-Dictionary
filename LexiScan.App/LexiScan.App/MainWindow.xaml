@@ -10,7 +10,7 @@
         Title="LexiScan"
         Height="600"
         Width="920"
-        ResizeMode="CanResize"
+        ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent" 
         AllowsTransparency="True" 
@@ -67,7 +67,7 @@
 
     <Grid>
         <Border Background="{DynamicResource AppBackground}" 
-                CornerRadius="0" 
+                CornerRadius="15" 
                 BorderThickness="1" 
                 BorderBrush="{DynamicResource BorderColor}">
 
@@ -78,7 +78,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid Grid.Column="0">
-                    <Border Background="{DynamicResource CardBackground}" CornerRadius="0" />
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="15,0,0,15" />
 
                     <StackPanel Margin="15,20,15,20">
                         <materialDesign:PackIcon Kind="BookAlphabet" 
@@ -160,7 +160,7 @@
                 </Grid>
 
                 <Grid Grid.Column="1">
-                    <Border Background="Transparent" CornerRadius="0" ClipToBounds="True">
+                    <Border Background="Transparent" CornerRadius="0,15,15,0" ClipToBounds="True">
                         <ContentControl Content="{Binding CurrentView}" Foreground="{DynamicResource PrimaryText}" />
                     </Border>
                 </Grid>
@@ -184,7 +184,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="0">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                     </ControlTemplate>

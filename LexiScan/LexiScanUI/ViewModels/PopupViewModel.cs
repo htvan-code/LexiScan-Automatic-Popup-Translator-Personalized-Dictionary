@@ -85,6 +85,9 @@ namespace LexiScanUI.ViewModels
         {
             if (result == null) return;
 
+            // reset split mode
+            IsSelectionMode = false;
+
             // store original English sentence
             OriginalSentence = result.OriginalText ?? "";
 
@@ -110,6 +113,7 @@ namespace LexiScanUI.ViewModels
             // prepare selectable words for sentence
             PrepareWordsForSelection();
         }
+
 
         // ===================== PIN TOGGLE =====================
         private void ExecutePin(object? parameter)
