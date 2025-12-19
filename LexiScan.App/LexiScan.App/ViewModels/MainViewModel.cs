@@ -4,23 +4,24 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using LexiScan.App.Commands;
-using LexiScan.Core; // [QUAN TRỌNG] Thêm dòng này để dùng AppCoordinator
+using LexiScan.Core;
+using LexiScan.Core.Utils; // [QUAN TRỌNG] Để dùng AppCoordinator và GlobalEvents
 
 namespace LexiScan.App.ViewModels
 {
     public class MainViewModel : BaseViewModel
     {
-        // [SỬA ĐỔI] Không khởi tạo DictionaryViewModel ngay tại đây nữa
-        // Vì nó cần tham số coordinator, ta sẽ khởi tạo nó trong Constructor
+        // Khởi tạo DictionaryViewModel và truyền coordinator vào (sẽ làm trong Constructor)
         private readonly DictionaryViewModel _dictionaryVM;
 
-        // Các ViewModel khác chưa cần Coordinator thì cứ giữ nguyên
+        // Các ViewModel khác
         private readonly PersonalDictionaryViewModel _personalDictionaryVM = new PersonalDictionaryViewModel();
         private readonly HistoryViewModel _historyVM = new HistoryViewModel();
         private readonly TranslationViewModel _translationVM = new TranslationViewModel();
         private readonly SettingsViewModel _settingsVM = new SettingsViewModel();
 
         private BaseViewModel? _currentView;
+        private string _selectedMenu = "Home"; // [MỚI] Biến để theo dõi menu đang chọn
 
         public BaseViewModel? CurrentView
         {
@@ -35,13 +36,20 @@ namespace LexiScan.App.ViewModels
             }
         }
 
+        // [MỚI] Property để Binding vào IsChecked của Menu (để menu tự sáng khi chuyển trang)
+        public string SelectedMenu
+        {
+            get => _selectedMenu;
+            set { _selectedMenu = value; OnPropertyChanged(); }
+        }
+
         public ICommand NavigateCommand { get; }
         public ICommand LogoutCommand { get; }
 
-        // [SỬA ĐỔI] Constructor phải nhận vào AppCoordinator
+        // Constructor nhận vào AppCoordinator
         public MainViewModel(AppCoordinator coordinator)
         {
-            // [SỬA ĐỔI] Khởi tạo DictionaryViewModel và truyền coordinator vào
+            // Khởi tạo DictionaryViewModel với coordinator
             _dictionaryVM = new DictionaryViewModel(coordinator);
 
             NavigateCommand = new RelayCommand(Navigate);
@@ -49,17 +57,48 @@ namespace LexiScan.App.ViewModels
 
             // Mặc định hiển thị Trang chủ
             CurrentView = _dictionaryVM;
+            SelectedMenu = "Home";
+
+            // [MỚI] Đăng ký lắng nghe sự kiện mở Settings từ GlobalEvents (do Popup gọi)
+            GlobalEvents.OnRequestOpenSettings += HandleOpenSettingsRequest;
         }
 
+        // [MỚI] Hàm xử lý khi nhận được yêu cầu mở Settings từ Popup
+        private void HandleOpenSettingsRequest()
+        {
+            // Dùng Dispatcher để ép buộc chạy trên luồng giao diện chính
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                // 1. Chuyển View
+                CurrentView = _settingsVM;
+                SelectedMenu = "Settings";
+
+                // 2. Hiện cửa sổ chính lên
+                var mainWindow = System.Windows.Application.Current.MainWindow;
+                if (mainWindow != null)
+                {
+                    if (mainWindow.WindowState == WindowState.Minimized)
+                    {
+                        mainWindow.WindowState = WindowState.Normal;
+                    }
+                    mainWindow.Show();
+                    mainWindow.Activate();
+                    mainWindow.Focus();
+                }
+            });
+        }
         private void Navigate(object? parameter)
         {
             string? viewName = parameter as string;
             if (string.IsNullOrEmpty(viewName)) return;
 
+            // [MỚI] Cập nhật SelectedMenu khi người dùng bấm nút điều hướng
+            SelectedMenu = viewName;
+
             CurrentView = viewName switch
             {
                 "Home" => _dictionaryVM,
-                "Dictionary" => _personalDictionaryVM, // Lưu ý: Logic cũ của bạn map Dictionary -> Personal, bạn có thể chỉnh lại nếu muốn
+                "Dictionary" => _personalDictionaryVM,
                 "PersonalDictionary" => _personalDictionaryVM,
                 "History" => _historyVM,
                 "Translation" => _translationVM,
@@ -74,8 +113,7 @@ namespace LexiScan.App.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
-                // Bước 1: Xóa Token
-                // Lưu ý: Đảm bảo bạn đã có Properties.Settings trong project App
+                // Bước 1: Xóa Token/UserId (Dùng UserId theo code của bạn)
                 LexiScan.App.Properties.Settings.Default.UserId = "";
                 LexiScan.App.Properties.Settings.Default.Save();
 

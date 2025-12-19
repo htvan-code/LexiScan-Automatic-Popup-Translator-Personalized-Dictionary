@@ -10,6 +10,7 @@ using System.Windows.Input;
 using CoreTts = LexiScan.Core.Services.TtsService;
 using InputKind = LexiScan.Core.Enums.InputType;
 using UiTts = LexiScanService.TtsService;
+using LexiScan.Core.Utils; // <--- THÊM DÒNG NÀY
 
 namespace LexiScanUI.ViewModels
 {
@@ -163,8 +164,15 @@ namespace LexiScanUI.ViewModels
                 _ttsService.ReadText(txt);
         }
 
-        private void ExecuteSettings(object? parameter) { }
+        private void ExecuteSettings(object? parameter)
+        {
+            // 1. Gọi sự kiện toàn cục để MainWindow nghe thấy
+            GlobalEvents.RaiseRequestOpenSettings();
 
+            // 2. Ẩn bớt các thành phần thừa trên popup cho gọn (tuỳ chọn)
+            IsSelectionMode = false;
+            WordList.Clear();
+        }
         private void ExecuteClose(object? parameter)
         {
             IsSelectionMode = false;

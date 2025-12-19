@@ -93,28 +93,64 @@
                                    Foreground="{DynamicResource PrimaryAccent}" 
                                    Margin="0,0,0,25" HorizontalAlignment="Center"/>
 
-                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Home" IsChecked="True">
+                        <RadioButton Command="{Binding NavigateCommand}" CommandParameter="Home">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton" BasedOn="{StaticResource SidebarNavigationStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedMenu}" Value="Home">
+                                            <Setter Property="IsChecked" Value="True"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Trang chủ"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="PersonalDictionary">
+                        <RadioButton Command="{Binding NavigateCommand}" CommandParameter="PersonalDictionary">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton" BasedOn="{StaticResource SidebarNavigationStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedMenu}" Value="PersonalDictionary">
+                                            <Setter Property="IsChecked" Value="True"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE736;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Từ điển cá nhân"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="History">
+                        <RadioButton Command="{Binding NavigateCommand}" CommandParameter="History">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton" BasedOn="{StaticResource SidebarNavigationStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedMenu}" Value="History">
+                                            <Setter Property="IsChecked" Value="True"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE81C;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Lịch sử tra cứu"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Translation">
+                        <RadioButton Command="{Binding NavigateCommand}" CommandParameter="Translation">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton" BasedOn="{StaticResource SidebarNavigationStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedMenu}" Value="Translation">
+                                            <Setter Property="IsChecked" Value="True"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8C1;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Dịch văn bản"/>
@@ -123,7 +159,16 @@
 
                         <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,15"/>
 
-                        <RadioButton Style="{StaticResource SidebarNavigationStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                        <RadioButton Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton" BasedOn="{StaticResource SidebarNavigationStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedMenu}" Value="Settings">
+                                            <Setter Property="IsChecked" Value="True"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <TextBlock Text="Cài đặt"/>
