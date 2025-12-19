@@ -9,6 +9,11 @@ namespace LexiScan.Core.Services
     {
         private readonly SpeechSynthesizer _synth = new();
 
+        // Lấy danh sách tất cả giọng Anh-Anh, Anh-Mỹ có trong máy
+        public List<InstalledVoice> GetInstalledVoices()
+        {
+            return _synth.GetInstalledVoices().ToList();
+        }
         public void Speak(string text, double speed, string accent)
         {
             if (string.IsNullOrWhiteSpace(text)) return;
@@ -17,21 +22,18 @@ namespace LexiScan.Core.Services
             _synth.Rate = Math.Clamp((int)((speed - 1) * 10), -10, 10);
 
             var voiceName = VoiceMapper.Map(accent);
-            if (voiceName != null)
+            if (!string.IsNullOrEmpty(voiceName))
             {
                 try
                 {
                     _synth.SelectVoice(voiceName);
                 }
-                catch (ArgumentException)
-                {
-                    Console.WriteLine($"TTS Error: Could not select voice '{voiceName}'. Using default voice.");
+                catch (Exception ex) {
+                    System.Diagnostics.Debug.WriteLine($"TTS Warning: Không tìm thấy giọng {voiceName}. Hệ thống sẽ dùng giọng mặc định. Chi tiết: {ex.Message}");
                 }
             }
-
             _synth.SpeakAsync(text);
         }
-
         public void Stop() => _synth.SpeakAsyncCancelAll();
     }
 }

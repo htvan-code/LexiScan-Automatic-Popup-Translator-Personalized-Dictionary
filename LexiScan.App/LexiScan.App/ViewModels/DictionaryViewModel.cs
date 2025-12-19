@@ -119,7 +119,6 @@ namespace LexiScan.App.ViewModels
             {
                 case SpeechVoice.EngUK: accentCode = "en-GB"; break;
                 case SpeechVoice.EngUS: accentCode = "en-US"; break;
-                default: accentCode = "en-US"; break;
             }
 
             // 3. Gọi Core

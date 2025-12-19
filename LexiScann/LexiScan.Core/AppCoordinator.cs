@@ -33,8 +33,7 @@ namespace LexiScan.Core
         // --- HÀM PHÁT ÂM (CHỈ GIỮ LẠI BẢN GỐC) ---
         public void Speak(string text, double speed, string accent)
         {
-            // speed: 0.5 - 2.0
-            // accent: "en-US" hoặc "en-GB"
+            // accent truyền vào là "en-US" hoặc "en-GB"
             _ttsService.Speak(text, speed, accent);
         }
 
