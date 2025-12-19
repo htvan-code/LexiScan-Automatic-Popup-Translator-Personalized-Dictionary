@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using LexiScan.Core.Enums;
+
 namespace LexiScan.Core.Models
 {
     public class TranslationResult
     {
         // === Dữ liệu Đầu vào/Đầu ra ===
         public string OriginalText { get; set; }
-
         public string TranslatedText { get; set; }
 
         // === Trạng thái & Phân loại ===
@@ -18,9 +18,10 @@ namespace LexiScan.Core.Models
         public bool IsError => Status != ServiceStatus.Success;
         public string ErrorMessage { get; set; }
 
-        // === Dictionary Data (Chỉ dùng cho InputType.SingleWord) ===
-        public string Phonetic { get; set; }
+        public bool IsFromClipboard { get; set; }
 
+        // === Dictionary Data ===
+        public string Phonetic { get; set; }
         public List<Meaning> Meanings { get; set; } = new List<Meaning>();
     }
 }

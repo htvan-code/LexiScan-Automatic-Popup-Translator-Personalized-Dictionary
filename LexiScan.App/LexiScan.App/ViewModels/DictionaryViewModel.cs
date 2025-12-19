@@ -91,6 +91,10 @@ namespace LexiScan.App.ViewModels
 
         private void OnTranslationResultReceived(TranslationResult result)
         {
+            if (result.IsFromClipboard)
+            {
+                return;
+            }
             DisplayWord = result.OriginalText;
             DefinitionText = result.TranslatedText;
             PhoneticText = result.Phonetic;
