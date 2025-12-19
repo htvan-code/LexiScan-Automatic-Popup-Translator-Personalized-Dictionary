@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using LexiScan.App.Commands;
 using LexiScan.App.Services;
-using LexiScan.App.Models; // Quan trọng: Để nhận diện SpeechSpeed, SpeechVoice
+using LexiScan.App.Models; 
 using LexiScan.Core;
 using LexiScan.Core.Models;
 
@@ -19,6 +19,13 @@ namespace LexiScan.App.ViewModels
         private string _phoneticText;
         private string _selectedSuggestion;
 
+        private bool _isListening;
+        public bool IsListening
+        {
+            get => _isListening;
+            set { _isListening = value; OnPropertyChanged(); }
+        }
+
         public DictionaryViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
@@ -34,10 +41,29 @@ namespace LexiScan.App.ViewModels
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
-            StartVoiceSearchCommand = new RelayCommand((o) => _coordinator.StartVoiceSearch());
+            // Command kích hoạt Micro
+            StartVoiceSearchCommand = new RelayCommand((o) => {
+                IsListening = true; // Bật đèn nháy
+                _coordinator.StartVoiceSearch();
+            });
 
-            // GỌI HÀM XỬ LÝ ĐỌC
             SpeakResultCommand = new RelayCommand(ExecuteSpeakResult);
+
+            // --- XỬ LÝ SỰ KIỆN TỪ MICRO ---
+            // Khi máy bắt đầu nghe thấy tiếng người nói
+            
+
+            // Khi nhận diện xong và trả về văn bản
+            _coordinator.VoiceSearchCompleted += (text) =>
+            {
+                IsListening = false;
+                SearchText = text;
+                SearchCommand.Execute(null); 
+            };
+
+            // Khi kết thúc (do lỗi hoặc im lặng) để tắt hiệu ứng
+            
+
         }
 
         // ... (Giữ nguyên các Property SearchText, SuggestionList, DisplayWord...)
@@ -91,6 +117,10 @@ namespace LexiScan.App.ViewModels
 
         private void OnTranslationResultReceived(TranslationResult result)
         {
+            if (result.IsFromClipboard)
+            {
+                return;
+            }
             DisplayWord = result.OriginalText;
             DefinitionText = result.TranslatedText;
             PhoneticText = result.Phonetic;
