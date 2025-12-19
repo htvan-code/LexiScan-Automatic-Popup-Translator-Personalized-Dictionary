@@ -88,10 +88,11 @@ namespace LexiScan.App
             {
                 if (result.Status == ServiceStatus.Success)
                 {
-                    // [SỬA] COMMENT HOẶC XÓA ĐOẠN CODE NÀY ĐI
-                    // Vì DictionaryView đã tự lo việc hiển thị rồi, không cần MainWindow bật popup nữa.
-
-                     if (_popupWindow == null || !IsWindowOpen(_popupWindow))
+                    if (this.IsActive)
+                    {
+                        return;
+                    }
+                    if (_popupWindow == null || !IsWindowOpen(_popupWindow))
                     {
                         _popupWindow = new PopupView();
                     }
