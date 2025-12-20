@@ -67,6 +67,7 @@ namespace LexiScan.Core.Services
             try
             {
                 _recognizer.RecognizeAsyncCancel();
+
                 _recognizer.RecognizeAsync(RecognizeMode.Single);
             }
             catch (Exception ex)

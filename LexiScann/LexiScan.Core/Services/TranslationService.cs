@@ -21,6 +21,11 @@ namespace LexiScan.Core.Services
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
             );
         }
+        public async Task<TranslationResult> TranslateForMainApp(string text, string sl, string tl)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            return await TranslateWithGoogleFull(text.Trim(), sl, tl);
+        }
 
         public async Task<TranslationResult> ProcessTranslationAsync(string text)
         {

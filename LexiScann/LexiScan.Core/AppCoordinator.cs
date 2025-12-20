@@ -48,7 +48,6 @@ namespace LexiScan.Core
             };
         }
 
-
         public void Speak(string text, double speed, string accent)
         {
             _ttsService.Speak(text, speed, accent);
@@ -113,6 +112,11 @@ namespace LexiScan.Core
         public void StartVoiceSearch()
         {
             _voiceToTextService.StartListening();
+        }
+
+        public async Task<TranslationResult> TranslateGeneralAsync(string text, string sl, string tl)
+        {
+            return await _translationService.TranslateForMainApp(text, sl, tl);
         }
     }
 }
