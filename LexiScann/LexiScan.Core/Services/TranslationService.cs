@@ -66,7 +66,13 @@ namespace LexiScan.Core.Services
                     arr0.Count > 0 &&
                     arr0[0] is JArray inner0)
                 {
-                    result.TranslatedText = inner0[0]?.ToString();
+                    var sb = new System.Text.StringBuilder();
+                    foreach (var segment in arr0)
+                    {
+                        if (segment is JArray seg && seg.Count > 0)
+                            sb.Append(seg[0]?.ToString());
+                    }
+                    result.TranslatedText = sb.ToString().Trim();
                 }
 
                 // ========= 2. LẤY PHIÊN ÂM TỪ dt=rm =========

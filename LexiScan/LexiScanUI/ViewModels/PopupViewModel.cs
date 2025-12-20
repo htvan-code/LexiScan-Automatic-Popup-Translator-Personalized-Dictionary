@@ -128,15 +128,23 @@ namespace LexiScanUI.ViewModels
             if (string.IsNullOrWhiteSpace(OriginalSentence))
                 return;
 
-            var parts = OriginalSentence.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            // chuẩn hóa text
+            var normalized = OriginalSentence
+                .Replace("\r", " ")
+                .Replace("\n", " ")
+                .Replace("\t", " ")
+                .Replace("  ", " ");
+
+            var parts = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var w in parts)
             {
-                var clean = w.Trim(',', '.', '?', '!', ';', ':');
+                var clean = w.Trim(',', '.', '?', '!', ';', ':', '\"', '\'', ')', '(');
                 if (!string.IsNullOrWhiteSpace(clean))
                     WordList.Add(new SelectableWord(clean, ClickWordCommand));
             }
         }
+
 
         // ===================== CLICK WORD TO TRANSLATE =====================
         private async void ExecuteClickWord(object? parameter)
