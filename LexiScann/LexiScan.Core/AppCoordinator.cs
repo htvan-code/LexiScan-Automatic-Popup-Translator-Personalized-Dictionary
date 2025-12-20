@@ -18,18 +18,36 @@ namespace LexiScan.Core
         public event Action<TranslationResult>? TranslationCompleted;
         public event Action<string>? TranslationVoiceRecognized;
 
+        public event Action? VoiceRecognitionStarted; 
+        public event Action? VoiceRecognitionEnded;
+
+        public event Action<int>? AudioLevelUpdated;
         public AppCoordinator(TranslationService translationService, VoicetoText voiceToTextService, TtsService ttsService)
         {
             _translationService = translationService;
             _voiceToTextService = voiceToTextService;
             _ttsService = ttsService;
 
+            _voiceToTextService.SpeechStarted += () => VoiceRecognitionStarted?.Invoke();
+            _voiceToTextService.SpeechEnded += () => VoiceRecognitionEnded?.Invoke();
+
             _voiceToTextService.TextRecognized += (text) =>
             {
-                VoiceSearchCompleted?.Invoke(text);
-                TranslationVoiceRecognized?.Invoke(text);
+                string cleanedText = text.Trim().Replace(".", "").ToLower();
+
+                if (!string.IsNullOrWhiteSpace(cleanedText))
+                {
+                    VoiceSearchCompleted?.Invoke(cleanedText);
+                    TranslationVoiceRecognized?.Invoke(cleanedText);
+                }
+            };
+
+            _voiceToTextService.AudioLevelUpdated += (level) =>
+            {
+                AudioLevelUpdated?.Invoke(level);
             };
         }
+
 
         public void Speak(string text, double speed, string accent)
         {
@@ -49,7 +67,6 @@ namespace LexiScan.Core
             {
                 var result = await _translationService.ProcessTranslationAsync(text.Trim());
 
-                // [GẮN NHÃN] Đây là search từ App -> KHÔNG hiện Popup
                 result.IsFromClipboard = false;
 
                 SearchResultReady?.Invoke(result);
@@ -62,7 +79,7 @@ namespace LexiScan.Core
                     OriginalText = text,
                     Status = ServiceStatus.ApiError,
                     ErrorMessage = ex.Message,
-                    IsFromClipboard = false // Lỗi trong app thì báo trong app
+                    IsFromClipboard = false 
                 };
                 SearchResultReady?.Invoke(errorResult);
                 TranslationCompleted?.Invoke(errorResult);
@@ -77,7 +94,6 @@ namespace LexiScan.Core
             {
                 var result = await _translationService.ProcessTranslationAsync(rawText.Trim());
 
-                // [GẮN NHÃN] Đây là search từ Hotkey -> CẦN hiện Popup
                 result.IsFromClipboard = true;
 
                 TranslationCompleted?.Invoke(result);
@@ -89,7 +105,7 @@ namespace LexiScan.Core
                     OriginalText = rawText,
                     Status = ServiceStatus.InternalError,
                     ErrorMessage = ex.Message,
-                    IsFromClipboard = true // Lỗi từ hotkey thì hiện popup báo lỗi
+                    IsFromClipboard = true
                 });
             }
         }

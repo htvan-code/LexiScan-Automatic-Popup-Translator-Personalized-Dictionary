@@ -89,27 +89,17 @@
                     <Grid Grid.Column="2" Width="45" Height="45">
                         <Ellipse x:Name="VoicePulse" 
                                  Fill="{DynamicResource PrimaryAccent}" 
-                                 Width="25" Height="25" 
-                                 Opacity="0" 
+                                 Width="{Binding VoiceLevel, FallbackValue=25}" 
+                                 Height="{Binding VoiceLevel, FallbackValue=25}" 
                                  IsHitTestVisible="False"
                                  HorizontalAlignment="Center" 
-                                 VerticalAlignment="Center">    
+                                 VerticalAlignment="Center">
                             <Ellipse.Style>
                                 <Style TargetType="Ellipse">
+                                    <Setter Property="Opacity" Value="0"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsListening}" Value="True">
-                                            <DataTrigger.EnterActions>
-                                                <BeginStoryboard Name="PulseStoryboard">
-                                                    <Storyboard RepeatBehavior="Forever">
-                                                        <DoubleAnimation Storyboard.TargetProperty="Width" From="25" To="55" Duration="0:0:0.8"/>
-                                                        <DoubleAnimation Storyboard.TargetProperty="Height" From="25" To="55" Duration="0:0:0.8"/>
-                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.6" To="0" Duration="0:0:0.8"/>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </DataTrigger.EnterActions>
-                                            <DataTrigger.ExitActions>
-                                                <StopStoryboard BeginStoryboardName="PulseStoryboard"/>
-                                            </DataTrigger.ExitActions>
+                                        <DataTrigger Binding="{Binding IsSpeaking}" Value="True">
+                                            <Setter Property="Opacity" Value="0.6"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -120,7 +110,7 @@
                                 Command="{Binding StartVoiceSearchCommand}"
                                 Width="45" Height="45"
                                 HorizontalAlignment="Center" 
-                                VerticalAlignment="Center">     
+                                VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Microphone" Width="20" Height="20">
                                 <materialDesign:PackIcon.Style>
                                     <Style TargetType="materialDesign:PackIcon">
@@ -170,14 +160,9 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" x:Name="SearchHistoryPopup"
-                VerticalAlignment="Top"
-                Margin="15,-5,15,0" 
-                Background="{DynamicResource CardBackground}" 
-                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,1,1"
-                CornerRadius="0,0,10,10" Padding="0,5"
-                Panel.ZIndex="999">
-
+        <Border Grid.Row="1" x:Name="SearchHistoryPopup" VerticalAlignment="Top" Margin="15,-5,15,0" 
+                Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" 
+                BorderThickness="1,0,1,1" CornerRadius="0,0,10,10" Padding="0,5" Panel.ZIndex="999">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -189,19 +174,14 @@
                             </MultiDataTrigger.Conditions>
                             <Setter Property="Visibility" Value="Visible"/>
                         </MultiDataTrigger>
-
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Visibility" Value="Visible"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
             </Border.Style>
-
-            <ListBox x:Name="SuggestionListBox" 
-                     ItemsSource="{Binding SuggestionList}" 
-                     SelectedItem="{Binding SelectedSuggestion}"
-                     BorderThickness="0" Background="Transparent" MaxHeight="250" 
-                     ItemContainerStyle="{StaticResource ListBoxItemStyle}">
+            <ListBox x:Name="SuggestionListBox" ItemsSource="{Binding SuggestionList}" SelectedItem="{Binding SelectedSuggestion}"
+                     BorderThickness="0" Background="Transparent" MaxHeight="250" ItemContainerStyle="{StaticResource ListBoxItemStyle}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -216,6 +196,5 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
-
     </Grid>
 </UserControl>
