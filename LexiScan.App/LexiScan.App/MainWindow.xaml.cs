@@ -90,6 +90,7 @@ namespace LexiScan.App
                 {
                     return;
                 }
+
                 if (result.Status == ServiceStatus.Success)
                 {
                     if (_popupWindow == null || !IsWindowOpen(_popupWindow))

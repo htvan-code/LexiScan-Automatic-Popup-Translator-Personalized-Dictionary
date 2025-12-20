@@ -17,7 +17,7 @@ namespace LexiScan.App.ViewModels
         // Các ViewModel khác
         private readonly PersonalDictionaryViewModel _personalDictionaryVM = new PersonalDictionaryViewModel();
         private readonly HistoryViewModel _historyVM = new HistoryViewModel();
-        private readonly TranslationViewModel _translationVM = new TranslationViewModel();
+        private readonly TranslationViewModel _translationVM;
         private readonly SettingsViewModel _settingsVM = new SettingsViewModel();
 
         private BaseViewModel? _currentView;
@@ -51,6 +51,8 @@ namespace LexiScan.App.ViewModels
         {
             // Khởi tạo DictionaryViewModel với coordinator
             _dictionaryVM = new DictionaryViewModel(coordinator);
+
+            _translationVM = new TranslationViewModel(coordinator);
 
             NavigateCommand = new RelayCommand(Navigate);
             LogoutCommand = new RelayCommand(ExecuteLogout);

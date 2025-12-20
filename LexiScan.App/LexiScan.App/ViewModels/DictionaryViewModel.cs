@@ -20,12 +20,17 @@ namespace LexiScan.App.ViewModels
         private string _selectedSuggestion;
 
         private bool _isListening;
-        public bool IsListening
-        {
-            get => _isListening;
-            set { _isListening = value; OnPropertyChanged(); }
-        }
+        public bool IsListening { get => _isListening; set { _isListening = value; OnPropertyChanged(); } }
 
+        private bool _isSpeaking;
+        public bool IsSpeaking { get => _isSpeaking; set { _isSpeaking = value; OnPropertyChanged(); } }
+
+        private double _voiceLevel;
+        public double VoiceLevel
+        {
+            get => _voiceLevel;
+            set { _voiceLevel = value; OnPropertyChanged(); }
+        }
         public DictionaryViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
@@ -34,6 +39,11 @@ namespace LexiScan.App.ViewModels
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
             SuggestionList = new ObservableCollection<string>();
 
+            _coordinator.VoiceRecognitionStarted += () => IsSpeaking = true;
+
+            // Khi ngừng nghe
+            _coordinator.VoiceRecognitionEnded += () => { IsSpeaking = false; IsListening = false; };
+            
             SearchCommand = new RelayCommand(async (o) =>
             {
                 if (string.IsNullOrWhiteSpace(SearchText)) return;
@@ -41,32 +51,34 @@ namespace LexiScan.App.ViewModels
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
-            // Command kích hoạt Micro
-            StartVoiceSearchCommand = new RelayCommand((o) => {
-                IsListening = true; // Bật đèn nháy
+            StartVoiceSearchCommand = new RelayCommand((o) =>
+            {
+                IsListening = true;
                 _coordinator.StartVoiceSearch();
             });
 
             SpeakResultCommand = new RelayCommand(ExecuteSpeakResult);
 
-            // --- XỬ LÝ SỰ KIỆN TỪ MICRO ---
-            // Khi máy bắt đầu nghe thấy tiếng người nói
-            
-
-            // Khi nhận diện xong và trả về văn bản
             _coordinator.VoiceSearchCompleted += (text) =>
             {
                 IsListening = false;
+                IsSpeaking = false;
                 SearchText = text;
                 SearchCommand.Execute(null); 
             };
 
-            // Khi kết thúc (do lỗi hoặc im lặng) để tắt hiệu ứng
-            
+            _coordinator.AudioLevelUpdated += (level) =>
+            {
+                double newSize = 25.0 + (level * 4.0);
+
+                if (newSize < 25) newSize = 25;
+                if (newSize > 120) newSize = 120;
+
+                VoiceLevel = newSize;
+            };
 
         }
 
-        // ... (Giữ nguyên các Property SearchText, SuggestionList, DisplayWord...)
         public ObservableCollection<string> SuggestionList { get; set; }
         public string SearchText
         {
@@ -121,6 +133,7 @@ namespace LexiScan.App.ViewModels
             {
                 return;
             }
+
             DisplayWord = result.OriginalText;
             DefinitionText = result.TranslatedText;
             PhoneticText = result.Phonetic;
