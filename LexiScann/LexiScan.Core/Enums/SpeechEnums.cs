@@ -5,7 +5,6 @@
         Slower,
         Slow,
         Normal
-        // Đã xóa Fast, Faster
     }
 
     public enum SpeechVoice

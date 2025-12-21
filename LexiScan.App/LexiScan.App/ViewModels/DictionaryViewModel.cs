@@ -1,10 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LexiScan.App.Commands;
-using LexiScan.App.Services;
-using LexiScan.App.Models; 
+
 using LexiScan.Core;
+using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
+using LexiScan.Core.Services; 
 
 namespace LexiScan.App.ViewModels
 {
@@ -146,25 +147,27 @@ namespace LexiScan.App.ViewModels
         // --- LOGIC CHUYỂN ĐỔI ENUM SANG SỐ LIỆU ---
         private void ExecuteSpeakResult(object obj)
         {
-            if (string.IsNullOrWhiteSpace(DisplayWord)) return;
+            string textToRead = !string.IsNullOrWhiteSpace(DisplayWord) ? DisplayWord : SearchText;
+            if (string.IsNullOrWhiteSpace(textToRead)) return;
 
-            // QUAN TRỌNG: Load cài đặt mới nhất từ file settings.json
+            // QUAN TRỌNG: Phải dùng SettingsService từ LexiScan.Core
+            // LoadSettings() sẽ đọc file json mới nhất mà SettingsView vừa lưu
             var settings = _settingsService.LoadSettings();
 
-            // 1. Chuyển đổi tốc độ (Dùng số nguyên từ -10 đến 10)
+            // 1. Chuyển đổi tốc độ (Rate)
             double speedRate = 0;
             switch (settings.Speed)
             {
-                case SpeechSpeed.Slower: speedRate = -5; break; // Chậm hơn
-                case SpeechSpeed.Slow: speedRate = -3; break; // Chậm
-                case SpeechSpeed.Normal: speedRate = 0; break; // Bình thường
+                case SpeechSpeed.Slower: speedRate = -5; break;
+                case SpeechSpeed.Slow: speedRate = -3; break;
+                case SpeechSpeed.Normal: speedRate = 0; break;
             }
 
-            // 2. Chuyển đổi giọng đọc
-            string accentCode = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
+            // 2. Chuyển đổi giọng (Voice)
+            string accent = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
 
-            // 3. Gọi Coordinator thực hiện đọc
-            _coordinator.Speak(DisplayWord, speedRate, accentCode);
+            // 3. Thực hiện đọc
+            _coordinator.Speak(textToRead, speedRate, accent);
         }
     }
 }

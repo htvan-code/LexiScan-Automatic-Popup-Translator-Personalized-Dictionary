@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <Folder Include="LexiScan\App\" />
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>
