@@ -151,7 +151,7 @@
                                    Foreground="{DynamicResource PrimaryText}"
                                    VerticalAlignment="Center" 
                                    Margin="0,0,10,0" HorizontalAlignment="Center"/>
-                        <TextBlock Text="How to use " 
+                        <TextBlock Text="Trợ giúp và phản hồi " 
                                    FontSize="14" 
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryText}"

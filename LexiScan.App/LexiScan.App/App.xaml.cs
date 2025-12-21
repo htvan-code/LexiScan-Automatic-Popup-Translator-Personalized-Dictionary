@@ -4,7 +4,8 @@ using System.Windows;
 using LexiScan.App.Views;
 using LexiScan.App.ViewModels; // [THÊM] Để dùng MainViewModel
 using LexiScan.Core;           // [THÊM] Để dùng AppCoordinator
-using LexiScan.Core.Services;  // [THÊM] Để dùng các Services
+using LexiScan.Core.Services;
+using LexiScanService;  // [THÊM] Để dùng các Services
 
 namespace LexiScan.App
 {

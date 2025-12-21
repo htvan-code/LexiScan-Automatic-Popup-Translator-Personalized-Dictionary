@@ -345,10 +345,9 @@
                             <CheckBox Content="Tự động phát âm khi tra từ" 
                                       Style="{StaticResource StandardCheckBoxStyle}"
                                       IsChecked="{Binding CurrentSettings.AutoPronounceOnLookup}"/>
-
-                            <CheckBox Content="Bật/Tắt popup" 
-                                      Style="{StaticResource StandardCheckBoxStyle}"
-                                      IsChecked="{Binding CurrentSettings.IsAutoReadEnabled}"/>
+                            <CheckBox Content="Bật popup" 
+          Style="{StaticResource StandardCheckBoxStyle}"
+          IsChecked="{Binding CurrentSettings.IsAutoReadEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" 
                                       Style="{StaticResource StandardCheckBoxStyle}"

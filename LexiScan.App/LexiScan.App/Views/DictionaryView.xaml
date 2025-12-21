@@ -7,8 +7,7 @@
              xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="550" d:DesignWidth="800" 
-             Background="{DynamicResource AppBackground}">
-
+             Background="Transparent">
     <UserControl.Resources>
         <Style TargetType="{x:Type TextBox}" x:Key="SearchTextBoxStyle">
             <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
@@ -55,146 +54,151 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="20" VerticalAlignment="Stretch">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Border Background="{DynamicResource AppBackground}" 
+            CornerRadius="0,15,15,0" 
+            ClipToBounds="True">
 
-        <StackPanel Grid.Row="0" Panel.ZIndex="1">
-            <TextBlock Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,15" Foreground="{DynamicResource PrimaryAccent}"/>
+        <Grid Margin="20" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <Border CornerRadius="18" Background="{DynamicResource CardBackground}" 
-                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Height="45">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Panel.ZIndex="1">
+                <TextBlock Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,15" Foreground="{DynamicResource PrimaryAccent}"/>
 
-                    <Button Grid.Column="0" Width="45" Style="{StaticResource IconButtonStyle}" Command="{Binding SearchCommand}">
-                        <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24"/>
-                    </Button>
+                <Border CornerRadius="18" Background="{DynamicResource CardBackground}" 
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Height="45">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <TextBox x:Name="SearchTextBox" Grid.Column="1" 
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource SearchTextBoxStyle}" 
-                             HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                        <TextBox.InputBindings>
-                            <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
-                        </TextBox.InputBindings>
-                    </TextBox>
+                        <Button Grid.Column="0" Width="45" Style="{StaticResource IconButtonStyle}" Command="{Binding SearchCommand}">
+                            <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24"/>
+                        </Button>
 
-                    <Grid Grid.Column="2" Width="45" Height="45">
-                        <Ellipse x:Name="VoicePulse" 
-                                 Fill="{DynamicResource PrimaryAccent}" 
-                                 Width="{Binding VoiceLevel, FallbackValue=25}" 
-                                 Height="{Binding VoiceLevel, FallbackValue=25}" 
-                                 IsHitTestVisible="False"
-                                 HorizontalAlignment="Center" 
-                                 VerticalAlignment="Center">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Opacity" Value="0"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSpeaking}" Value="True">
-                                            <Setter Property="Opacity" Value="0.6"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
+                        <TextBox x:Name="SearchTextBox" Grid.Column="1" 
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBoxStyle}" 
+                                 HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
 
-                        <Button Style="{StaticResource IconButtonStyle}" 
-                                Command="{Binding StartVoiceSearchCommand}"
-                                Width="45" Height="45"
-                                HorizontalAlignment="Center" 
-                                VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Microphone" Width="20" Height="20">
-                                <materialDesign:PackIcon.Style>
-                                    <Style TargetType="materialDesign:PackIcon">
-                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+                        <Grid Grid.Column="2" Width="45" Height="45">
+                            <Ellipse x:Name="VoicePulse" 
+                                     Fill="{DynamicResource PrimaryAccent}" 
+                                     Width="{Binding VoiceLevel, FallbackValue=25}" 
+                                     Height="{Binding VoiceLevel, FallbackValue=25}" 
+                                     IsHitTestVisible="False"
+                                     HorizontalAlignment="Center" 
+                                     VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Opacity" Value="0"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsListening}" Value="True">
-                                                <Setter Property="Opacity" Value="0.4"/>
-                                                <Setter Property="Foreground" Value="Red"/>
+                                            <DataTrigger Binding="{Binding IsSpeaking}" Value="True">
+                                                <Setter Property="Opacity" Value="0.6"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </materialDesign:PackIcon.Style>
-                            </materialDesign:PackIcon>
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Border>
-        </StackPanel>
+                                </Ellipse.Style>
+                            </Ellipse>
 
-        <Border Grid.Row="1" Panel.ZIndex="0" 
-                Margin="0,20,0,0" Padding="20" 
-                Background="{DynamicResource CardBackground}" 
-                CornerRadius="12" VerticalAlignment="Top">
-            <StackPanel>
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="{Binding DisplayWord, TargetNullValue='[Từ vựng]'}" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}"/>
-                        <TextBlock Text="{Binding PhoneticText, TargetNullValue='/.../'}" FontSize="18" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic" Margin="0,5,0,0"/>
-                    </StackPanel>
-
-                    <Border Grid.Column="1" CornerRadius="20" Width="40" Height="40" Background="{DynamicResource PrimaryAccent}" VerticalAlignment="Center">
-                        <Button Background="Transparent" Style="{StaticResource IconButtonStyle}" Foreground="White" Command="{Binding SpeakResultCommand}">
-                            <materialDesign:PackIcon Kind="VolumeHigh" Width="22" Height="22"/>
-                        </Button>
-                    </Border>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,0,0,15"/>
-
-                <TextBlock Text="Định nghĩa:" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,8"/>
-                <TextBlock Text="{Binding DefinitionText, TargetNullValue='...'}" TextWrapping="Wrap" FontSize="16" LineHeight="24" Foreground="{DynamicResource SecondaryText}"/>
-            </StackPanel>
-        </Border>
-
-        <Border Grid.Row="1" x:Name="SearchHistoryPopup" VerticalAlignment="Top" Margin="15,-5,15,0" 
-                Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" 
-                BorderThickness="1,0,1,1" CornerRadius="0,0,10,10" Padding="0,5" Panel.ZIndex="999">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                    <Style.Triggers>
-                        <MultiDataTrigger>
-                            <MultiDataTrigger.Conditions>
-                                <Condition Binding="{Binding ElementName=SearchTextBox, Path=IsKeyboardFocused}" Value="True"/>
-                                <Condition Binding="{Binding ElementName=SuggestionListBox, Path=HasItems}" Value="True"/>
-                            </MultiDataTrigger.Conditions>
-                            <Setter Property="Visibility" Value="Visible"/>
-                        </MultiDataTrigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Visibility" Value="Visible"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
-            <ListBox x:Name="SuggestionListBox" ItemsSource="{Binding SuggestionList}" SelectedItem="{Binding SelectedSuggestion}"
-                     BorderThickness="0" Background="Transparent" MaxHeight="250" ItemContainerStyle="{StaticResource ListBoxItemStyle}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Grid.Column="0" Kind="ClockTimeThreeOutline" Foreground="{DynamicResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <TextBlock Grid.Column="1" Text="{Binding}" FontWeight="Regular" FontSize="15" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                            <Button Style="{StaticResource IconButtonStyle}" 
+                                    Command="{Binding StartVoiceSearchCommand}"
+                                    Width="45" Height="45"
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Microphone" Width="20" Height="20">
+                                    <materialDesign:PackIcon.Style>
+                                        <Style TargetType="materialDesign:PackIcon">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.4"/>
+                                                    <Setter Property="Foreground" Value="Red"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </materialDesign:PackIcon.Style>
+                                </materialDesign:PackIcon>
+                            </Button>
                         </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </Border>
-    </Grid>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <Border Grid.Row="1" Panel.ZIndex="0" 
+                    Margin="0,20,0,0" Padding="20" 
+                    Background="{DynamicResource CardBackground}" 
+                    CornerRadius="12" VerticalAlignment="Top">
+                <StackPanel>
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding DisplayWord, TargetNullValue='[Từ vựng]'}" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}"/>
+                            <TextBlock Text="{Binding PhoneticText, TargetNullValue='/.../'}" FontSize="18" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic" Margin="0,5,0,0"/>
+                        </StackPanel>
+
+                        <Border Grid.Column="1" CornerRadius="20" Width="40" Height="40" Background="{DynamicResource PrimaryAccent}" VerticalAlignment="Center">
+                            <Button Background="Transparent" Style="{StaticResource IconButtonStyle}" Foreground="White" Command="{Binding SpeakResultCommand}">
+                                <materialDesign:PackIcon Kind="VolumeHigh" Width="22" Height="22"/>
+                            </Button>
+                        </Border>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Định nghĩa:" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding DefinitionText, TargetNullValue='...'}" TextWrapping="Wrap" FontSize="16" LineHeight="24" Foreground="{DynamicResource SecondaryText}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1" x:Name="SearchHistoryPopup" VerticalAlignment="Top" Margin="15,-5,15,0" 
+                    Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" 
+                    BorderThickness="1,0,1,1" CornerRadius="0,0,10,10" Padding="0,5" Panel.ZIndex="999">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=SearchTextBox, Path=IsKeyboardFocused}" Value="True"/>
+                                    <Condition Binding="{Binding ElementName=SuggestionListBox, Path=HasItems}" Value="True"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <ListBox x:Name="SuggestionListBox" ItemsSource="{Binding SuggestionList}" SelectedItem="{Binding SelectedSuggestion}"
+                         BorderThickness="0" Background="Transparent" MaxHeight="250" ItemContainerStyle="{StaticResource ListBoxItemStyle}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="ClockTimeThreeOutline" Foreground="{DynamicResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Grid.Column="1" Text="{Binding}" FontWeight="Regular" FontSize="15" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </Grid>
+    </Border>
 </UserControl>

@@ -1,14 +1,17 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Interop;
+﻿using LexiScan.App.Services;
 using LexiScan.App.ViewModels; // Không cần using Service lẻ tẻ nữa
 using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
+using LexiScan.Core.Services;
 using LexiScanUI.View;
+using LexiScanUI.ViewModels;
 using ScreenTranslator;
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace LexiScan.App
 {
@@ -32,8 +35,9 @@ namespace LexiScan.App
             // 1. Nhận Coordinator được truyền vào
             _coordinator = coordinator;
 
-            // Đăng ký sự kiện nhận kết quả dịch để hiện Popup
-            _coordinator.TranslationCompleted += OnTranslationResultReceived;
+            // [SỬA]: Không dùng TranslationCompleted nữa vì nó dùng chung cho cả Dictionary
+            // Đổi sang sự kiện OnPopupResultReceived chuyên biệt cho Popup
+            _coordinator.OnPopupResultReceived += OnTranslationResultReceived;
 
             // 2. Các Service liên quan mật thiết đến Window (Hook & Tray) thì giữ lại ở đây cũng được
 
@@ -73,24 +77,44 @@ namespace LexiScan.App
         }
 
         // PHẦN 2: XỬ LÝ DỊCH VÀ HIỆN POPUP (Giữ nguyên)
+        // Hàm này chạy khi bạn bấm Ctrl + Space (hoặc Hotkey đã cài)
         private async void SendTextToCoordinator(string text)
         {
+            // [SỬA]: Khởi tạo service để load cài đặt
+            var settingsService = new LexiScan.Core.Services.SettingsService();
+            var settings = settingsService.LoadSettings();
+
+            // Nếu tắt Popup thì dừng hẳn, không gửi yêu cầu dịch đi đâu cả
+            if (!settings.IsAutoReadEnabled) return;
+
             if (!string.IsNullOrWhiteSpace(text))
             {
-                // Gọi coordinator đã được tiêm vào
+                // Gửi văn bản bôi đen sang Coordinator để xử lý riêng cho Popup
                 await _coordinator.HandleClipboardTextAsync(text);
             }
         }
-
         private void OnTranslationResultReceived(TranslationResult result)
         {
             this.Dispatcher.Invoke(() =>
             {
+                // 1. Kiểm tra nguồn (Chỉ hiện popup nếu từ Clipboard/Bôi đen)
                 if (!result.IsFromClipboard)
                 {
                     return;
                 }
 
+                // 2. [MỚI] KIỂM TRA CÀI ĐẶT BẬT/TẮT POPUP
+                // Phải khai báo namespace: using LexiScan.Core.Services; ở đầu file
+                var settingsService = new LexiScan.Core.Services.SettingsService();
+                var settings = settingsService.LoadSettings();
+
+                // Nếu người dùng đã bỏ tích "Bật/Tắt Popup" -> Dừng lại, KHÔNG hiện cửa sổ
+                if (!settings.IsAutoReadEnabled)
+                {
+                    return;
+                }
+
+                // 3. Nếu mọi thứ OK -> Hiện Popup
                 if (result.Status == ServiceStatus.Success)
                 {
                     if (_popupWindow == null || !IsWindowOpen(_popupWindow))
@@ -100,9 +124,16 @@ namespace LexiScan.App
 
                     _popupWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                     _popupWindow.Topmost = true;
-                    _popupWindow.Show();
+
+                    _popupWindow.Show(); // <--- Dòng này sẽ không chạy nếu bị return ở trên
                     _popupWindow.Activate();
-                    _popupWindow.ShowResult(result);
+
+                    // Truyền dữ liệu vào ViewModel của Popup
+                    if (_popupWindow.DataContext is PopupViewModel vm)
+                    {
+                        vm.LoadTranslationData(result);
+                    }
+                    // Hoặc dùng cách cũ của bạn: _popupWindow.ShowResult(result);
                 }
             });
         }

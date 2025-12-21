@@ -126,17 +126,21 @@ namespace LexiScan.App.ViewModels
                 foreach (var s in suggestions) SuggestionList.Add(s);
             });
         }
-
+        //Thịnh sửa 20_12
         private void OnTranslationResultReceived(TranslationResult result)
         {
-            if (result.IsFromClipboard)
-            {
-                return;
-            }
-
             DisplayWord = result.OriginalText;
             DefinitionText = result.TranslatedText;
             PhoneticText = result.Phonetic;
+
+            var currentSettings = _settingsService.LoadSettings();
+
+            // Kiểm tra nếu người dùng bật "Tự động phát âm khi tra từ"
+            if (currentSettings.AutoPronounceOnLookup)
+            {
+                // Gọi hàm ExecuteSpeakResult để dùng chung logic tốc độ/giọng đọc
+                ExecuteSpeakResult(null);
+            }
         }
 
         // --- LOGIC CHUYỂN ĐỔI ENUM SANG SỐ LIỆU ---
@@ -144,27 +148,22 @@ namespace LexiScan.App.ViewModels
         {
             if (string.IsNullOrWhiteSpace(DisplayWord)) return;
 
-            var currentSettings = _settingsService.LoadSettings();
+            // QUAN TRỌNG: Load cài đặt mới nhất từ file settings.json
+            var settings = _settingsService.LoadSettings();
 
-            // 1. Chuyển đổi Tốc độ
-            double speedRate = 1.0;
-            switch (currentSettings.Speed)
+            // 1. Chuyển đổi tốc độ (Dùng số nguyên từ -10 đến 10)
+            double speedRate = 0;
+            switch (settings.Speed)
             {
-                case SpeechSpeed.Slower: speedRate = 0.5; break;
-                case SpeechSpeed.Slow: speedRate = 0.75; break;
-                case SpeechSpeed.Normal: speedRate = 1.0; break;
-
+                case SpeechSpeed.Slower: speedRate = -5; break; // Chậm hơn
+                case SpeechSpeed.Slow: speedRate = -3; break; // Chậm
+                case SpeechSpeed.Normal: speedRate = 0; break; // Bình thường
             }
 
-            // 2. Chuyển đổi Giọng đọc
-            string accentCode = "en-US";
-            switch (currentSettings.Voice)
-            {
-                case SpeechVoice.EngUK: accentCode = "en-GB"; break;
-                case SpeechVoice.EngUS: accentCode = "en-US"; break;
-            }
+            // 2. Chuyển đổi giọng đọc
+            string accentCode = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
 
-            // 3. Gọi Core
+            // 3. Gọi Coordinator thực hiện đọc
             _coordinator.Speak(DisplayWord, speedRate, accentCode);
         }
     }

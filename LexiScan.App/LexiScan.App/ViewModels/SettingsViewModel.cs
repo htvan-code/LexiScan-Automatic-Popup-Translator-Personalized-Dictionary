@@ -1,11 +1,12 @@
 ﻿using LexiScan.App.Commands;
-using LexiScan.App.Models;
-using LexiScan.App.Services;
 using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+// [SỬA LẠI] Dùng Core thay vì App (vì bạn đã chuyển file sang Core)
+using LexiScan.Core.Models;
+using LexiScan.Core.Services;
 
 namespace LexiScan.App.ViewModels
 {
@@ -20,28 +21,27 @@ namespace LexiScan.App.ViewModels
         private bool _isChangingHotkey;
         private string _hotkeyButtonText = "Thiết Lập";
 
+        public ICommand SaveCommand { get; }
+        public ICommand CancelCommand { get; }
+        public ICommand ChangeHotkeyCommand { get; }
+        public ICommand ExportDataCommand { get; }
+
         public SettingsViewModel()
         {
-            var loaded = _settingsService.LoadSettings();
-            CurrentSettings = loaded;
+            CurrentSettings = _settingsService.LoadSettings();
 
-            // Áp dụng theme
+            // Áp dụng theme lần đầu
             ApplyTheme(CurrentSettings.IsDarkModeEnabled);
 
             SaveCommand = new RelayCommand(SaveSettings);
             CancelCommand = new RelayCommand(CancelChanges);
 
-            // Logic bấm nút đổi hotkey
             ChangeHotkeyCommand = new RelayCommand((o) => {
                 IsChangingHotkey = true;
                 HotkeyButtonText = "Đang bấm phím...";
             });
-
             ExportDataCommand = new RelayCommand(_ => { });
         }
-
-        // ... (Các Property CurrentSettings, IsDarkModeEnabled, HasUnsavedChanges giữ nguyên như bản cũ của bạn) ...
-        // (Tôi rút gọn phần này để tập trung vào logic mới)
 
         public Settings CurrentSettings
         {
@@ -76,16 +76,9 @@ namespace LexiScan.App.ViewModels
 
         public bool HasUnsavedChanges { get => _hasUnsavedChanges; set { _hasUnsavedChanges = value; OnPropertyChanged(); } }
 
-        // Property cho Hotkey
         public bool IsChangingHotkey { get => _isChangingHotkey; set { _isChangingHotkey = value; OnPropertyChanged(); } }
         public string HotkeyButtonText { get => _hotkeyButtonText; set { _hotkeyButtonText = value; OnPropertyChanged(); } }
 
-        public ICommand SaveCommand { get; }
-        public ICommand CancelCommand { get; }
-        public ICommand ExportDataCommand { get; }
-        public ICommand ChangeHotkeyCommand { get; }
-
-        // --- LOGIC HOTKEY ---
         public void UpdateHotkey(string newHotkey)
         {
             if (IsChangingHotkey)
@@ -94,11 +87,10 @@ namespace LexiScan.App.ViewModels
                 OnPropertyChanged(nameof(CurrentSettings));
                 IsChangingHotkey = false;
                 HotkeyButtonText = "Thiết Lập";
-                CheckIfDirty();
+                CheckIfDirty(); // Báo thay đổi để hiện nút Lưu
             }
         }
 
-        // --- CÁC HÀM CƠ BẢN ---
         private void OnSettingsChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Settings.IsDarkModeEnabled))
@@ -112,15 +104,15 @@ namespace LexiScan.App.ViewModels
         private void CheckIfDirty()
         {
             if (_currentSettings == null || _originalSettings == null) return;
-            HasUnsavedChanges = !_currentSettings.Equals(_originalSettings);
+            HasUnsavedChanges = true; // Hiện nút Lưu khi có thay đổi
         }
 
         private void SaveSettings(object parameter)
         {
             _settingsService.SaveSettings(_currentSettings);
-            _originalSettings = (Settings)_currentSettings.Clone();
-            CheckIfDirty();
-            MessageBox.Show("Đã lưu!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            _originalSettings = (Settings)_currentSettings.Clone(); // Cập nhật mốc
+            HasUnsavedChanges = false; // Ẩn nút lưu
+            MessageBox.Show("Đã lưu cài đặt!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void CancelChanges(object parameter)
@@ -128,31 +120,35 @@ namespace LexiScan.App.ViewModels
             var backup = _originalSettings;
             _currentSettings.PropertyChanged -= OnSettingsChanged;
 
-            // Restore manual
+            // Phục hồi thủ công các trường quan trọng
             _currentSettings.Hotkey = backup.Hotkey;
+            _currentSettings.IsAutoReadEnabled = backup.IsAutoReadEnabled;
+            _currentSettings.Speed = backup.Speed;
+            _currentSettings.Voice = backup.Voice;
             _currentSettings.IsDarkModeEnabled = backup.IsDarkModeEnabled;
-            // ... restore các biến khác ...
+            _currentSettings.AutoPronounceOnLookup = backup.AutoPronounceOnLookup;
+            _currentSettings.AutoPronounceOnTranslate = backup.AutoPronounceOnTranslate;
 
             _currentSettings.PropertyChanged += OnSettingsChanged;
+
             ApplyTheme(_currentSettings.IsDarkModeEnabled);
             OnPropertyChanged(nameof(IsDarkModeEnabled));
-            CheckIfDirty();
-        }
+            OnPropertyChanged(nameof(CurrentSettings)); // Refresh UI
 
-        // --- HÀM ĐỔI MÀU (FIX LỖI MATERIAL DESIGN) ---
+            HasUnsavedChanges = false;
+        }
         private void ApplyTheme(bool isDark)
         {
             var app = Application.Current;
             if (app == null) return;
 
-            string assemblyName = "LexiScan"; // Chắc chắn tên này đúng với Properties của project
+            string assemblyName = "LexiScan";
             string themePath = isDark ? "Themes/DarkTheme.xaml" : "Themes/LightTheme.xaml";
             string newUriString = $"pack://application:,,,/{assemblyName};component/{themePath}";
 
             try
             {
                 ResourceDictionary? existingThemeDict = null;
-                // Tìm file theme cũ (Light hoặc Dark) để thay thế
                 foreach (var dict in app.Resources.MergedDictionaries)
                 {
                     if (dict.Source != null &&

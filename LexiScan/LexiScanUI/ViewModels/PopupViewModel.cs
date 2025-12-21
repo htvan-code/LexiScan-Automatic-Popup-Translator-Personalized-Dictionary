@@ -1,16 +1,13 @@
 ﻿using LexiScan.Core.Models;
-using LexiScan.Core.Services;
-using LexiScanData.Services;
-using LexiScanService;
+using LexiScan.Core.Services; // Đã thấy được do SettingsService giờ nằm ở Core
+using LexiScan.Core.Enums;    // Đã thấy được Enum
+using LexiScan.Core.Utils;
 using LexiScanUI.Helpers;
-using System;
+using LexiScanService;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using CoreTts = LexiScan.Core.Services.TtsService;
 using InputKind = LexiScan.Core.Enums.InputType;
 using UiTts = LexiScanService.TtsService;
-using LexiScan.Core.Utils; // <--- THÊM DÒNG NÀY
 
 namespace LexiScanUI.ViewModels
 {
@@ -18,60 +15,34 @@ namespace LexiScanUI.ViewModels
     {
         private readonly TranslationService _translator;
         private readonly UiTts _ttsService;
+        private readonly SettingsService _settingsService;
 
-
-        // ===================== PROPERTIES =====================
+        // Properties (Giữ nguyên)
         private string _currentWord = "";
-        public string CurrentWord
-        {
-            get => _currentWord;
-            set { _currentWord = value; OnPropertyChanged(); }
-        }
-
+        public string CurrentWord { get => _currentWord; set { _currentWord = value; OnPropertyChanged(); } }
         private string _phonetic = "";
-        public string Phonetic
-        {
-            get => _phonetic;
-            set { _phonetic = value; OnPropertyChanged(); }
-        }
-
+        public string Phonetic { get => _phonetic; set { _phonetic = value; OnPropertyChanged(); } }
         private string _currentTranslatedText = "";
-        public string CurrentTranslatedText
-        {
-            get => _currentTranslatedText;
-            set { _currentTranslatedText = value; OnPropertyChanged(); }
-        }
-
+        public string CurrentTranslatedText { get => _currentTranslatedText; set { _currentTranslatedText = value; OnPropertyChanged(); } }
         private bool _isSelectionMode;
-        public bool IsSelectionMode
-        {
-            get => _isSelectionMode;
-            set { _isSelectionMode = value; OnPropertyChanged(); }
-        }
-
+        public bool IsSelectionMode { get => _isSelectionMode; set { _isSelectionMode = value; OnPropertyChanged(); } }
         private string _originalSentence = "";
-        public string OriginalSentence
-        {
-            get => _originalSentence;
-            set { _originalSentence = value; OnPropertyChanged(); }
-        }
+        public string OriginalSentence { get => _originalSentence; set { _originalSentence = value; OnPropertyChanged(); } }
 
         public ObservableCollection<Meaning> Meanings { get; } = new();
         public ObservableCollection<SelectableWord> WordList { get; } = new();
 
-        // ===================== COMMANDS =====================
         public ICommand PinCommand { get; }
         public ICommand ReadAloudCommand { get; }
         public ICommand SettingsCommand { get; }
         public ICommand CloseCommand { get; }
         public ICommand ClickWordCommand { get; }
 
-        // ===================== CONSTRUCTOR =====================
         public PopupViewModel()
         {
             _translator = new TranslationService();
             _ttsService = new UiTts();
-
+            _settingsService = new SettingsService();
 
             PinCommand = new RelayCommand(ExecutePin);
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
@@ -80,115 +51,85 @@ namespace LexiScanUI.ViewModels
             ClickWordCommand = new RelayCommand(ExecuteClickWord);
         }
 
-        // ===================== LOAD TRANSLATION =====================
+        // --- LOGIC XỬ LÝ DỮ LIỆU ---
         public void LoadTranslationData(TranslationResult result)
         {
             if (result == null) return;
 
-            // reset split mode
+            // 1. [TÍNH NĂNG] Bật/Tắt Popup
+            var currentSettings = _settingsService.LoadSettings();
+            if (!currentSettings.IsAutoReadEnabled) return; // Nếu tắt -> Dừng luôn
+
             IsSelectionMode = false;
-
-            // store original English sentence
             OriginalSentence = result.OriginalText ?? "";
-
-            // header show English
             CurrentWord = result.OriginalText ?? "";
-
-            // show Vietnamese
             CurrentTranslatedText = result.TranslatedText ?? "";
+            Phonetic = (result.InputType == InputKind.SingleWord && !string.IsNullOrEmpty(result.Phonetic)) ? $"/{result.Phonetic}/" : "";
 
-            // show phonetic only for single word
-            Phonetic = (result.InputType == InputKind.SingleWord && !string.IsNullOrEmpty(result.Phonetic))
-                ? $"/{result.Phonetic}/"
-                : "";
-
-            // meanings only for word
             Meanings.Clear();
             if (result.InputType == InputKind.SingleWord && result.Meanings != null)
-            {
-                foreach (var m in result.Meanings)
-                    Meanings.Add(m);
-            }
+                foreach (var m in result.Meanings) Meanings.Add(m);
 
-            // prepare selectable words for sentence
             PrepareWordsForSelection();
-        }
 
-
-        // ===================== PIN TOGGLE =====================
-        private void ExecutePin(object? parameter)
-        {
-            IsSelectionMode = !IsSelectionMode;
-        }
-
-        // ===================== WORD SPLIT =====================
-        private void PrepareWordsForSelection()
-        {
-            WordList.Clear();
-            if (string.IsNullOrWhiteSpace(OriginalSentence))
-                return;
-
-            // chuẩn hóa text
-            var normalized = OriginalSentence
-                .Replace("\r", " ")
-                .Replace("\n", " ")
-                .Replace("\t", " ")
-                .Replace("  ", " ");
-
-            var parts = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var w in parts)
+            // 2. [TÍNH NĂNG] Tự động đọc khi dịch xong
+            if (currentSettings.AutoPronounceOnTranslate)
             {
-                var clean = w.Trim(',', '.', '?', '!', ';', ':', '\"', '\'', ')', '(');
-                if (!string.IsNullOrWhiteSpace(clean))
-                    WordList.Add(new SelectableWord(clean, ClickWordCommand));
+                ExecuteReadAloud(null);
             }
         }
 
-
-        // ===================== CLICK WORD TO TRANSLATE =====================
-        private async void ExecuteClickWord(object? parameter)
-        {
-            if (parameter is not string word)
-                return;
-
-            var result = await _translator.ProcessTranslationAsync(word);
-
-            CurrentWord = result.OriginalText ?? word;
-
-            Phonetic = !string.IsNullOrEmpty(result.Phonetic)
-                ? $"/{result.Phonetic}/"
-                : "";
-
-            Meanings.Clear();
-            if (result.Meanings != null)
-            {
-                foreach (var m in result.Meanings)
-                    Meanings.Add(m);
-            }
-        }
-
-        // ===================== READ ALOUD =====================
         private void ExecuteReadAloud(object? parameter)
         {
             var txt = !string.IsNullOrWhiteSpace(CurrentWord) ? CurrentWord : CurrentTranslatedText;
-            if (!string.IsNullOrWhiteSpace(txt))
-                _ttsService.ReadText(txt);
+            if (string.IsNullOrWhiteSpace(txt)) return;
+
+            var settings = _settingsService.LoadSettings();
+
+            double speed = 0;
+            switch (settings.Speed)
+            {
+                case SpeechSpeed.Slower: speed = -5; break;
+                case SpeechSpeed.Slow: speed = -3; break;
+                case SpeechSpeed.Normal: speed = 0; break;
+            }
+
+            string accent = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
+            _ttsService.Speak(txt, speed, accent);
+        }
+        // --- CÁC HÀM PHỤ TRỢ ---
+        private void ExecutePin(object? parameter) => IsSelectionMode = !IsSelectionMode;
+
+        private void PrepareWordsForSelection()
+        {
+            WordList.Clear();
+            if (string.IsNullOrWhiteSpace(OriginalSentence)) return;
+            foreach (var w in OriginalSentence.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var clean = w.Trim(',', '.', '?', '!', ';', ':');
+                if (!string.IsNullOrWhiteSpace(clean)) WordList.Add(new SelectableWord(clean, ClickWordCommand));
+            }
+        }
+
+        private async void ExecuteClickWord(object? parameter)
+        {
+            if (parameter is not string word) return;
+            var result = await _translator.ProcessTranslationAsync(word);
+            CurrentWord = result.OriginalText ?? word;
+            Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : "";
+            Meanings.Clear();
+            if (result.Meanings != null) foreach (var m in result.Meanings) Meanings.Add(m);
+
+            // 4. [TÍNH NĂNG] Tự động đọc khi tra từ đơn (Click vào từ)
+            if (_settingsService.LoadSettings().AutoPronounceOnLookup)
+                ExecuteReadAloud(null);
         }
 
         private void ExecuteSettings(object? parameter)
         {
-            // 1. Gọi sự kiện toàn cục để MainWindow nghe thấy
             GlobalEvents.RaiseRequestOpenSettings();
-
-            // 2. Ẩn bớt các thành phần thừa trên popup cho gọn (tuỳ chọn)
-            IsSelectionMode = false;
-            WordList.Clear();
+            IsSelectionMode = false; WordList.Clear();
         }
-        private void ExecuteClose(object? parameter)
-        {
-            IsSelectionMode = false;
-            WordList.Clear();
-        }
+        private void ExecuteClose(object? parameter) { IsSelectionMode = false; WordList.Clear(); }
     }
 }
