@@ -67,6 +67,7 @@
 
             <StackPanel Grid.Row="0" Panel.ZIndex="1">
                 <TextBlock Text="LexiScan App" FontSize="28" FontWeight="ExtraBold" Margin="0,0,0,15" Foreground="{DynamicResource PrimaryAccent}"/>
+
                 <Border CornerRadius="18" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Height="45">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -79,7 +80,10 @@
                             <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24"/>
                         </Button>
 
-                        <TextBox x:Name="SearchTextBox" Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchTextBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <TextBox x:Name="SearchTextBox" Grid.Column="1" 
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                                 Style="{StaticResource SearchTextBoxStyle}" 
+                                 HorizontalAlignment="Stretch" VerticalAlignment="Center">
                             <TextBox.InputBindings>
                                 <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
                             </TextBox.InputBindings>
@@ -112,7 +116,18 @@
                             <Border CornerRadius="20" Width="40" Height="40" Background="{DynamicResource PrimaryAccent}" Margin="0,0,10,0">
                                 <Button Background="Transparent" Style="{StaticResource IconButtonStyle}" Foreground="White" 
                                         Command="{Binding AddToPersonalDictionaryCommand}">
-                                    <materialDesign:PackIcon Kind="StarOutline" Width="22" Height="22"/>
+                                    <materialDesign:PackIcon Width="22" Height="22">
+                                        <materialDesign:PackIcon.Style>
+                                            <Style TargetType="materialDesign:PackIcon">
+                                                <Setter Property="Kind" Value="StarOutline"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSaved}" Value="True">
+                                                        <Setter Property="Kind" Value="Star"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </materialDesign:PackIcon.Style>
+                                    </materialDesign:PackIcon>
                                 </Button>
                             </Border>
 
