@@ -28,6 +28,12 @@ namespace LexiScanUI.ViewModels
         public bool IsSelectionMode { get => _isSelectionMode; set { _isSelectionMode = value; OnPropertyChanged(); } }
         private string _originalSentence = "";
         public string OriginalSentence { get => _originalSentence; set { _originalSentence = value; OnPropertyChanged(); } }
+        private bool _isPinned;
+        public bool IsPinned
+        {
+            get => _isPinned;
+            set { _isPinned = value; OnPropertyChanged(); }
+        }
 
         public ObservableCollection<Meaning> Meanings { get; } = new();
         public ObservableCollection<SelectableWord> WordList { get; } = new();
@@ -37,7 +43,7 @@ namespace LexiScanUI.ViewModels
         public ICommand SettingsCommand { get; }
         public ICommand CloseCommand { get; }
         public ICommand ClickWordCommand { get; }
-
+        public ICommand PinToFirebaseCommand { get; }
         public PopupViewModel()
         {
             _translator = new TranslationService();
@@ -49,6 +55,8 @@ namespace LexiScanUI.ViewModels
             SettingsCommand = new RelayCommand(ExecuteSettings);
             CloseCommand = new RelayCommand(ExecuteClose);
             ClickWordCommand = new RelayCommand(ExecuteClickWord);
+            PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
+
         }
 
         // --- LOGIC XỬ LÝ DỮ LIỆU ---
@@ -131,5 +139,15 @@ namespace LexiScanUI.ViewModels
             IsSelectionMode = false; WordList.Clear();
         }
         private void ExecuteClose(object? parameter) { IsSelectionMode = false; WordList.Clear(); }
+        private void ExecutePinToFirebase(object? parameter)
+        {
+            // Toggle trạng thái pin
+            IsPinned = !IsPinned;
+
+            // TODO: Lưu Firebase sau nếu cần:
+            // if (IsPinned) FirebaseStore.Save(CurrentWord);
+            // else FirebaseStore.Delete(CurrentWord);
+        }
+
     }
 }
