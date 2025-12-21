@@ -349,9 +349,7 @@
           Style="{StaticResource StandardCheckBoxStyle}"
           IsChecked="{Binding CurrentSettings.IsAutoReadEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                            <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" 
-                                      Style="{StaticResource StandardCheckBoxStyle}"
-                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/>
+                          
                         </StackPanel>
                     </Border>
                 </GroupBox>
@@ -389,7 +387,9 @@
                                              IsChecked="{Binding CurrentSettings.Voice, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=EngUS}" 
                                              Width="84"/>
                             </StackPanel>
-
+                            <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" 
+            Style="{StaticResource StandardCheckBoxStyle}"
+            IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/>
 
                         </StackPanel>
                     </Border>
