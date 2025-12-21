@@ -46,6 +46,7 @@ namespace LexiScanUI.ViewModels
         public ICommand PinToFirebaseCommand { get; }
         public PopupViewModel()
         {
+            PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
             _translator = new TranslationService();
             _ttsService = new UiTts();
             _settingsService = new SettingsService();
@@ -55,8 +56,6 @@ namespace LexiScanUI.ViewModels
             SettingsCommand = new RelayCommand(ExecuteSettings);
             CloseCommand = new RelayCommand(ExecuteClose);
             ClickWordCommand = new RelayCommand(ExecuteClickWord);
-            PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
-
         }
 
         // --- LOGIC XỬ LÝ DỮ LIỆU ---
@@ -66,7 +65,8 @@ namespace LexiScanUI.ViewModels
 
             // 1. [TÍNH NĂNG] Bật/Tắt Popup
             var currentSettings = _settingsService.LoadSettings();
-            if (!currentSettings.IsAutoReadEnabled) return; // Nếu tắt -> Dừng luôn
+            var settings = _settingsService.LoadSettings();
+            bool autoPopup = settings.IsAutoReadEnabled;
 
             IsSelectionMode = false;
             OriginalSentence = result.OriginalText ?? "";
@@ -141,12 +141,7 @@ namespace LexiScanUI.ViewModels
         private void ExecuteClose(object? parameter) { IsSelectionMode = false; WordList.Clear(); }
         private void ExecutePinToFirebase(object? parameter)
         {
-            // Toggle trạng thái pin
             IsPinned = !IsPinned;
-
-            // TODO: Lưu Firebase sau nếu cần:
-            // if (IsPinned) FirebaseStore.Save(CurrentWord);
-            // else FirebaseStore.Delete(CurrentWord);
         }
 
     }

@@ -6,7 +6,8 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         MinWidth="260"
-        MaxWidth="500"
+        MaxWidth="420"
+        MaxHeight="600"
         Height="480"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -24,10 +25,9 @@
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="18"
-                Padding="10">
-
+                Padding="8">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="22"
+                <DropShadowEffect BlurRadius="20"
                                   ShadowDepth="0"
                                   Opacity="0.32"/>
             </Border.Effect>
@@ -37,22 +37,21 @@
                     <RowDefinition Height="Auto"/>
                     <!-- Toolbar -->
                     <RowDefinition Height="*"/>
-                    <!-- Scroll Zone -->
+                    <!-- Scroll -->
                 </Grid.RowDefinitions>
 
                 <!-- ================= TOOLBAR ================= -->
                 <StackPanel Grid.Row="0"
                             Orientation="Horizontal"
                             HorizontalAlignment="Right"
-                            Margin="0,0,0,6">
+                            Margin="0,0,0,4">
 
-                    <!-- Volume -->
                     <Button Style="{StaticResource MaterialDesignToolButton}"
                             Command="{Binding ReadAloudCommand}">
-                        <materialDesign:PackIcon Kind="VolumeHigh"/>
+                        <materialDesign:PackIcon Kind="VolumeHigh"
+                                                 Foreground="{DynamicResource SecondaryText}"/>
                     </Button>
 
-                    <!-- Star Select -->
                     <Button Style="{StaticResource MaterialDesignToolButton}"
                             Command="{Binding PinCommand}">
                         <materialDesign:PackIcon Width="18">
@@ -71,7 +70,6 @@
                         </materialDesign:PackIcon>
                     </Button>
 
-                    <!-- Pin Firebase -->
                     <Button Style="{StaticResource MaterialDesignToolButton}"
                             Command="{Binding PinToFirebaseCommand}">
                         <materialDesign:PackIcon Width="18">
@@ -90,30 +88,47 @@
                         </materialDesign:PackIcon>
                     </Button>
 
-                    <!-- Settings -->
                     <Button Style="{StaticResource MaterialDesignToolButton}"
                             Command="{Binding SettingsCommand}">
-                        <materialDesign:PackIcon Kind="Cog"/>
+                        <materialDesign:PackIcon Kind="Cog"
+                                                 Foreground="{DynamicResource SecondaryText}"/>
                     </Button>
 
-                    <!-- Close -->
                     <Button Style="{StaticResource MaterialDesignToolButton}"
                             Click="Close_Click">
-                        <materialDesign:PackIcon Kind="Close"/>
+                        <materialDesign:PackIcon Kind="Close"
+                                                 Foreground="{DynamicResource DangerColor}"/>
                     </Button>
                 </StackPanel>
 
-
-                <!-- ============ SCROLL CONTENT ============ -->
+                <!-- ================= SCROLL ALL CONTENT ================= -->
                 <ScrollViewer Grid.Row="1"
-                              VerticalScrollBarVisibility="Auto">
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,6,0,0">
+
                     <StackPanel>
 
-                        <!-- English -->
-                        <TextBlock Text="{Binding OriginalSentence}"
-                                   FontSize="16"
+                        <!-- Word -->
+                        <TextBlock Text="{Binding CurrentWord}"
+                                   FontSize="17"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,2"/>
+
+                        <!-- Phonetic -->
+                        <TextBlock Text="{Binding Phonetic}"
+                                   FontSize="13"
+                                   FontStyle="Italic"
+                                   Foreground="{DynamicResource SecondaryText}"
+                                   Margin="0,0,0,10"/>
+
+                        <!-- Original English -->
+                        <TextBlock Text="{Binding OriginalText}"
+                                   FontSize="15"
                                    FontWeight="SemiBold"
-                                   Margin="0,2,0,8"
+                                   Foreground="{DynamicResource PrimaryText}"
+                                   Margin="0,0,0,12"
                                    TextWrapping="Wrap"
                                    TextAlignment="Justify"/>
 
@@ -122,34 +137,56 @@
                                    FontSize="15"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryAccent}"
-                                   Margin="0,0,0,12"
+                                   Margin="0,0,0,14"
                                    TextWrapping="Wrap"
                                    TextAlignment="Justify"/>
 
-
-                        <!-- Select Words -->
-                        <Border Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}"
-                                Padding="4">
+                        <!-- WordList -->
+                        <Border Background="{DynamicResource CardBackground}"
+        CornerRadius="10"
+        Padding="6"
+        Margin="0,0,0,12"
+        Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}">
                             <ItemsControl ItemsSource="{Binding WordList}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding Text}"
+                        Command="{Binding ClickCommand}"
+                        CommandParameter="{Binding Text}"
+                        Margin="2"
+                        Padding="4,2"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Border>
+
+
+
+                        <Separator Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}"
+                                   Margin="4,0"/>
 
                         <!-- Meanings -->
                         <ItemsControl ItemsSource="{Binding Meanings}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="0,4">
+                                    <StackPanel Margin="0,4,0,0">
                                         <TextBlock Text="{Binding PartOfSpeech}"
-                                                   FontWeight="Bold"
-                                                   FontStyle="Italic"/>
+                                                   FontSize="13"
+                                                   FontStyle="Italic"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryText}"/>
                                         <TextBlock Text="{Binding DefinitionsText}"
+                                                   FontSize="13"
+                                                   Margin="10,2,0,0"
                                                    TextWrapping="Wrap"
-                                                   Margin="10,0"/>
+                                                   TextAlignment="Justify"
+                                                   Foreground="{DynamicResource SecondaryText}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
