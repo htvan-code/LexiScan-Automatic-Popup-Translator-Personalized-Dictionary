@@ -64,7 +64,6 @@ namespace LexiScan.Core
         }
 
         // --- HÀM 1: CHỈ DÀNH CHO APP CHÍNH (Tra cứu thủ công) ---
-        // Note: Hàm này sẽ kích hoạt sự kiện cập nhật giao diện Dictionary chính
         public async Task ExecuteSearchAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return;

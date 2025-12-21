@@ -25,7 +25,6 @@ namespace LexiScanData.Services
         // --- 1. LƯU LỊCH SỬ DỊCH (Tự động) ---
         public async Task AddHistoryAsync(Sentences sentence)
         {
-            // Lưu vào đường dẫn: users/{uid}/history
             await _client
                 .Child("users")
                 .Child(_userId)
@@ -40,7 +39,7 @@ namespace LexiScanData.Services
                 .Child(_userId)
                 .Child("history")
                 .OrderByKey()
-                .LimitToLast(50) // Lấy 50 cái mới nhất
+                .LimitToLast(50) 
                 .OnceAsync<Sentences>();
 
             return items.Select(i =>
@@ -48,7 +47,7 @@ namespace LexiScanData.Services
                 var s = i.Object;
                 s.SentenceId = i.Key;
                 return s;
-            }).Reverse().ToList(); // Đảo ngược để cái mới nhất lên đầu
+            }).Reverse().ToList(); 
         }
 
         // --- 2. LƯU CÂU VÀO TỪ (Tính năng Popup) ---

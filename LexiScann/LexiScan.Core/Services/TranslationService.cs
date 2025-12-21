@@ -37,7 +37,6 @@ namespace LexiScan.Core.Services
                     ErrorMessage = "Không có văn bản."
                 };
             }
-
             string cleaned = text.Trim();
             return await TranslateWithGoogleFull(cleaned);
         }
@@ -159,41 +158,41 @@ namespace LexiScan.Core.Services
             }
         }
 
-        // =================== Suggestion ===================
         public async Task<List<string>> GetGoogleSuggestionsAsync(string prefix)
         {
             if (string.IsNullOrWhiteSpace(prefix)) return new List<string>();
 
+            if (prefix.Contains(" ")) return new List<string>();
+
+            string cleanPrefix = prefix.Trim().ToLower();
+
             try
             {
-                // [SỬA ĐỔI] Dùng Datamuse API để gợi ý chuẩn từ điển hơn
-                string url = $"https://api.datamuse.com/words?sp={Uri.EscapeDataString(prefix)}*&md=f&max=10";
-
+                string url = $"https://api.datamuse.com/words?sp={Uri.EscapeDataString(cleanPrefix)}*&max=15";
                 var response = await _http.GetStringAsync(url);
                 var jsonArray = JArray.Parse(response);
-
-                // Datamuse trả về dạng: [{"word": "hello", "score": ...}, {"word": "help", ...}]
-                // Nên ta cần lấy thuộc tính "word" của từng object
-                var suggestions = new List<string>();
+                var result = new List<string>();
 
                 foreach (var item in jsonArray)
                 {
-                    // Lấy từ khóa trong thuộc tính "word"
                     var word = item["word"]?.ToString();
                     if (!string.IsNullOrEmpty(word))
                     {
-                        suggestions.Add(word);
+                        string lowerWord = word.ToLower();
+
+                        if (lowerWord.Contains(" ")) continue;
+                        if (lowerWord.Any(c => char.IsPunctuation(c))) continue;
+                        if (lowerWord.Any(c => char.IsDigit(c))) continue;
+
+                        result.Add(lowerWord);
                     }
                 }
-
-                return suggestions.Take(5).ToList();
+                return result.Take(5).ToList();
             }
             catch
             {
-                // Lỗi thì trả về rỗng
+                return new List<string>();
             }
-
-            return new List<string>();
         }
         // =================== Helpers ===================
         private string ConvertPosToVietnamese(string pos)

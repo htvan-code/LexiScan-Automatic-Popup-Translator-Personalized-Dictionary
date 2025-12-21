@@ -130,16 +130,50 @@ namespace LexiScan.App.ViewModels
         //Thịnh sửa 20_12
         private void OnTranslationResultReceived(TranslationResult result)
         {
-            DisplayWord = result.OriginalText;
-            DefinitionText = result.TranslatedText;
-            PhoneticText = result.Phonetic;
+            // 1. Kiểm tra null như bên Popup
+            if (result == null) return;
+
+            // 2. Gán dữ liệu cơ bản
+            DisplayWord = result.OriginalText ?? "";
+
+            // [LOGIC GIỐNG POPUP] Thêm dấu gạch chéo /.../ cho phiên âm nếu có
+            PhoneticText = (!string.IsNullOrEmpty(result.Phonetic)) ? $"/{result.Phonetic}/" : "";
+
+            // 3. Xử lý hiển thị Nghĩa (Dùng StringBuilder vì giao diện chính là TextBlock)
+            var sb = new System.Text.StringBuilder();
+
+            // - Nghĩa dịch tóm tắt (Google Translate)
+            if (!string.IsNullOrWhiteSpace(result.TranslatedText))
+            {
+                sb.AppendLine(result.TranslatedText);
+            }
+
+            // - Nghĩa chi tiết (Noun/Verb) - Logic lấy dữ liệu giống Popup nhưng chuyển thành text
+            if (result.Meanings != null && result.Meanings.Count > 0)
+            {
+                sb.AppendLine(); // Xuống dòng tạo khoảng cách
+                foreach (var m in result.Meanings)
+                {
+                    // In loại từ (Ví dụ: ★ danh từ)
+                    sb.AppendLine($"★ {m.PartOfSpeech}");
+
+                    // In các định nghĩa con
+                    foreach (var def in m.Definitions)
+                    {
+                        sb.AppendLine($"   - {def}");
+                    }
+                    sb.AppendLine(); // Dòng trống cho thoáng
+                }
+            }
+
+            // Gán chuỗi đã gộp vào biến hiển thị
+            DefinitionText = sb.ToString().Trim();
 
             var currentSettings = _settingsService.LoadSettings();
 
-            // Kiểm tra nếu người dùng bật "Tự động phát âm khi tra từ"
             if (currentSettings.AutoPronounceOnLookup)
             {
-                // Gọi hàm ExecuteSpeakResult để dùng chung logic tốc độ/giọng đọc
+                // Gọi hàm đọc (MainViewModel đã có sẵn hàm này)
                 ExecuteSpeakResult(null);
             }
         }
