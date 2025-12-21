@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LexiScanData.Models
 {
-    internal class UserProfile
+    public class UserProfile
     {
     }
 }

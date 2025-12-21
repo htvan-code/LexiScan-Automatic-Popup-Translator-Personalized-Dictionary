@@ -8,11 +8,17 @@ using System.Threading.Tasks;
 
 namespace LexiScan.Core
 {
+    // [THÊM] Enum để phân biệt nguồn gọi Voice
+    public enum VoiceSource { Dictionary, Translation }
+
     public class AppCoordinator
     {
         private readonly TranslationService _translationService;
         private readonly VoicetoText _voiceToTextService;
         private readonly TtsService _ttsService;
+
+        // [THÊM] Thuộc tính để biết ai đang dùng Mic
+        public VoiceSource CurrentVoiceSource { get; private set; }
 
         // Sự kiện dành cho Dictionary (Giao diện chính)
         public event Action<TranslationResult>? SearchResultReady;
@@ -21,7 +27,7 @@ namespace LexiScan.Core
         // Sự kiện dành cho Popup (Dịch nhanh từ Clipboard/Hotkey)
         public event Action<TranslationResult>? OnPopupResultReceived;
 
-        // Các sự kiện Voice (giữ nguyên)
+        // Các sự kiện Voice
         public event Action<string>? VoiceSearchCompleted;
         public event Action<string>? TranslationVoiceRecognized;
         public event Action? VoiceRecognitionStarted;
@@ -42,8 +48,15 @@ namespace LexiScan.Core
                 string cleanedText = text.Trim().Replace(".", "").ToLower();
                 if (!string.IsNullOrWhiteSpace(cleanedText))
                 {
-                    VoiceSearchCompleted?.Invoke(cleanedText);
-                    TranslationVoiceRecognized?.Invoke(cleanedText);
+                    // [QUAN TRỌNG] Gửi tín hiệu Voice dựa trên nguồn đã lưu
+                    if (CurrentVoiceSource == VoiceSource.Dictionary)
+                    {
+                        VoiceSearchCompleted?.Invoke(cleanedText);
+                    }
+                    else if (CurrentVoiceSource == VoiceSource.Translation)
+                    {
+                        TranslationVoiceRecognized?.Invoke(cleanedText);
+                    }
                 }
             };
 
@@ -72,7 +85,6 @@ namespace LexiScan.Core
                 var result = await _translationService.ProcessTranslationAsync(text.Trim());
                 result.IsFromClipboard = false;
 
-                // Kích hoạt các sự kiện dành riêng cho màn hình chính
                 SearchResultReady?.Invoke(result);
                 TranslationCompleted?.Invoke(result);
             }
@@ -91,23 +103,16 @@ namespace LexiScan.Core
         }
 
         // --- HÀM 2: CHỈ DÀNH CHO POPUP (Dịch nhanh qua Clipboard/Hotkey) ---
-        // Note: [QUAN TRỌNG] Hàm này KHÔNG gọi các sự kiện của Dictionary chính
         public async Task HandleClipboardTextAsync(string rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText)) return;
             try
             {
-                // 1. Thực hiện dịch
                 var result = await _translationService.ProcessTranslationAsync(rawText.Trim());
                 if (result == null) return;
 
                 result.IsFromClipboard = true;
-
-                // 2. CHỈ gửi dữ liệu cho sự kiện Popup hiển thị
                 OnPopupResultReceived?.Invoke(result);
-
-                // 3. TUYỆT ĐỐI không gọi SearchResultReady hay TranslationCompleted ở đây
-                // để tránh làm thay đổi nội dung đang tra cứu trong màn hình Dictionary chính.
             }
             catch (Exception ex)
             {
@@ -121,8 +126,10 @@ namespace LexiScan.Core
             }
         }
 
-        public void StartVoiceSearch()
+        // [CẬP NHẬT] Hàm bắt đầu nghe phải nhận vào Nguồn gọi
+        public void StartVoiceSearch(VoiceSource source)
         {
+            CurrentVoiceSource = source; // Lưu lại ai đang gọi
             _voiceToTextService.StartListening();
         }
 
@@ -130,5 +137,13 @@ namespace LexiScan.Core
         {
             return await _translationService.TranslateForMainApp(text, sl, tl);
         }
+
+        // [BỔ SUNG] Hàm lưu vào từ điển cá nhân (Đã hứa ở các bước trước)
+        /*
+        public void SaveToPersonalDictionary(string word, string meaning, string phonetic = "")
+        {
+            // Logic lưu dữ liệu của bạn sẽ gọi vào DataService ở đây
+            System.Diagnostics.Debug.WriteLine($"Đang lưu: {word} - {meaning}");
+        }*/
     }
 }

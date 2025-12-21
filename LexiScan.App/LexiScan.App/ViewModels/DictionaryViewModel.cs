@@ -1,11 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LexiScan.App.Commands;
-
 using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
-using LexiScan.Core.Services; 
+using LexiScan.Core.Services;
 
 namespace LexiScan.App.ViewModels
 {
@@ -32,6 +31,7 @@ namespace LexiScan.App.ViewModels
             get => _voiceLevel;
             set { _voiceLevel = value; OnPropertyChanged(); }
         }
+
         public DictionaryViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
@@ -41,10 +41,8 @@ namespace LexiScan.App.ViewModels
             SuggestionList = new ObservableCollection<string>();
 
             _coordinator.VoiceRecognitionStarted += () => IsSpeaking = true;
-
-            // Khi ngừng nghe
             _coordinator.VoiceRecognitionEnded += () => { IsSpeaking = false; IsListening = false; };
-            
+
             SearchCommand = new RelayCommand(async (o) =>
             {
                 if (string.IsNullOrWhiteSpace(SearchText)) return;
@@ -52,32 +50,34 @@ namespace LexiScan.App.ViewModels
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
+            // CẬP NHẬT: Gửi kèm nguồn là Dictionary
             StartVoiceSearchCommand = new RelayCommand((o) =>
             {
                 IsListening = true;
-                _coordinator.StartVoiceSearch();
+                _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
             });
 
             SpeakResultCommand = new RelayCommand(ExecuteSpeakResult);
 
+            // CẬP NHẬT: Kiểm tra nguồn trước khi nhận kết quả
             _coordinator.VoiceSearchCompleted += (text) =>
             {
-                IsListening = false;
-                IsSpeaking = false;
-                SearchText = text;
-                SearchCommand.Execute(null); 
+                if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
+                {
+                    IsListening = false;
+                    IsSpeaking = false;
+                    SearchText = text;
+                    SearchCommand.Execute(null);
+                }
             };
 
             _coordinator.AudioLevelUpdated += (level) =>
             {
                 double newSize = 25.0 + (level * 4.0);
-
                 if (newSize < 25) newSize = 25;
                 if (newSize > 120) newSize = 120;
-
                 VoiceLevel = newSize;
             };
-
         }
 
         public ObservableCollection<string> SuggestionList { get; set; }
@@ -127,68 +127,51 @@ namespace LexiScan.App.ViewModels
                 foreach (var s in suggestions) SuggestionList.Add(s);
             });
         }
-        //Thịnh sửa 20_12
+
         private void OnTranslationResultReceived(TranslationResult result)
         {
-            // 1. Kiểm tra null như bên Popup
             if (result == null) return;
 
-            // 2. Gán dữ liệu cơ bản
             DisplayWord = result.OriginalText ?? "";
-
-            // [LOGIC GIỐNG POPUP] Thêm dấu gạch chéo /.../ cho phiên âm nếu có
             PhoneticText = (!string.IsNullOrEmpty(result.Phonetic)) ? $"/{result.Phonetic}/" : "";
 
-            // 3. Xử lý hiển thị Nghĩa (Dùng StringBuilder vì giao diện chính là TextBlock)
             var sb = new System.Text.StringBuilder();
 
-            // - Nghĩa dịch tóm tắt (Google Translate)
             if (!string.IsNullOrWhiteSpace(result.TranslatedText))
             {
                 sb.AppendLine(result.TranslatedText);
             }
 
-            // - Nghĩa chi tiết (Noun/Verb) - Logic lấy dữ liệu giống Popup nhưng chuyển thành text
             if (result.Meanings != null && result.Meanings.Count > 0)
             {
-                sb.AppendLine(); // Xuống dòng tạo khoảng cách
+                sb.AppendLine();
                 foreach (var m in result.Meanings)
                 {
-                    // In loại từ (Ví dụ: ★ danh từ)
                     sb.AppendLine($"★ {m.PartOfSpeech}");
-
-                    // In các định nghĩa con
                     foreach (var def in m.Definitions)
                     {
-                        sb.AppendLine($"   - {def}");
+                        sb.AppendLine($"    - {def}");
                     }
-                    sb.AppendLine(); // Dòng trống cho thoáng
+                    sb.AppendLine();
                 }
             }
 
-            // Gán chuỗi đã gộp vào biến hiển thị
             DefinitionText = sb.ToString().Trim();
-
             var currentSettings = _settingsService.LoadSettings();
 
             if (currentSettings.AutoPronounceOnLookup)
             {
-                // Gọi hàm đọc (MainViewModel đã có sẵn hàm này)
                 ExecuteSpeakResult(null);
             }
         }
 
-        // --- LOGIC CHUYỂN ĐỔI ENUM SANG SỐ LIỆU ---
         private void ExecuteSpeakResult(object obj)
         {
             string textToRead = !string.IsNullOrWhiteSpace(DisplayWord) ? DisplayWord : SearchText;
             if (string.IsNullOrWhiteSpace(textToRead)) return;
 
-            // QUAN TRỌNG: Phải dùng SettingsService từ LexiScan.Core
-            // LoadSettings() sẽ đọc file json mới nhất mà SettingsView vừa lưu
             var settings = _settingsService.LoadSettings();
 
-            // 1. Chuyển đổi tốc độ (Rate)
             double speedRate = 0;
             switch (settings.Speed)
             {
@@ -197,10 +180,7 @@ namespace LexiScan.App.ViewModels
                 case SpeechSpeed.Normal: speedRate = 0; break;
             }
 
-            // 2. Chuyển đổi giọng (Voice)
             string accent = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
-
-            // 3. Thực hiện đọc
             _coordinator.Speak(textToRead, speedRate, accent);
         }
     }
