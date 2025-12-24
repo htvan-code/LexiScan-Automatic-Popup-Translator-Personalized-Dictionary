@@ -90,20 +90,20 @@
                         <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryAccent}" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                         <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource SearchHistoryTextBoxStyle}"
-                                     Width="350"
-                                     d:Text="Nhập từ khóa để tìm kiếm..."/>
+                                 Style="{StaticResource SearchHistoryTextBoxStyle}"
+                                 Width="350"
+                                 d:Text="Nhập từ khóa để tìm kiếm..."/>
                     </StackPanel>
                 </Border>
 
                 <Button Grid.Column="1"
-                            Content="Xóa Toàn bộ"
-                            Command="{Binding ClearAllCommand}"
-                            Background="#FF4D4D" 
-                            Foreground="White"
-                            FontSize="12"
-                            Padding="15,8"
-                            HorizontalAlignment="Right"/>
+                        Content="Xóa Toàn bộ"
+                        Command="{Binding ClearAllCommand}"
+                        Background="#FF4D4D" 
+                        Foreground="White"
+                        FontSize="12"
+                        Padding="15,8"
+                        HorizontalAlignment="Right"/>
             </Grid>
 
             <Border Grid.Row="2" Padding="10" 
@@ -129,22 +129,28 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Word}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryAccent}"/>
-                                    <TextBlock Text="{Binding Meaning}" FontSize="12" Foreground="{DynamicResource SecondaryText}"/>
+                                    <TextBlock Text="{Binding SourceText}" 
+                           FontSize="16" 
+                           FontWeight="SemiBold" 
+                           Foreground="{DynamicResource PrimaryAccent}"/>
+
+                                    <TextBlock Text="{Binding SavedDate, StringFormat='{}{0:HH:mm - dd/MM/yyyy}'}" 
+                           FontSize="12" 
+                           Foreground="{DynamicResource SecondaryText}"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Content="Xem Chi Tiết" 
-                                               Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.ViewDetailsCommand}"
-                                               CommandParameter="{Binding .}"
-                                               Margin="0,0,10,0"
-                                               Style="{StaticResource DetailButtonStyle}"/>
+                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.ViewDetailsCommand}"
+                        CommandParameter="{Binding .}"
+                        Margin="0,0,10,0"
+                        Style="{StaticResource DetailButtonStyle}"/>
 
                                     <Button Content="&#xE74D;" 
-                                               FontFamily="Segoe MDL2 Assets"
-                                               Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteItemCommand}"
-                                               CommandParameter="{Binding .}"
-                                               Style="{StaticResource DeleteIconButtonStyle}"/>
+                        FontFamily="Segoe MDL2 Assets"
+                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteItemCommand}"
+                        CommandParameter="{Binding .}"
+                        Style="{StaticResource DeleteIconButtonStyle}"/>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>

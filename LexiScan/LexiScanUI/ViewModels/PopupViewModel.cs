@@ -1,9 +1,11 @@
-﻿using LexiScan.Core.Models;
-using LexiScan.Core.Services; // Đã thấy được do SettingsService giờ nằm ở Core
+﻿using LexiScan.Core;
 using LexiScan.Core.Enums;    // Đã thấy được Enum
+using LexiScan.Core.Models;
+using LexiScan.Core.Services; // Đã thấy được do SettingsService giờ nằm ở Core
 using LexiScan.Core.Utils;
-using LexiScanUI.Helpers;
+using LexiScanData.Services;
 using LexiScanService;
+using LexiScanUI.Helpers;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using InputKind = LexiScan.Core.Enums.InputType;
@@ -16,6 +18,7 @@ namespace LexiScanUI.ViewModels
         private readonly TranslationService _translator;
         private readonly UiTts _ttsService;
         private readonly SettingsService _settingsService;
+        private DatabaseServices? _dbService;
 
         // Properties (Giữ nguyên)
         private string _currentWord = "";
@@ -51,6 +54,11 @@ namespace LexiScanUI.ViewModels
             _ttsService = new UiTts();
             _settingsService = new SettingsService();
 
+            string uid = SessionManager.CurrentUserId;
+            if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+
+            PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
+
             PinCommand = new RelayCommand(ExecutePin);
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
             SettingsCommand = new RelayCommand(ExecuteSettings);
@@ -59,14 +67,11 @@ namespace LexiScanUI.ViewModels
         }
 
         // --- LOGIC XỬ LÝ DỮ LIỆU ---
-        public void LoadTranslationData(TranslationResult result)
+        public async void LoadTranslationData(TranslationResult result)
         {
             if (result == null) return;
 
-            // 1. [TÍNH NĂNG] Bật/Tắt Popup
             var currentSettings = _settingsService.LoadSettings();
-            var settings = _settingsService.LoadSettings();
-            bool autoPopup = settings.IsAutoReadEnabled;
 
             IsSelectionMode = false;
             OriginalSentence = result.OriginalText ?? "";
@@ -80,10 +85,18 @@ namespace LexiScanUI.ViewModels
 
             PrepareWordsForSelection();
 
-            // 2. [TÍNH NĂNG] Tự động đọc khi dịch xong
             if (currentSettings.AutoPronounceOnTranslate)
             {
                 ExecuteReadAloud(null);
+            }
+
+            // [THÊM] Kiểm tra xem từ này đã ghim chưa để bật sáng cái Ghim
+            if (_dbService != null)
+            {
+                IsPinned = false; 
+                string wordToCheck = !string.IsNullOrEmpty(CurrentWord) ? CurrentWord : OriginalSentence;
+                string? key = await _dbService.FindSavedKeyAsync(wordToCheck);
+                if (key != null) IsPinned = true;
             }
         }
 
@@ -106,8 +119,10 @@ namespace LexiScanUI.ViewModels
             _ttsService.Speak(txt, speed, accent);
         }
         // --- CÁC HÀM PHỤ TRỢ ---
-        private void ExecutePin(object? parameter) => IsSelectionMode = !IsSelectionMode;
-
+        private void ExecutePin(object? parameter)
+        {
+            IsSelectionMode = !IsSelectionMode;
+        }
         private void PrepareWordsForSelection()
         {
             WordList.Clear();
@@ -140,9 +155,41 @@ namespace LexiScanUI.ViewModels
             IsSelectionMode = false; WordList.Clear();
         }
         private void ExecuteClose(object? parameter) { IsSelectionMode = false; WordList.Clear(); }
-        private void ExecutePinToFirebase(object? parameter)
+        private async void ExecutePinToFirebase(object? parameter)
         {
-            IsPinned = !IsPinned;
+            // Tự kết nối lại nếu null
+            if (_dbService == null)
+            {
+                if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                else return;
+            }
+
+            // Ưu tiên lưu từ đơn, nếu không có thì lưu cả câu
+            string textToSave = !string.IsNullOrWhiteSpace(CurrentWord) ? CurrentWord : OriginalSentence;
+            string meaningToSave = CurrentTranslatedText;
+
+            if (string.IsNullOrWhiteSpace(textToSave)) return;
+
+            try
+            {
+                // Kiểm tra xem từ này đã ghim chưa?
+                string? existingKey = await _dbService.FindSavedKeyAsync(textToSave);
+
+                if (existingKey != null)
+                {
+                    // ĐÃ CÓ -> XÓA (BỎ GHIM)
+                    await _dbService.DeleteSavedItemAsync(existingKey);
+                    IsPinned = false; // Tắt đèn cái Ghim
+                }
+                else
+                {
+                    // CHƯA CÓ -> LƯU (GHIM)
+                    await _dbService.SaveSimpleVocabularyAsync(textToSave, meaningToSave);
+                    IsPinned = true; // Bật đèn cái Ghim
+                }
+            }
+            catch { }
         }
 
     }
