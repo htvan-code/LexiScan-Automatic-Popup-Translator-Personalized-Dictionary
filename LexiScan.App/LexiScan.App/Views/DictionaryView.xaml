@@ -48,6 +48,20 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderColor}"/>
                             </Trigger>
+
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource SelectedBackground}"/>
+
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource SelectedBackground}"/>
+                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -80,10 +94,13 @@
                             <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24"/>
                         </Button>
 
-                        <TextBox x:Name="SearchTextBox" Grid.Column="1" 
-                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource SearchTextBoxStyle}" 
-                                 HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <TextBox x:Name="SearchTextBox" 
+             Grid.Column="1" 
+             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+             Style="{StaticResource SearchTextBoxStyle}" 
+             HorizontalAlignment="Stretch" 
+             VerticalAlignment="Center"
+             PreviewKeyDown="SearchTextBox_PreviewKeyDown">
                             <TextBox.InputBindings>
                                 <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
                             </TextBox.InputBindings>
@@ -164,6 +181,7 @@
                 </Border.Style>
 
                 <ListBox x:Name="SuggestionListBox" 
+                         PreviewMouseLeftButtonUp="SuggestionListBox_PreviewMouseLeftButtonUp"
                          ItemsSource="{Binding SuggestionList}" 
                          SelectedItem="{Binding SelectedSuggestion}"
                          BorderThickness="0" 

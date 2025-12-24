@@ -5,8 +5,8 @@ using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
 using LexiScan.Core.Services;
-using LexiScanData.Services; 
-using LexiScanData.Models;   
+using LexiScanData.Services;
+using LexiScanData.Models;
 
 namespace LexiScan.App.ViewModels
 {
@@ -40,7 +40,6 @@ namespace LexiScan.App.ViewModels
             _coordinator = coordinator;
             _settingsService = new SettingsService();
 
-            // Khởi tạo Database Service (Code này chuẩn rồi)
             string uid = SessionManager.CurrentUserId;
             if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
 
@@ -53,6 +52,8 @@ namespace LexiScan.App.ViewModels
             SearchCommand = new RelayCommand(async (o) =>
             {
                 if (string.IsNullOrWhiteSpace(SearchText)) return;
+
+                // Ẩn gợi ý khi bắt đầu tìm kiếm
                 SuggestionList.Clear();
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
@@ -86,6 +87,7 @@ namespace LexiScan.App.ViewModels
         }
 
         public ObservableCollection<string> SuggestionList { get; set; }
+
         public string SearchText
         {
             get => _searchText;
@@ -95,11 +97,26 @@ namespace LexiScan.App.ViewModels
                 {
                     _searchText = value;
                     OnPropertyChanged();
-                    if (!string.IsNullOrWhiteSpace(_searchText)) LoadSuggestions(_searchText);
-                    else SuggestionList.Clear();
+
+                    // Logic: Chỉ load gợi ý khi người dùng gõ, 
+                    // Nếu SearchText thay đổi do chọn từ gợi ý (SelectedSuggestion) thì không load lại
+                    if (!string.IsNullOrWhiteSpace(_searchText))
+                    {
+                        // Kiểm tra: Nếu text hiện tại GIỐNG cái đang chọn thì không load lại gợi ý
+                        if (_selectedSuggestion != _searchText)
+                        {
+                            LoadSuggestions(_searchText);
+                        }
+                    }
+                    else
+                    {
+                        SuggestionList.Clear();
+                    }
                 }
             }
         }
+
+        // --- [QUAN TRỌNG: ĐÃ SỬA PHẦN NÀY] ---
         public string SelectedSuggestion
         {
             get => _selectedSuggestion;
@@ -107,14 +124,20 @@ namespace LexiScan.App.ViewModels
             {
                 _selectedSuggestion = value;
                 OnPropertyChanged();
+
+                // KHI CHỌN GỢI Ý (BẰNG MŨI TÊN HOẶC CHUỘT):
+                // 1. Chỉ đưa chữ lên ô tìm kiếm.
+                // 2. KHÔNG gọi ExecuteSearchAsync ở đây (để tránh bị tìm luôn khi mới bấm nút xuống).
+                // 3. Việc kích hoạt tìm kiếm sẽ do phím Enter hoặc Click chuột (ở View) đảm nhận.
                 if (!string.IsNullOrEmpty(value))
                 {
-                    SearchText = value;
-                    SuggestionList.Clear();
-                    _coordinator.ExecuteSearchAsync(value);
+                    // Cập nhật biến _searchText trực tiếp để tránh kích hoạt LoadSuggestions vòng lặp
+                    _searchText = value;
+                    OnPropertyChanged(nameof(SearchText));
                 }
             }
         }
+
         public string DisplayWord { get => _displayWord; set { _displayWord = value; OnPropertyChanged(); } }
         public string DefinitionText { get => _definitionText; set { _definitionText = value; OnPropertyChanged(); } }
         public string PhoneticText { get => _phoneticText; set { _phoneticText = value; OnPropertyChanged(); } }
@@ -173,11 +196,10 @@ namespace LexiScan.App.ViewModels
             {
                 _dbService = new DatabaseServices(SessionManager.CurrentUserId);
             }
-            // --- [QUAN TRỌNG: THÊM ĐOẠN NÀY ĐỂ LƯU VÀO LỊCH SỬ] ---
-            // --- [ĐOẠN LƯU VÀO LỊCH SỬ CÓ BẮT LỖI] ---
+
+            // --- LƯU VÀO LỊCH SỬ ---
             if (_dbService != null)
             {
-                // Dùng Dispatcher.Invoke để đảm bảo MessageBox hiện đúng luồng
                 System.Windows.Application.Current.Dispatcher.Invoke(async () =>
                 {
                     try
@@ -189,20 +211,17 @@ namespace LexiScan.App.ViewModels
                             CreatedDate = System.DateTime.Now
                         });
 
-                        // [HỘP THOẠI 3] Nếu hiện cái này là LƯU THÀNH CÔNG
-                        System.Windows.MessageBox.Show("Đã lưu vào Lịch sử thành công!", "Bước 3: Hoàn tất");
+                        // Đã ẩn thông báo để trải nghiệm mượt mà hơn. 
+                        // Nếu cần debug thì mở lại dòng dưới:
+                        // System.Windows.MessageBox.Show("Đã lưu vào Lịch sử thành công!", "Thông báo");
                     }
                     catch (System.Exception ex)
                     {
-                        System.Windows.MessageBox.Show("Lỗi khi lưu: " + ex.Message, "Lỗi");
+                        // Chỉ hiện lỗi nếu thực sự có vấn đề nghiêm trọng
+                        System.Diagnostics.Debug.WriteLine("Lỗi lưu lịch sử: " + ex.Message);
                     }
                 });
             }
-            else
-            {
-                System.Windows.MessageBox.Show("Lỗi: Chưa kết nối Database (_dbService null). Kiểm tra lại phần đăng nhập!", "Lỗi");
-            }
-            // ------------------------------------------
         }
 
         private void ExecuteSpeakResult(object obj)
