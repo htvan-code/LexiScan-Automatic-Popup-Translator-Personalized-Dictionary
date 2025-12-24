@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="pack://application:,,,/ScreenTranslator;component/Components/TrayMenu.xaml"/>
                 
             </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="TextColorBrush" Color="White" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

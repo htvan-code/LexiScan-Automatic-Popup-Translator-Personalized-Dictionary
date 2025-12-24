@@ -70,9 +70,14 @@
 
                         <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
                             <TextBox x:Name="SourceTextBox" Text="{Binding SourceText, UpdateSourceTrigger=PropertyChanged}" 
-                                     MaxLength="1000" BorderThickness="0" Background="Transparent" 
-                                     TextWrapping="Wrap" FontSize="18" Foreground="{DynamicResource PrimaryText}" 
-                                     FontWeight="SemiBold" AcceptsReturn="True"/>
+                            MaxLength="1000" BorderThickness="0" Background="Transparent" 
+                            TextWrapping="Wrap" FontSize="18" Foreground="{DynamicResource PrimaryText}" 
+                            FontWeight="SemiBold" AcceptsReturn="True">
+
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Return" Command="{Binding SaveTranslationCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
                         </ScrollViewer>
 
                         <Grid Grid.Row="2" Margin="10,0,10,10">

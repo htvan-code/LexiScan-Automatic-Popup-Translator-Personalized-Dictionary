@@ -63,6 +63,7 @@ namespace LexiScan.App.ViewModels
                 LexiScan.App.Properties.Settings.Default.UserId = user.Uid;
                 LexiScan.App.Properties.Settings.Default.Save();
 
+                LexiScan.Core.SessionManager.CurrentUserId = user.Uid;
                 SessionManager.CurrentUserId = user.Uid;
                 CloseWindow(true);
             }
