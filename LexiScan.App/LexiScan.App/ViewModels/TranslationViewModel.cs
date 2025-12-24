@@ -1,5 +1,6 @@
 ﻿using LexiScan.App.Commands;
 using LexiScan.Core;
+using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
 using LexiScanData.Services;
 using LexiScanData.Models;
@@ -8,14 +9,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using LexiScan.Core.Enums;
 
 namespace LexiScan.App.ViewModels
 {
     public class TranslationViewModel : BaseViewModel
     {
-        private readonly DatabaseServices? _dbService;
+        private DatabaseServices? _dbService;
         private readonly AppCoordinator _coordinator;
+
         private string _sourceText = "";
         private string _translatedText = "Bản dịch";
         private int _currentCharCount = 0;
@@ -24,6 +25,7 @@ namespace LexiScan.App.ViewModels
         private string _sourceLangName = "Anh";
         private string _targetLangName = "Việt";
         private CancellationTokenSource _translationCts;
+        private string _lastSavedText = "";
 
         public ICommand SpeakSourceCommand { get; }
         public ICommand SpeakTargetCommand { get; }
@@ -48,13 +50,17 @@ namespace LexiScan.App.ViewModels
             SpeakSourceCommand = new RelayCommand(obj => _coordinator.Speak(SourceText, 1.0, _sourceLang));
             SpeakTargetCommand = new RelayCommand(obj => _coordinator.Speak(TranslatedText, 1.0, _targetLang));
 
-            // CẬP NHẬT: Gửi kèm nguồn là Translation
+            // [SỬA 2] Thêm đoạn khởi tạo nút LƯU 
+            SaveTranslationCommand = new RelayCommand(async (obj) =>
+            {
+                await ExecuteSaveHistory();
+            });
+
             StartVoiceCommand = new RelayCommand(obj =>
             {
                 _coordinator.StartVoiceSearch(VoiceSource.Translation);
             });
 
-            // CẬP NHẬT: Nhận kết quả Voice cho trang dịch
             _coordinator.VoiceSearchCompleted += (text) =>
             {
                 if (_coordinator.CurrentVoiceSource == VoiceSource.Translation)
@@ -84,63 +90,39 @@ namespace LexiScan.App.ViewModels
                     if (result != null && !token.IsCancellationRequested)
                     {
                         TranslatedText = result.TranslatedText;
-                        // --- BẮT ĐẦU ĐOẠN CODE BẮT LỖI (COPY ĐÈ VÀO ĐÂY) ---
-
-                        // 1. Kiểm tra xem đã có ID chưa?
-                        string currentId = SessionManager.CurrentUserId;
-                        if (string.IsNullOrEmpty(currentId))
-                        {
-                            MessageBox.Show("LỖI TO: SessionManager.CurrentUserId đang bị RỖNG!\nBạn chưa đăng nhập hoặc code App.xaml.cs chưa chạy.", "Báo động đỏ");
-                        }
-                        else
-                        {
-                            // 2. Nếu có ID rồi, thử lưu và xem có lỗi gì không
-                            if (_dbService != null)
-                            {
-                                Application.Current.Dispatcher.Invoke(async () =>
-                                {
-                                    try
-                                    {
-                                        // Hiện thông báo trước khi lưu (để biết code có chạy vào đây ko)
-                                        // MessageBox.Show($"Bắt đầu lưu cho User: {currentId}", "Thông báo");
-
-                                        await _dbService.AddHistoryAsync(new Sentences
-                                        {
-                                            SourceText = SourceText,
-                                            TranslatedText = result.TranslatedText,
-                                            CreatedDate = DateTime.Now
-                                        });
-
-                                        // Hiện thông báo nếu lưu thành công
-                                        MessageBox.Show("Đã gửi lệnh lưu lên Firebase THÀNH CÔNG!", "Chúc mừng");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        // Hiện lỗi cụ thể nếu mạng lag hoặc sai Rule
-                                        MessageBox.Show($"Lưu thất bại. Lỗi: {ex.Message}", "Lỗi rồi");
-                                    }
-                                });
-                            }
-                            else
-                            {
-                                MessageBox.Show("Lỗi: _dbService chưa được khởi tạo (null)", "Lỗi Code");
-                            }
-                        }
-                        // --- KẾT THÚC ĐOẠN CODE BẮT LỖI ---
-                        // [THÊM 2] LỆNH LƯU VÀO LỊCH SỬ
-                        if (_dbService != null)
-                        {
-                            _ = _dbService.AddHistoryAsync(new Sentences
-                            {
-                                SourceText = SourceText,
-                                TranslatedText = result.TranslatedText,
-                                CreatedDate = DateTime.Now
-                            });
-                        }
                     }
                 }
                 catch (OperationCanceledException) { }
             }, token);
+        }
+
+        private async Task ExecuteSaveHistory()
+        {
+            // Kiểm tra: Text rỗng hoặc vừa mới lưu xong thì bỏ qua
+            if (string.IsNullOrWhiteSpace(SourceText) || SourceText == _lastSavedText) return;
+
+            // Tự kết nối lại nếu bị null
+            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            {
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+            }
+
+            if (_dbService != null)
+            {
+                try
+                {
+                    await _dbService.AddHistoryAsync(new Sentences
+                    {
+                        SourceText = SourceText,
+                        TranslatedText = TranslatedText,
+                        CreatedDate = DateTime.Now
+                    });
+
+                    // Cập nhật text đã lưu
+                    _lastSavedText = SourceText;
+                }
+                catch { }
+            }
         }
 
         private void ExecuteSwap()
