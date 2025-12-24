@@ -131,11 +131,24 @@ namespace LexiScan.App
         // Hàm đổi Theme (Giữ nguyên)
         public static void ChangeTheme(bool isDark)
         {
-            var mergedDicts = Current.Resources.MergedDictionaries;
+            // --- Phần code cũ của bạn (giữ nguyên) ---
+            // Lưu ý: Dùng Application.Current thay vì Current nếu đang ở class khác ngoài App.xaml.cs
+            var mergedDicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+
+            // Xóa dictionary cuối cùng (đang là theme cũ)
             if (mergedDicts.Count > 0) mergedDicts.RemoveAt(mergedDicts.Count - 1);
+
+            // Thêm theme mới
             var newTheme = new ResourceDictionary();
-            newTheme.Source = isDark ? new Uri("Themes/DarkTheme.xaml", UriKind.Relative) : new Uri("Themes/LightTheme.xaml", UriKind.Relative);
+            newTheme.Source = isDark ? new Uri("Themes/DarkTheme.xaml", UriKind.Relative)
+                                     : new Uri("Themes/LightTheme.xaml", UriKind.Relative);
             mergedDicts.Add(newTheme);
+
+            // --- PHẦN CẦN THÊM VÀO ĐỂ SỬA LỖI MÀU CHỮ ---
+            // Cập nhật lại Resource "TextColorBrush" mà ListBox đang lắng nghe
+            System.Windows.Application.Current.Resources["TextColorBrush"] = isDark
+                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White)
+                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Black);
         }
     }
 }

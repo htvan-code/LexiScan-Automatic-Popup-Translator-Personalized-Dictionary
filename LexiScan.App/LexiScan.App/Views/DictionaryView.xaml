@@ -112,7 +112,6 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-
                             <Border CornerRadius="20" Width="40" Height="40" Background="{DynamicResource PrimaryAccent}" Margin="0,0,10,0">
                                 <Button Background="Transparent" Style="{StaticResource IconButtonStyle}" Foreground="White" 
                                         Command="{Binding AddToPersonalDictionaryCommand}">
@@ -137,7 +136,6 @@
                                     <materialDesign:PackIcon Kind="VolumeHigh" Width="22" Height="22"/>
                                 </Button>
                             </Border>
-
                         </StackPanel>
                     </Grid>
 
@@ -164,8 +162,23 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <ListBox x:Name="SuggestionListBox" ItemsSource="{Binding SuggestionList}" SelectedItem="{Binding SelectedSuggestion}"
-                         BorderThickness="0" Background="Transparent" MaxHeight="250" ItemContainerStyle="{StaticResource ListBoxItemStyle}">
+
+                <ListBox x:Name="SuggestionListBox" 
+                         ItemsSource="{Binding SuggestionList}" 
+                         SelectedItem="{Binding SelectedSuggestion}"
+                         BorderThickness="0" 
+                         Background="Transparent" 
+                         MaxHeight="250" 
+                         ItemContainerStyle="{StaticResource ListBoxItemStyle}">
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding .}" 
+                                       Foreground="{DynamicResource SuggestionTextBrush}" 
+                                       Padding="5,2"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
                 </ListBox>
             </Border>
         </Grid>
