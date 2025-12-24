@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         MinWidth="260"
         MaxWidth="420"
+        SizeToContent="Height"
         MaxHeight="600"
         Height="480"
         WindowStyle="None"
@@ -104,7 +105,8 @@
                 <!-- ================= SCROLL ALL CONTENT ================= -->
                 <ScrollViewer Grid.Row="1"
                               VerticalScrollBarVisibility="Auto"
-                              Margin="0,6,0,0">
+                              Margin="0,6,0,0"
+                              MaxHeight="540">
 
                     <StackPanel>
 
