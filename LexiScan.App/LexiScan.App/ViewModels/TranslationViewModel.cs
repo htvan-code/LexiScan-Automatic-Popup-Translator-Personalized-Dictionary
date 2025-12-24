@@ -84,7 +84,49 @@ namespace LexiScan.App.ViewModels
                     if (result != null && !token.IsCancellationRequested)
                     {
                         TranslatedText = result.TranslatedText;
+                        // --- BẮT ĐẦU ĐOẠN CODE BẮT LỖI (COPY ĐÈ VÀO ĐÂY) ---
 
+                        // 1. Kiểm tra xem đã có ID chưa?
+                        string currentId = SessionManager.CurrentUserId;
+                        if (string.IsNullOrEmpty(currentId))
+                        {
+                            MessageBox.Show("LỖI TO: SessionManager.CurrentUserId đang bị RỖNG!\nBạn chưa đăng nhập hoặc code App.xaml.cs chưa chạy.", "Báo động đỏ");
+                        }
+                        else
+                        {
+                            // 2. Nếu có ID rồi, thử lưu và xem có lỗi gì không
+                            if (_dbService != null)
+                            {
+                                Application.Current.Dispatcher.Invoke(async () =>
+                                {
+                                    try
+                                    {
+                                        // Hiện thông báo trước khi lưu (để biết code có chạy vào đây ko)
+                                        // MessageBox.Show($"Bắt đầu lưu cho User: {currentId}", "Thông báo");
+
+                                        await _dbService.AddHistoryAsync(new Sentences
+                                        {
+                                            SourceText = SourceText,
+                                            TranslatedText = result.TranslatedText,
+                                            CreatedDate = DateTime.Now
+                                        });
+
+                                        // Hiện thông báo nếu lưu thành công
+                                        MessageBox.Show("Đã gửi lệnh lưu lên Firebase THÀNH CÔNG!", "Chúc mừng");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        // Hiện lỗi cụ thể nếu mạng lag hoặc sai Rule
+                                        MessageBox.Show($"Lưu thất bại. Lỗi: {ex.Message}", "Lỗi rồi");
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                MessageBox.Show("Lỗi: _dbService chưa được khởi tạo (null)", "Lỗi Code");
+                            }
+                        }
+                        // --- KẾT THÚC ĐOẠN CODE BẮT LỖI ---
                         // [THÊM 2] LỆNH LƯU VÀO LỊCH SỬ
                         if (_dbService != null)
                         {

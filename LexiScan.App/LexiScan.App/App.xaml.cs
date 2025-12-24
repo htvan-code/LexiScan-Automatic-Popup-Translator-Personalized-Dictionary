@@ -65,6 +65,7 @@ namespace LexiScan.App
             if (!string.IsNullOrEmpty(savedToken))
             {
                 StartMainWindow();
+                SessionManager.CurrentUserId = savedToken;
             }
             else
             {
