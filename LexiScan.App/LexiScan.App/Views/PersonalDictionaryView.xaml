@@ -3,15 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:vm="clr-namespace:LexiScan.App.ViewModels"
+             xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="700"
              Background="Transparent">
-    <UserControl.DataContext>
-        <vm:PersonalDictionaryViewModel/>
-    </UserControl.DataContext>
 
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
         <Style TargetType="{x:Type TextBox}" x:Key="SearchHistoryTextBoxStyle">
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -117,42 +116,99 @@
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                             <Setter Property="Padding" Value="0,5"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </ListView.ItemContainerStyle>
 
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,5">
 
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding SourceText}" 
-                           FontSize="16" 
-                           FontWeight="SemiBold" 
-                           Foreground="{DynamicResource PrimaryAccent}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="{Binding SavedDate, StringFormat='{}{0:HH:mm - dd/MM/yyyy}'}" 
-                           FontSize="12" 
-                           Foreground="{DynamicResource SecondaryText}"/>
-                                </StackPanel>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding SourceText}" 
+                                                   FontSize="16" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{DynamicResource PrimaryAccent}"/>
 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="Xem Chi Tiết" 
-                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.ViewDetailsCommand}"
-                        CommandParameter="{Binding .}"
-                        Margin="0,0,10,0"
-                        Style="{StaticResource DetailButtonStyle}"/>
+                                        <TextBlock Text="{Binding SavedDate, StringFormat='{}{0:HH:mm - dd/MM/yyyy}'}" 
+                                                   FontSize="12" 
+                                                   Foreground="{DynamicResource SecondaryText}"/>
+                                    </StackPanel>
 
-                                    <Button Content="&#xE74D;" 
-                        FontFamily="Segoe MDL2 Assets"
-                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteItemCommand}"
-                        CommandParameter="{Binding .}"
-                        Style="{StaticResource DeleteIconButtonStyle}"/>
-                                </StackPanel>
-                            </Grid>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="Xem Chi Tiết" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.ViewDetailsCommand}"
+                                                CommandParameter="{Binding .}"
+                                                Margin="0,0,10,0"
+                                                Style="{StaticResource DetailButtonStyle}"/>
+
+                                        <Button Content="&#xE74D;" 
+                                                FontFamily="Segoe MDL2 Assets"
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteItemCommand}"
+                                                CommandParameter="{Binding .}"
+                                                Style="{StaticResource DeleteIconButtonStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border Background="{DynamicResource AppBackground}" 
+                                        BorderBrush="{DynamicResource BorderColor}"
+                                        BorderThickness="1"
+                                        CornerRadius="5"
+                                        Margin="0,8,0,0"
+                                        Padding="10"
+                                        Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
+
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+                                            <materialDesign:PackIcon Kind="ProgressDownload" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource PrimaryAccent}">
+                                                <materialDesign:PackIcon.RenderTransform>
+                                                    <RotateTransform Angle="0"/>
+                                                </materialDesign:PackIcon.RenderTransform>
+                                            </materialDesign:PackIcon>
+                                            <TextBlock Text="Đang tải dữ liệu..." VerticalAlignment="Center" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic"/>
+                                        </StackPanel>
+
+                                        <TextBlock Text="{Binding DetailInfo}" 
+                                                   TextWrapping="Wrap" 
+                                                   FontSize="14" 
+                                                   LineHeight="22"
+                                                   Foreground="{DynamicResource PrimaryText}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>

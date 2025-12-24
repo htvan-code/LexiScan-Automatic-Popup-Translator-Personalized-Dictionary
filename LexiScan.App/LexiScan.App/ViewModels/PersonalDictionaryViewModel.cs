@@ -3,7 +3,11 @@ using LexiScan.Core.Models;
 using LexiScan.App.Commands;
 using LexiScanData.Models;
 using LexiScanData.Services;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,30 +16,108 @@ namespace LexiScan.App.ViewModels
     public class PersonalDictionaryViewModel : BaseViewModel
     {
         private readonly DatabaseServices? _dbService;
-        public ObservableCollection<WordExample> SavedWords { get; set; } = new();
+        private readonly AppCoordinator _coordinator; // Cần để tra nghĩa chi tiết
+
+        // --- [CLASS WRAPPER CHO ITEM ĐỂ HỖ TRỢ ĐÓNG/MỞ] ---
+        public class PersonalWordEntry : BaseViewModel
+        {
+            public string Id { get; set; }
+            public string SourceText { get; set; } = string.Empty;
+            public DateTime SavedDate { get; set; }
+
+            // Biến trạng thái UI
+            private bool _isExpanded;
+            public bool IsExpanded { get => _isExpanded; set { _isExpanded = value; OnPropertyChanged(); } }
+
+            private bool _isLoading;
+            public bool IsLoading { get => _isLoading; set { _isLoading = value; OnPropertyChanged(); } }
+
+            private string _detailInfo;
+            public string DetailInfo { get => _detailInfo; set { _detailInfo = value; OnPropertyChanged(); } }
+        }
+
+        // Đổi từ WordExample sang PersonalWordEntry
+        public ObservableCollection<PersonalWordEntry> SavedWords { get; set; } = new();
 
         public ICommand LoadDataCommand { get; }
         public ICommand DeleteItemCommand { get; }
         public ICommand ClearAllCommand { get; }
-        public ICommand SearchCommand { get; }
+        public ICommand ViewDetailsCommand { get; } // Command Xem Chi Tiết
 
         private string _searchTerm;
         public string SearchTerm { get => _searchTerm; set { _searchTerm = value; OnPropertyChanged(); FilterList(); } }
 
-        // Danh sách gốc để lọc tìm kiếm
-        private List<WordExample> _allWords = new();
+        // Danh sách gốc (cũng phải đổi sang PersonalWordEntry)
+        private List<PersonalWordEntry> _allEntries = new();
 
-        public PersonalDictionaryViewModel()
+        // [QUAN TRỌNG] Cần thêm AppCoordinator vào Constructor
+        public PersonalDictionaryViewModel(AppCoordinator coordinator)
         {
-            // Kết nối Database
+            _coordinator = coordinator;
+
             string uid = SessionManager.CurrentUserId;
             if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
 
             DeleteItemCommand = new RelayCommand(ExecuteDeleteItem);
             ClearAllCommand = new RelayCommand(ExecuteClearAll);
+            ViewDetailsCommand = new RelayCommand(ExecuteViewDetails);
 
-            // Tải dữ liệu ngay khi mở
             LoadData();
+        }
+
+        // --- LOGIC XEM CHI TIẾT (Giống HistoryViewModel) ---
+        private async void ExecuteViewDetails(object? parameter)
+        {
+            if (parameter is PersonalWordEntry entry)
+            {
+                entry.IsExpanded = !entry.IsExpanded;
+
+                if (entry.IsExpanded && string.IsNullOrEmpty(entry.DetailInfo))
+                {
+                    entry.IsLoading = true;
+                    entry.DetailInfo = string.Empty;
+
+                    try
+                    {
+                        // Gọi Coordinator để lấy thông tin đầy đủ
+                        var result = await _coordinator.TranslateAndGetResultAsync(entry.SourceText);
+
+                        if (result != null)
+                        {
+                            var sb = new System.Text.StringBuilder();
+                            if (!string.IsNullOrEmpty(result.Phonetic)) sb.AppendLine($"/{result.Phonetic}/");
+                            if (!string.IsNullOrEmpty(result.TranslatedText))
+                            {
+                                sb.AppendLine($"➤ {result.TranslatedText}");
+                                sb.AppendLine();
+                            }
+
+                            if (result.Meanings != null && result.Meanings.Count > 0)
+                            {
+                                foreach (var m in result.Meanings)
+                                {
+                                    sb.AppendLine($"★ {m.PartOfSpeech}");
+                                    foreach (var def in m.Definitions) sb.AppendLine($"    • {def}");
+                                    sb.AppendLine();
+                                }
+                            }
+                            entry.DetailInfo = sb.ToString().Trim();
+                        }
+                        else
+                        {
+                            entry.DetailInfo = "Không tìm thấy dữ liệu chi tiết.";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        entry.DetailInfo = $"Lỗi: {ex.Message}";
+                    }
+                    finally
+                    {
+                        entry.IsLoading = false;
+                    }
+                }
+            }
         }
 
         public async void LoadData()
@@ -44,41 +126,49 @@ namespace LexiScan.App.ViewModels
             try
             {
                 var list = await _dbService.GetSavedItemsAsync();
-                _allWords = list; // Lưu vào danh sách gốc
 
-                // Hiển thị ra màn hình
-                SavedWords.Clear();
-                foreach (var item in list) SavedWords.Add(item);
+                _allEntries.Clear();
+                // Chuyển đổi WordExample -> PersonalWordEntry
+                // Sắp xếp ngày mới nhất lên đầu (OrderByDescending)
+                foreach (var item in list.OrderByDescending(x => x.SavedDate))
+                {
+                    _allEntries.Add(new PersonalWordEntry
+                    {
+                        Id = item.Id,
+                        SourceText = item.SourceText,
+                        SavedDate = item.SavedDate
+                    });
+                }
+
+                FilterList(); // Hiển thị ra UI
             }
             catch { }
         }
 
         private void FilterList()
         {
+            SavedWords.Clear();
             if (string.IsNullOrWhiteSpace(SearchTerm))
             {
-                SavedWords.Clear();
-                foreach (var item in _allWords) SavedWords.Add(item);
+                foreach (var item in _allEntries) SavedWords.Add(item);
             }
             else
             {
-                var filtered = _allWords.Where(x => x.SourceText.ToLower().Contains(SearchTerm.ToLower())).ToList();
-                SavedWords.Clear();
+                var filtered = _allEntries.Where(x => x.SourceText.ToLower().Contains(SearchTerm.ToLower())).ToList();
                 foreach (var item in filtered) SavedWords.Add(item);
             }
         }
 
         private async void ExecuteDeleteItem(object? parameter)
         {
-            if (parameter is WordExample item && _dbService != null)
+            if (parameter is PersonalWordEntry entry && _dbService != null)
             {
-                SavedWords.Remove(item); // Xóa trên giao diện
-                _allWords.Remove(item);
+                SavedWords.Remove(entry);
+                _allEntries.Remove(entry);
 
-                // Xóa trên Firebase (Cần biến Id ở Bước 1)
-                if (!string.IsNullOrEmpty(item.Id))
+                if (!string.IsNullOrEmpty(entry.Id))
                 {
-                    await _dbService.DeleteSavedItemAsync(item.Id);
+                    await _dbService.DeleteSavedItemAsync(entry.Id);
                 }
             }
         }
@@ -90,12 +180,9 @@ namespace LexiScan.App.ViewModels
             var result = MessageBox.Show("Bạn có chắc muốn xóa toàn bộ từ điển không?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result == MessageBoxResult.Yes)
             {
-                // Xóa từng cái (Firebase không hỗ trợ xóa 1 phát hết folder users/{id}/saved trừ khi xóa parent)
-                // Cách an toàn là xóa folder "saved"
-                // Ở đây ta loop xóa trên UI trước cho nhanh
-                var listClone = new List<WordExample>(SavedWords);
+                var listClone = new List<PersonalWordEntry>(SavedWords);
                 SavedWords.Clear();
-                _allWords.Clear();
+                _allEntries.Clear();
 
                 foreach (var item in listClone)
                 {
