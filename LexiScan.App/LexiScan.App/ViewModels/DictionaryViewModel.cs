@@ -12,7 +12,7 @@ namespace LexiScan.App.ViewModels
 {
     public class DictionaryViewModel : BaseViewModel
     {
-        private readonly DatabaseServices _dbService;
+        private DatabaseServices? _dbService;
         private readonly AppCoordinator _coordinator;
         private readonly SettingsService _settingsService;
 
@@ -169,18 +169,40 @@ namespace LexiScan.App.ViewModels
                 ExecuteSpeakResult(null);
             }
 
+            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            {
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+            }
             // --- [QUAN TRỌNG: THÊM ĐOẠN NÀY ĐỂ LƯU VÀO LỊCH SỬ] ---
+            // --- [ĐOẠN LƯU VÀO LỊCH SỬ CÓ BẮT LỖI] ---
             if (_dbService != null)
             {
-                _ = _dbService.AddHistoryAsync(new Sentences
+                // Dùng Dispatcher.Invoke để đảm bảo MessageBox hiện đúng luồng
+                System.Windows.Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    SourceText = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText,
+                    try
+                    {
+                        await _dbService.AddHistoryAsync(new Sentences
+                        {
+                            SourceText = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText,
+                            TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
+                            CreatedDate = System.DateTime.Now
+                        });
 
-                    TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
-
-                    CreatedDate = System.DateTime.Now
+                        // [HỘP THOẠI 3] Nếu hiện cái này là LƯU THÀNH CÔNG
+                        System.Windows.MessageBox.Show("Đã lưu vào Lịch sử thành công!", "Bước 3: Hoàn tất");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        System.Windows.MessageBox.Show("Lỗi khi lưu: " + ex.Message, "Lỗi");
+                    }
                 });
             }
+            else
+            {
+                System.Windows.MessageBox.Show("Lỗi: Chưa kết nối Database (_dbService null). Kiểm tra lại phần đăng nhập!", "Lỗi");
+            }
+            // ------------------------------------------
         }
 
         private void ExecuteSpeakResult(object obj)
