@@ -1,26 +1,38 @@
 ﻿using LexiScan.Core;
-using LexiScan.Core.Enums;    // Đã thấy được Enum
+using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
-using LexiScan.Core.Services; // Đã thấy được do SettingsService giờ nằm ở Core
+using LexiScan.Core.Services;
 using LexiScan.Core.Utils;
 using LexiScanData.Services;
 using LexiScanService;
 using LexiScanUI.Helpers;
 using System.Collections.ObjectModel;
+using System.Speech.Synthesis; // [MỚI] Thêm thư viện này (nhớ Add Reference System.Speech nếu chưa có)
 using System.Windows.Input;
 using InputKind = LexiScan.Core.Enums.InputType;
-using UiTts = LexiScanService.TtsService;
+// using UiTts = LexiScanService.TtsService; // [BỎ] Chúng ta sẽ dùng trực tiếp Synthesizer để dễ kiểm soát Stop/Start
 
 namespace LexiScanUI.ViewModels
 {
     public class PopupViewModel : BaseViewModel
     {
         private readonly TranslationService _translator;
-        private readonly UiTts _ttsService;
+        // private readonly UiTts _ttsService; // [BỎ] Không dùng service cũ nữa
         private readonly SettingsService _settingsService;
         private DatabaseServices? _dbService;
 
-        // Properties (Giữ nguyên)
+        // [MỚI] Đối tượng đọc và Biến trạng thái
+        private SpeechSynthesizer _synthesizer;
+        private bool _isPlaying;
+
+        // [MỚI] Property để Binding màu nút Loa (True = Sáng, False = Tối)
+        public bool IsPlaying
+        {
+            get => _isPlaying;
+            set { _isPlaying = value; OnPropertyChanged(); }
+        }
+
+        // ... Các Properties cũ giữ nguyên ...
         private string _currentWord = "";
         public string CurrentWord { get => _currentWord; set { _currentWord = value; OnPropertyChanged(); } }
         private string _phonetic = "";
@@ -47,18 +59,24 @@ namespace LexiScanUI.ViewModels
         public ICommand CloseCommand { get; }
         public ICommand ClickWordCommand { get; }
         public ICommand PinToFirebaseCommand { get; }
+
         public PopupViewModel()
         {
             PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
             _translator = new TranslationService();
-            _ttsService = new UiTts();
+            // _ttsService = new UiTts(); // [BỎ]
             _settingsService = new SettingsService();
+
+            // [MỚI] Khởi tạo bộ đọc và đăng ký sự kiện
+            _synthesizer = new SpeechSynthesizer();
+            _synthesizer.SetOutputToDefaultAudioDevice();
+            // Sự kiện: Khi đọc xong -> Tự set IsPlaying về false (Tắt đèn)
+            _synthesizer.SpeakCompleted += (s, e) => IsPlaying = false;
 
             string uid = SessionManager.CurrentUserId;
             if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
 
             PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
-
             PinCommand = new RelayCommand(ExecutePin);
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
             SettingsCommand = new RelayCommand(ExecuteSettings);
@@ -70,6 +88,9 @@ namespace LexiScanUI.ViewModels
         public async void LoadTranslationData(TranslationResult result)
         {
             if (result == null) return;
+
+            // [MỚI] Reset trạng thái đọc khi load từ mới
+            StopAudio();
 
             var currentSettings = _settingsService.LoadSettings();
 
@@ -90,10 +111,10 @@ namespace LexiScanUI.ViewModels
                 ExecuteReadAloud(null);
             }
 
-            // [THÊM] Kiểm tra xem từ này đã ghim chưa để bật sáng cái Ghim
+            // Logic Ghim (Giữ nguyên)
             if (_dbService != null)
             {
-                IsPinned = false; 
+                IsPinned = false;
                 string wordToCheck = !string.IsNullOrEmpty(CurrentWord) ? CurrentWord : OriginalSentence;
                 string? key = await _dbService.FindSavedKeyAsync(wordToCheck);
                 if (key != null) IsPinned = true;
@@ -102,27 +123,52 @@ namespace LexiScanUI.ViewModels
 
         private void ExecuteReadAloud(object? parameter)
         {
+            if (IsPlaying)
+            {
+                StopAudio();
+                return;
+            }
+
             var txt = !string.IsNullOrWhiteSpace(CurrentWord) ? CurrentWord : CurrentTranslatedText;
             if (string.IsNullOrWhiteSpace(txt)) return;
 
             var settings = _settingsService.LoadSettings();
 
-            double speed = 0;
+            int speedRate = 0;
             switch (settings.Speed)
             {
-                case SpeechSpeed.Slower: speed = -5; break;
-                case SpeechSpeed.Slow: speed = -3; break;
-                case SpeechSpeed.Normal: speed = 0; break;
+                case SpeechSpeed.Slower: speedRate = -5; break;
+                case SpeechSpeed.Slow: speedRate = -3; break;
+                case SpeechSpeed.Normal: speedRate = 0; break;
             }
+            _synthesizer.Rate = speedRate;
 
-            string accent = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
-            _ttsService.Speak(txt, speed, accent);
+            string culture = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
+            try
+            {
+                _synthesizer.SelectVoiceByHints(VoiceGender.NotSet, VoiceAge.NotSet, 0, new System.Globalization.CultureInfo(culture));
+            }
+            catch {  }
+
+            IsPlaying = true;
+            _synthesizer.SpeakAsync(txt);
         }
-        // --- CÁC HÀM PHỤ TRỢ ---
+
+        public void StopAudio()
+        {
+            if (_synthesizer != null && _synthesizer.State == SynthesizerState.Speaking)
+            {
+                _synthesizer.SpeakAsyncCancelAll();
+            }
+            IsPlaying = false;
+        }
+
+        // ... CÁC HÀM PHỤ TRỢ ...
         private void ExecutePin(object? parameter)
         {
             IsSelectionMode = !IsSelectionMode;
         }
+
         private void PrepareWordsForSelection()
         {
             WordList.Clear();
@@ -137,27 +183,35 @@ namespace LexiScanUI.ViewModels
         private async void ExecuteClickWord(object? parameter)
         {
             if (parameter is not string word) return;
+
+
             var result = await _translator.ProcessTranslationAsync(word);
             CurrentWord = result.OriginalText ?? word;
             Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : "";
             Meanings.Clear();
             if (result.Meanings != null) foreach (var m in result.Meanings) Meanings.Add(m);
 
-            // 4. [TÍNH NĂNG] Tự động đọc khi tra từ đơn (Click vào từ)
             if (_settingsService.LoadSettings().AutoPronounceOnLookup)
                 ExecuteReadAloud(null);
         }
-        
+
 
         private void ExecuteSettings(object? parameter)
         {
             GlobalEvents.RaiseRequestOpenSettings();
             IsSelectionMode = false; WordList.Clear();
         }
-        private void ExecuteClose(object? parameter) { IsSelectionMode = false; WordList.Clear(); }
+
+        private void ExecuteClose(object? parameter)
+        {
+            StopAudio();
+
+            IsSelectionMode = false;
+            WordList.Clear();
+        }
+
         private async void ExecutePinToFirebase(object? parameter)
         {
-            // Tự kết nối lại nếu null
             if (_dbService == null)
             {
                 if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
@@ -165,7 +219,6 @@ namespace LexiScanUI.ViewModels
                 else return;
             }
 
-            // Ưu tiên lưu từ đơn, nếu không có thì lưu cả câu
             string textToSave = !string.IsNullOrWhiteSpace(CurrentWord) ? CurrentWord : OriginalSentence;
             string meaningToSave = CurrentTranslatedText;
 
@@ -173,24 +226,20 @@ namespace LexiScanUI.ViewModels
 
             try
             {
-                // Kiểm tra xem từ này đã ghim chưa?
                 string? existingKey = await _dbService.FindSavedKeyAsync(textToSave);
 
                 if (existingKey != null)
                 {
-                    // ĐÃ CÓ -> XÓA (BỎ GHIM)
                     await _dbService.DeleteSavedItemAsync(existingKey);
-                    IsPinned = false; // Tắt đèn cái Ghim
+                    IsPinned = false;
                 }
                 else
                 {
-                    // CHƯA CÓ -> LƯU (GHIM)
                     await _dbService.SaveSimpleVocabularyAsync(textToSave, meaningToSave);
-                    IsPinned = true; // Bật đèn cái Ghim
+                    IsPinned = true;
                 }
             }
             catch { }
         }
-
     }
 }
