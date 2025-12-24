@@ -1,6 +1,7 @@
-﻿using LexiScan.Core;
+﻿using LexiScan.App.Commands;
+using LexiScan.Core;
 using LexiScan.Core.Models;
-using LexiScan.App.Commands;
+using LexiScan.Core.Utils;
 using LexiScanData.Models;
 using LexiScanData.Services;
 using System;
@@ -15,17 +16,18 @@ namespace LexiScan.App.ViewModels
 {
     public class PersonalDictionaryViewModel : BaseViewModel
     {
-        private readonly DatabaseServices? _dbService;
-        private readonly AppCoordinator _coordinator; // Cần để tra nghĩa chi tiết
+        // [SỬA LỖI Ở ĐÂY]: Xóa từ khóa 'readonly' để có thể gán lại trong hàm LoadData
+        private DatabaseServices? _dbService;
 
-        // --- [CLASS WRAPPER CHO ITEM ĐỂ HỖ TRỢ ĐÓNG/MỞ] ---
+        private readonly AppCoordinator _coordinator;
+
+        // ... (Class PersonalWordEntry giữ nguyên) ...
         public class PersonalWordEntry : BaseViewModel
         {
             public string Id { get; set; }
             public string SourceText { get; set; } = string.Empty;
             public DateTime SavedDate { get; set; }
 
-            // Biến trạng thái UI
             private bool _isExpanded;
             public bool IsExpanded { get => _isExpanded; set { _isExpanded = value; OnPropertyChanged(); } }
 
@@ -36,21 +38,18 @@ namespace LexiScan.App.ViewModels
             public string DetailInfo { get => _detailInfo; set { _detailInfo = value; OnPropertyChanged(); } }
         }
 
-        // Đổi từ WordExample sang PersonalWordEntry
         public ObservableCollection<PersonalWordEntry> SavedWords { get; set; } = new();
 
         public ICommand LoadDataCommand { get; }
         public ICommand DeleteItemCommand { get; }
         public ICommand ClearAllCommand { get; }
-        public ICommand ViewDetailsCommand { get; } // Command Xem Chi Tiết
+        public ICommand ViewDetailsCommand { get; }
 
         private string _searchTerm;
         public string SearchTerm { get => _searchTerm; set { _searchTerm = value; OnPropertyChanged(); FilterList(); } }
 
-        // Danh sách gốc (cũng phải đổi sang PersonalWordEntry)
         private List<PersonalWordEntry> _allEntries = new();
 
-        // [QUAN TRỌNG] Cần thêm AppCoordinator vào Constructor
         public PersonalDictionaryViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
@@ -63,9 +62,15 @@ namespace LexiScan.App.ViewModels
             ViewDetailsCommand = new RelayCommand(ExecuteViewDetails);
 
             LoadData();
+
+            // Đăng ký sự kiện cập nhật
+            GlobalEvents.OnPersonalDictionaryUpdated += () =>
+            {
+                Application.Current.Dispatcher.Invoke(() => LoadData());
+            };
         }
 
-        // --- LOGIC XEM CHI TIẾT (Giống HistoryViewModel) ---
+        // ... (Hàm ExecuteViewDetails giữ nguyên) ...
         private async void ExecuteViewDetails(object? parameter)
         {
             if (parameter is PersonalWordEntry entry)
@@ -79,7 +84,6 @@ namespace LexiScan.App.ViewModels
 
                     try
                     {
-                        // Gọi Coordinator để lấy thông tin đầy đủ
                         var result = await _coordinator.TranslateAndGetResultAsync(entry.SourceText);
 
                         if (result != null)
@@ -122,14 +126,19 @@ namespace LexiScan.App.ViewModels
 
         public async void LoadData()
         {
-            if (_dbService == null) return;
+            if (_dbService == null)
+            {
+                string uid = SessionManager.CurrentUserId;
+                // Dòng này trước đây gây lỗi vì _dbService là readonly. Giờ đã sửa.
+                if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+                else return;
+            }
+
             try
             {
                 var list = await _dbService.GetSavedItemsAsync();
 
                 _allEntries.Clear();
-                // Chuyển đổi WordExample -> PersonalWordEntry
-                // Sắp xếp ngày mới nhất lên đầu (OrderByDescending)
                 foreach (var item in list.OrderByDescending(x => x.SavedDate))
                 {
                     _allEntries.Add(new PersonalWordEntry
@@ -140,11 +149,12 @@ namespace LexiScan.App.ViewModels
                     });
                 }
 
-                FilterList(); // Hiển thị ra UI
+                FilterList();
             }
             catch { }
         }
 
+        // ... (Các hàm FilterList, Delete, ClearAll giữ nguyên) ...
         private void FilterList()
         {
             SavedWords.Clear();

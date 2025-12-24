@@ -210,8 +210,10 @@ namespace LexiScanUI.ViewModels
             WordList.Clear();
         }
 
+        // --- SỬA LẠI HÀM NÀY ---
         private async void ExecutePinToFirebase(object? parameter)
         {
+            // 1. Kiểm tra kết nối DB
             if (_dbService == null)
             {
                 if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
@@ -230,14 +232,20 @@ namespace LexiScanUI.ViewModels
 
                 if (existingKey != null)
                 {
+                    // Đã có -> Xóa
                     await _dbService.DeleteSavedItemAsync(existingKey);
                     IsPinned = false;
                 }
                 else
                 {
+                    // Chưa có -> Lưu
                     await _dbService.SaveSimpleVocabularyAsync(textToSave, meaningToSave);
                     IsPinned = true;
                 }
+
+                // [QUAN TRỌNG - THÊM DÒNG NÀY]
+                // Báo hiệu cho các màn hình khác biết là dữ liệu đã thay đổi
+                GlobalEvents.RaisePersonalDictionaryUpdated();
             }
             catch { }
         }
