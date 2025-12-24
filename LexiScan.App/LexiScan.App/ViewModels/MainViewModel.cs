@@ -16,7 +16,7 @@ namespace LexiScan.App.ViewModels
 
         // Các ViewModel khác
         private readonly PersonalDictionaryViewModel _personalDictionaryVM = new PersonalDictionaryViewModel();
-        private readonly HistoryViewModel _historyVM = new HistoryViewModel();
+        private readonly HistoryViewModel _historyVM;
         private readonly TranslationViewModel _translationVM;
         private readonly SettingsViewModel _settingsVM = new SettingsViewModel();
 
@@ -53,7 +53,7 @@ namespace LexiScan.App.ViewModels
             _dictionaryVM = new DictionaryViewModel(coordinator);
 
             _translationVM = new TranslationViewModel(coordinator);
-
+            _historyVM = new HistoryViewModel(coordinator);
             NavigateCommand = new RelayCommand(Navigate);
             LogoutCommand = new RelayCommand(ExecuteLogout);
 
@@ -96,7 +96,13 @@ namespace LexiScan.App.ViewModels
 
             // [MỚI] Cập nhật SelectedMenu khi người dùng bấm nút điều hướng
             SelectedMenu = viewName;
-
+            // --- THÊM ĐOẠN CODE NÀY ---
+            // Nếu người dùng chọn menu "History", bắt nó tải lại dữ liệu mới nhất từ Database
+            if (viewName == "History")
+            {
+                _historyVM.LoadFirebaseHistory();
+            }
+            // --------------------------
             CurrentView = viewName switch
             {
                 "Home" => _dictionaryVM,
