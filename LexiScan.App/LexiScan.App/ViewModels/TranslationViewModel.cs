@@ -2,14 +2,13 @@
 using LexiScan.Core;
 using LexiScan.Core.Models;
 using LexiScanData.Services;
+using LexiScanData.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using LexiScan.Core;
 using LexiScan.Core.Enums;
-using LexiScan.Core.Models;
 
 namespace LexiScan.App.ViewModels
 {

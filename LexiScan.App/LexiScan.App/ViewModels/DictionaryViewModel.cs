@@ -5,6 +5,8 @@ using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
 using LexiScan.Core.Services;
+using LexiScanData.Services; 
+using LexiScanData.Models;   
 
 namespace LexiScan.App.ViewModels
 {
@@ -38,6 +40,7 @@ namespace LexiScan.App.ViewModels
             _coordinator = coordinator;
             _settingsService = new SettingsService();
 
+            // Khởi tạo Database Service (Code này chuẩn rồi)
             string uid = SessionManager.CurrentUserId;
             if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
 
@@ -54,7 +57,6 @@ namespace LexiScan.App.ViewModels
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
-            // CẬP NHẬT: Gửi kèm nguồn là Dictionary
             StartVoiceSearchCommand = new RelayCommand((o) =>
             {
                 IsListening = true;
@@ -63,7 +65,6 @@ namespace LexiScan.App.ViewModels
 
             SpeakResultCommand = new RelayCommand(ExecuteSpeakResult);
 
-            // CẬP NHẬT: Kiểm tra nguồn trước khi nhận kết quả
             _coordinator.VoiceSearchCompleted += (text) =>
             {
                 if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
@@ -166,6 +167,19 @@ namespace LexiScan.App.ViewModels
             if (currentSettings.AutoPronounceOnLookup)
             {
                 ExecuteSpeakResult(null);
+            }
+
+            // --- [QUAN TRỌNG: THÊM ĐOẠN NÀY ĐỂ LƯU VÀO LỊCH SỬ] ---
+            if (_dbService != null)
+            {
+                _ = _dbService.AddHistoryAsync(new Sentences
+                {
+                    SourceText = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText,
+
+                    TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
+
+                    CreatedDate = System.DateTime.Now
+                });
             }
         }
 

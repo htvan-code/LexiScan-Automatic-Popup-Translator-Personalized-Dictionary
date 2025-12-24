@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using LexiScan.App.ViewModels;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -23,6 +24,7 @@ namespace LexiScan.App.Views
         public HistoryView()
         {
             InitializeComponent();
+            this.DataContext = new HistoryViewModel();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
