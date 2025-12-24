@@ -10,6 +10,7 @@ namespace LexiScan.App.ViewModels
 {
     public class DictionaryViewModel : BaseViewModel
     {
+        private readonly DatabaseServices _dbService;
         private readonly AppCoordinator _coordinator;
         private readonly SettingsService _settingsService;
 
@@ -36,6 +37,9 @@ namespace LexiScan.App.ViewModels
         {
             _coordinator = coordinator;
             _settingsService = new SettingsService();
+
+            string uid = SessionManager.CurrentUserId;
+            if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
 
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
             SuggestionList = new ObservableCollection<string>();

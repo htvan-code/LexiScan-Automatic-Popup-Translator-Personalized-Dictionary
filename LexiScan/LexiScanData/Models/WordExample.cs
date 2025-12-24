@@ -4,8 +4,13 @@ namespace LexiScanData.Models
 {
     public class WordExample
     {
-        public string OriginalSentence { get; set; }
-        public string TranslatedMeaning { get; set; }
+        // Nội dung tiếng Anh (Từ hoặc Câu)
+        public string SourceText { get; set; }
+
+        // Nghĩa tiếng Việt
+        public string Meaning { get; set; }
+
+        // Ngày lưu
         public DateTime SavedDate { get; set; } = DateTime.Now;
     }
 }

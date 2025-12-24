@@ -34,12 +34,7 @@ namespace LexiScan.App
 
             // 1. Nhận Coordinator được truyền vào
             _coordinator = coordinator;
-
-            // [SỬA]: Không dùng TranslationCompleted nữa vì nó dùng chung cho cả Dictionary
-            // Đổi sang sự kiện OnPopupResultReceived chuyên biệt cho Popup
             _coordinator.OnPopupResultReceived += OnTranslationResultReceived;
-
-            // 2. Các Service liên quan mật thiết đến Window (Hook & Tray) thì giữ lại ở đây cũng được
 
             // B. Dịch vụ bắt phím tắt & Clipboard
             _hookService = new ClipboardHookService();

@@ -1,6 +1,7 @@
 ﻿using LexiScan.App;
 using LexiScan.App.Commands;
 using LexiScan.Core.Services;
+using LexiScan.Core;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -44,8 +45,6 @@ namespace LexiScan.App.ViewModels
             RegisterCommand = new RelayCommand(ExecuteRegister);
             ForgotPasswordCommand = new RelayCommand(ExecuteForgotPassword);
         }
-
-        // --- SỬA HÀM NÀY ---
         private async void ExecuteLogin(object? parameter)
         {
             var passwordBox = parameter as PasswordBox;
@@ -61,16 +60,10 @@ namespace LexiScan.App.ViewModels
 
             if (user != null)
             {
-                // 2. LƯU TOKEN (Để tự động đăng nhập lần sau)
-                LexiScan.App.Properties.Settings.Default.UserId = user.Credential.RefreshToken;
-
-                // 3. LƯU USER ID (CÁI NÀY QUAN TRỌNG ĐỂ LẤY DATA)
-                // (Nếu chưa có biến UserId trong Settings, bạn nhớ vào Project Properties -> Settings thêm vào nhé)
                 LexiScan.App.Properties.Settings.Default.UserId = user.Uid;
-
                 LexiScan.App.Properties.Settings.Default.Save();
 
-                // 4. Báo thành công -> App.xaml.cs sẽ nhận tín hiệu này để mở MainWindow
+                SessionManager.CurrentUserId = user.Uid;
                 CloseWindow(true);
             }
             else
@@ -78,8 +71,6 @@ namespace LexiScan.App.ViewModels
                 MessageBox.Show("Đăng nhập thất bại. Kiểm tra lại thông tin.", "Lỗi");
             }
         }
-
-        // ... (Giữ nguyên ExecuteRegister, ExecuteForgotPassword) ...
         private async void ExecuteRegister(object? parameter)
         {
             if (string.IsNullOrWhiteSpace(RegEmail)) return;

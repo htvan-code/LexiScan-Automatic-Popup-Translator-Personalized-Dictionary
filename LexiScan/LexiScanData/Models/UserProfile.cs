@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LexiScanData.Models
+﻿namespace LexiScanData.Models
 {
     public class UserProfile
     {
+        public string Email { get; set; }
+        public string DisplayName { get; set; }
+        public string AvatarUrl { get; set; }
+        public bool IsPremium { get; set; } = false;
     }
 }

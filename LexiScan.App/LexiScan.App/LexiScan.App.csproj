@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LexiScann\LexiScan.Core\LexiScan.Core.csproj" />
+    <ProjectReference Include="..\..\LexiScan\LexiScanData\LexiScanData.csproj" />
     <ProjectReference Include="..\..\ScreenTranslator\ScreenTranslator\ScreenTranslator.csproj" />
   </ItemGroup>
 

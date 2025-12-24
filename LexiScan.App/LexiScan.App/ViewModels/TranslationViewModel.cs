@@ -1,4 +1,7 @@
 ﻿using LexiScan.App.Commands;
+using LexiScan.Core;
+using LexiScan.Core.Models;
+using LexiScanData.Services;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +15,7 @@ namespace LexiScan.App.ViewModels
 {
     public class TranslationViewModel : BaseViewModel
     {
+        private readonly DatabaseServices? _dbService;
         private readonly AppCoordinator _coordinator;
         private string _sourceText = "";
         private string _translatedText = "Bản dịch";
@@ -34,6 +38,13 @@ namespace LexiScan.App.ViewModels
         public TranslationViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
+
+            string uid = SessionManager.CurrentUserId;
+            if (!string.IsNullOrEmpty(uid))
+            {
+                _dbService = new DatabaseServices(uid);
+            }
+
             SwapLanguageCommand = new RelayCommand(obj => ExecuteSwap());
             SpeakSourceCommand = new RelayCommand(obj => _coordinator.Speak(SourceText, 1.0, _sourceLang));
             SpeakTargetCommand = new RelayCommand(obj => _coordinator.Speak(TranslatedText, 1.0, _targetLang));
@@ -71,7 +82,21 @@ namespace LexiScan.App.ViewModels
                     await Task.Delay(500, token);
                     if (string.IsNullOrWhiteSpace(SourceText)) { TranslatedText = "Bản dịch"; return; }
                     var result = await _coordinator.TranslateGeneralAsync(SourceText, _sourceLang, _targetLang);
-                    if (result != null && !token.IsCancellationRequested) TranslatedText = result.TranslatedText;
+                    if (result != null && !token.IsCancellationRequested)
+                    {
+                        TranslatedText = result.TranslatedText;
+
+                        // [THÊM 2] LỆNH LƯU VÀO LỊCH SỬ
+                        if (_dbService != null)
+                        {
+                            _ = _dbService.AddHistoryAsync(new Sentences
+                            {
+                                SourceText = SourceText,
+                                TranslatedText = result.TranslatedText,
+                                CreatedDate = DateTime.Now
+                            });
+                        }
+                    }
                 }
                 catch (OperationCanceledException) { }
             }, token);

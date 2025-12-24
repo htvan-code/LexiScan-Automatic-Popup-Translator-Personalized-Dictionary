@@ -1,22 +1,23 @@
 ﻿// File: ViewModels/HistoryViewModel.cs
-
+using LexiScan.Core;
+using LexiScan.App.Commands;
+using LexiScanData.Services;
 using System;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
-using LexiScan.App.Commands;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Linq; // Cần thiết để xóa một phần tử cụ thể
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace LexiScan.App.ViewModels
 {
     // Kế thừa từ BaseViewModel
     public class HistoryViewModel : BaseViewModel
     {
-        // Model đơn giản cho một mục lịch sử
+        private readonly DatabaseServices _dbService;
         public class HistoryEntry
         {
-            // Khắc phục CS8618: Khởi tạo với string.Empty
+            public string Id { get; set; }
             public string SearchTerm { get; set; } = string.Empty;
             public DateTime Timestamp { get; set; }
             public string DisplayTime => Timestamp.ToString("HH:mm - dd/MM/yyyy");
@@ -24,42 +25,65 @@ namespace LexiScan.App.ViewModels
 
         // ObservableCollection tự động thông báo khi thêm/xóa/sắp xếp item
         public ObservableCollection<HistoryEntry> HistoryEntries { get; set; }
-        public ICommand ClearHistoryCommand { get; } // Dùng `get;` để tuân thủ ReadOnly
-        public ICommand DeleteHistoryEntryCommand { get; } // Dùng `get;` để tuân thủ ReadOnly
+        public ICommand ClearHistoryCommand { get; } 
+        public ICommand DeleteHistoryEntryCommand { get; } 
 
         public HistoryViewModel()
         {
             HistoryEntries = new ObservableCollection<HistoryEntry>();
 
-            // Khắc phục CS0246: RelayCommand đã được tham chiếu đúng
+            string uid = SessionManager.CurrentUserId;
+            if (!string.IsNullOrEmpty(uid))
+            {
+                _dbService = new DatabaseServices(uid);
+
+                LoadFirebaseHistory();
+            }
+            
             ClearHistoryCommand = new RelayCommand(ExecuteClearHistory);
-            // DeleteHistoryEntryCommand chấp nhận tham số (HistoryEntry)
             DeleteHistoryEntryCommand = new RelayCommand(ExecuteDeleteHistoryEntry);
 
-            LoadPlaceholderData();
         }
-
-        private void LoadPlaceholderData()
+        private async void LoadFirebaseHistory()
         {
-            // Thêm một số dữ liệu mẫu để kiểm tra giao diện
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "mitosis", Timestamp = DateTime.Now.AddHours(-1) });
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "paradigm shift", Timestamp = DateTime.Now.AddHours(-5) });
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "infrastructure", Timestamp = DateTime.Now.AddDays(-1) });
-            HistoryEntries.Add(new HistoryEntry { SearchTerm = "commitment", Timestamp = DateTime.Now.AddDays(-2) });
-        }
+            if (_dbService == null) return;
 
-        // Khắc phục cảnh báo unused parameter bằng cách sử dụng dấu gạch dưới `_`
+            try
+            {
+                var listFromServer = await _dbService.GetHistoryAsync();
+
+                HistoryEntries.Clear();
+                foreach (var item in listFromServer)
+                {
+                    HistoryEntries.Add(new HistoryEntry
+                    {
+                        Id = item.SentenceId, // Lấy ID Firebase
+                        SearchTerm = item.SourceText,
+                        Timestamp = item.CreatedDate
+                    });
+                }
+            }
+            catch {  }
+        }
+        
         private void ExecuteClearHistory(object? _)
         {
             HistoryEntries.Clear();
         }
 
         // Khắc phục cảnh báo unused parameter và sử dụng object?
-        private void ExecuteDeleteHistoryEntry(object? parameter)
+        private async void ExecuteDeleteHistoryEntry(object? parameter)
         {
             if (parameter is HistoryEntry entry)
             {
+                // 1. Xóa trên giao diện trước cho nhanh
                 HistoryEntries.Remove(entry);
+
+                // 2. Xóa trên Firebase
+                if (_dbService != null && !string.IsNullOrEmpty(entry.Id))
+                {
+                    await _dbService.DeleteHistoryAsync(entry.SearchTerm);
+                }
             }
         }
     }
