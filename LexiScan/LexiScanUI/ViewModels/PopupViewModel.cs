@@ -132,6 +132,7 @@ namespace LexiScanUI.ViewModels
             if (_settingsService.LoadSettings().AutoPronounceOnLookup)
                 ExecuteReadAloud(null);
         }
+        
 
         private void ExecuteSettings(object? parameter)
         {
