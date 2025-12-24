@@ -340,11 +340,12 @@
                                     </Border>
                                 </Button>
                             </Grid>
+                            <CheckBox Content="Chế độ tự đọc khi hiện popup" 
+Style="{StaticResource StandardCheckBoxStyle}"
+IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/> 
 
 
-                            <CheckBox Content="Tự động phát âm khi tra từ" 
-                                      Style="{StaticResource StandardCheckBoxStyle}"
-                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnLookup}"/>
+
                             <CheckBox Content="Bật popup" 
           Style="{StaticResource StandardCheckBoxStyle}"
           IsChecked="{Binding CurrentSettings.IsAutoReadEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -387,9 +388,10 @@
                                              IsChecked="{Binding CurrentSettings.Voice, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=EngUS}" 
                                              Width="84"/>
                             </StackPanel>
-                            <CheckBox Content="Bật chế độ đọc tự động khi dịch xong" 
-            Style="{StaticResource StandardCheckBoxStyle}"
-            IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/>
+
+                            <CheckBox Content="Tự động phát âm khi tra từ điển" 
+                                      Style="{StaticResource StandardCheckBoxStyle}"
+                                      IsChecked="{Binding CurrentSettings.AutoPronounceOnLookup}"/>
 
                         </StackPanel>
                     </Border>
