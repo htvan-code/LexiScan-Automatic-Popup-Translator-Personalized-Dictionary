@@ -10,4 +10,5 @@
     <SolidColorBrush x:Key="HoverBackground" Color="#E6F7FF"/>
     <SolidColorBrush x:Key="SelectedBackground" Color="#BAE7FF"/>
     <SolidColorBrush x:Key="DangerColor" Color="#FF4D4D"/>
+    <SolidColorBrush x:Key="SuggestionTextBrush" Color="Black" />
 </ResourceDictionary>
