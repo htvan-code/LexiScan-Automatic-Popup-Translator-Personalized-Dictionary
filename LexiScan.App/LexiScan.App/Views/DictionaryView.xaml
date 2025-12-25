@@ -149,14 +149,15 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <Border CornerRadius="20" Width="40" Height="40" Background="{DynamicResource PrimaryAccent}" Margin="0,0,10,0">
                                 <Button Background="Transparent" Style="{StaticResource IconButtonStyle}" Foreground="White" 
-                                        Command="{Binding AddToPersonalDictionaryCommand}">
+                                Command="{Binding PinToFirebaseCommand}">
                                     <materialDesign:PackIcon Width="22" Height="22">
                                         <materialDesign:PackIcon.Style>
                                             <Style TargetType="materialDesign:PackIcon">
                                                 <Setter Property="Kind" Value="StarOutline"/>
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSaved}" Value="True">
+                                                    <DataTrigger Binding="{Binding IsPinned}" Value="True">
                                                         <Setter Property="Kind" Value="Star"/>
+                                                        <Setter Property="Foreground" Value="#FFD700"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
