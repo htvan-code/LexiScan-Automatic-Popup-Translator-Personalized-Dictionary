@@ -1,6 +1,6 @@
 <div align="center">
 
-<img width="100" height="100" alt="Image" src="https://github.com/user-attachments/assets/ba65eaa3-7950-4518-85d9-a3f2d24fea98" />
+<img width="1165" height="172" alt="Image" src="https://github.com/user-attachments/assets/f0a6b60a-5815-410f-b993-0beda752b006" />
 
 [![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![Visual Studio](https://img.shields.io/badge/Visual_Studio_2022-5C2D91?style=for-the-badge&logo=visual-studio&logoColor=white)](https://visualstudio.microsoft.com/)
