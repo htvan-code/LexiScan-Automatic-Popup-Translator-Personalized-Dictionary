@@ -116,7 +116,6 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        // --- [QUAN TRỌNG: ĐÃ SỬA PHẦN NÀY] ---
         public string SelectedSuggestion
         {
             get => _selectedSuggestion;
@@ -125,10 +124,6 @@ namespace LexiScan.App.ViewModels
                 _selectedSuggestion = value;
                 OnPropertyChanged();
 
-                // KHI CHỌN GỢI Ý (BẰNG MŨI TÊN HOẶC CHUỘT):
-                // 1. Chỉ đưa chữ lên ô tìm kiếm.
-                // 2. KHÔNG gọi ExecuteSearchAsync ở đây (để tránh bị tìm luôn khi mới bấm nút xuống).
-                // 3. Việc kích hoạt tìm kiếm sẽ do phím Enter hoặc Click chuột (ở View) đảm nhận.
                 if (!string.IsNullOrEmpty(value))
                 {
                     // Cập nhật biến _searchText trực tiếp để tránh kích hoạt LoadSuggestions vòng lặp
@@ -192,35 +187,34 @@ namespace LexiScan.App.ViewModels
                 ExecuteSpeakResult(null);
             }
 
-            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            // [SỬA LẠI ĐOẠN NÀY] Chỉ lưu khi cài đặt BẬT
+            if (currentSettings.AutoSaveHistoryToDictionary)
             {
-                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
-            }
-
-            // --- LƯU VÀO LỊCH SỬ ---
-            if (_dbService != null)
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(async () =>
+                if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
                 {
-                    try
-                    {
-                        await _dbService.AddHistoryAsync(new Sentences
-                        {
-                            SourceText = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText,
-                            TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
-                            CreatedDate = System.DateTime.Now
-                        });
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                }
 
-                        // Đã ẩn thông báo để trải nghiệm mượt mà hơn. 
-                        // Nếu cần debug thì mở lại dòng dưới:
-                        // System.Windows.MessageBox.Show("Đã lưu vào Lịch sử thành công!", "Thông báo");
-                    }
-                    catch (System.Exception ex)
+                // --- LƯU VÀO LỊCH SỬ ---
+                if (_dbService != null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(async () =>
                     {
-                        // Chỉ hiện lỗi nếu thực sự có vấn đề nghiêm trọng
-                        System.Diagnostics.Debug.WriteLine("Lỗi lưu lịch sử: " + ex.Message);
-                    }
-                });
+                        try
+                        {
+                            await _dbService.AddHistoryAsync(new Sentences
+                            {
+                                SourceText = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText,
+                                TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
+                                CreatedDate = System.DateTime.Now
+                            });
+                        }
+                        catch (System.Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Lỗi lưu lịch sử: " + ex.Message);
+                        }
+                    });
+                }
             }
         }
 

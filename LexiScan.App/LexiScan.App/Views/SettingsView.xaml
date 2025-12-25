@@ -425,7 +425,7 @@ IsChecked="{Binding CurrentSettings.AutoPronounceOnTranslate}"/>
                             BorderBrush="{DynamicResource BorderColor}" 
                             BorderThickness="1" CornerRadius="8" Padding="15">
                         <StackPanel>
-                            <CheckBox Content="Tự động lưu lịch sử tra cứu vào Từ điển cá nhân"
+                            <CheckBox Content="Tự động lưu lịch sử tra cứu"
                                       Style="{StaticResource StandardCheckBoxStyle}"
                                       IsChecked="{Binding CurrentSettings.AutoSaveHistoryToDictionary}"/>
                         </StackPanel>
