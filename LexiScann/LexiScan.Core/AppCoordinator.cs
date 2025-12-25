@@ -142,5 +142,28 @@ namespace LexiScan.Core
         {
             return await _translationService.TranslateForMainApp(text, sl, tl);
         }
+
+        // --- [MỚI] HÀM NÀY ĐỂ PHỤC VỤ HISTORY VIEW MODEL ---
+        // Lấy kết quả dịch đầy đủ và trả về trực tiếp (thay vì bắn Event)
+        public async Task<TranslationResult?> TranslateAndGetResultAsync(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            try
+            {
+                // Tái sử dụng logic dịch có sẵn
+                return await _translationService.ProcessTranslationAsync(text.Trim());
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        // [BỔ SUNG] Hàm lưu vào từ điển cá nhân (Đã hứa ở các bước trước)
+        /*
+        public void SaveToPersonalDictionary(string word, string meaning, string phonetic = "")
+        {
+            // Logic lưu dữ liệu của bạn sẽ gọi vào DataService ở đây
+            System.Diagnostics.Debug.WriteLine($"Đang lưu: {word} - {meaning}");
+        }*/
     }
 }

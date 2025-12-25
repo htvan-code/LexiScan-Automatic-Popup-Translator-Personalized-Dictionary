@@ -155,7 +155,12 @@ namespace LexiScanData.Services
                .Child("saved")
                .OnceAsync<WordExample>();
 
-            return items.Select(i => i.Object).Reverse().ToList();
+            return items.Select(i =>
+            {
+                var w = i.Object;
+                w.Id = i.Key; 
+                return w;
+            }).Reverse().ToList();
         }
 
         // ==========================================

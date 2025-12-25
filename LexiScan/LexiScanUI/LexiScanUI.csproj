@@ -30,7 +30,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\LexiScann\LexiScan.Core\LexiScan.Core.csproj" />
     <ProjectReference Include="..\LexiScanData\LexiScanData.csproj" />
-    <ProjectReference Include="..\LexiScanService\LexiScanService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

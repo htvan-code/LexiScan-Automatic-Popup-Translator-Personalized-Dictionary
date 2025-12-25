@@ -1,23 +1,35 @@
-﻿using LexiScan.Core.Models;
-using LexiScan.Core.Services; // Đã thấy được do SettingsService giờ nằm ở Core
-using LexiScan.Core.Enums;    // Đã thấy được Enum
+﻿using LexiScan.Core;
+using LexiScan.Core.Enums;
+using LexiScan.Core.Models;
+using LexiScan.Core.Services;
 using LexiScan.Core.Utils;
-using LexiScanUI.Helpers;
+using LexiScanData.Services;
 using LexiScanService;
+using LexiScanUI.Helpers;
 using System.Collections.ObjectModel;
+using System.Speech.Synthesis;
 using System.Windows.Input;
 using InputKind = LexiScan.Core.Enums.InputType;
-using UiTts = LexiScanService.TtsService;
+using System.Text;
+using System.Collections.Generic; // Thêm để dùng List
 
 namespace LexiScanUI.ViewModels
 {
     public class PopupViewModel : BaseViewModel
     {
         private readonly TranslationService _translator;
-        private readonly UiTts _ttsService;
         private readonly SettingsService _settingsService;
+        private DatabaseServices? _dbService;
 
-        // Properties (Giữ nguyên)
+        private SpeechSynthesizer _synthesizer;
+        private bool _isPlaying;
+
+        public bool IsPlaying
+        {
+            get => _isPlaying;
+            set { _isPlaying = value; OnPropertyChanged(); }
+        }
+
         private string _currentWord = "";
         public string CurrentWord { get => _currentWord; set { _currentWord = value; OnPropertyChanged(); } }
         private string _phonetic = "";
@@ -44,13 +56,21 @@ namespace LexiScanUI.ViewModels
         public ICommand CloseCommand { get; }
         public ICommand ClickWordCommand { get; }
         public ICommand PinToFirebaseCommand { get; }
+
         public PopupViewModel()
         {
             PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
             _translator = new TranslationService();
-            _ttsService = new UiTts();
             _settingsService = new SettingsService();
 
+            _synthesizer = new SpeechSynthesizer();
+            _synthesizer.SetOutputToDefaultAudioDevice();
+            _synthesizer.SpeakCompleted += (s, e) => IsPlaying = false;
+
+            string uid = SessionManager.CurrentUserId;
+            if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+
+            PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
             PinCommand = new RelayCommand(ExecutePin);
             ReadAloudCommand = new RelayCommand(ExecuteReadAloud);
             SettingsCommand = new RelayCommand(ExecuteSettings);
@@ -59,54 +79,138 @@ namespace LexiScanUI.ViewModels
         }
 
         // --- LOGIC XỬ LÝ DỮ LIỆU ---
-        public void LoadTranslationData(TranslationResult result)
+        public async void LoadTranslationData(TranslationResult result)
         {
             if (result == null) return;
 
-            // 1. [TÍNH NĂNG] Bật/Tắt Popup
+            StopAudio();
+
             var currentSettings = _settingsService.LoadSettings();
-            var settings = _settingsService.LoadSettings();
-            bool autoPopup = settings.IsAutoReadEnabled;
 
             IsSelectionMode = false;
-            OriginalSentence = result.OriginalText ?? "";
-            CurrentWord = result.OriginalText ?? "";
-            CurrentTranslatedText = result.TranslatedText ?? "";
+
+            // Áp dụng chuẩn hóa Text
+            OriginalSentence = NormalizeText(result.OriginalText);
+            CurrentWord = NormalizeText(result.OriginalText);
+            CurrentTranslatedText = NormalizeText(result.TranslatedText);
+
             Phonetic = (result.InputType == InputKind.SingleWord && !string.IsNullOrEmpty(result.Phonetic)) ? $"/{result.Phonetic}/" : "";
 
             Meanings.Clear();
             if (result.InputType == InputKind.SingleWord && result.Meanings != null)
-                foreach (var m in result.Meanings) Meanings.Add(m);
+            {
+                foreach (var m in result.Meanings)
+                {
+                    // Chuẩn hóa PartOfSpeech
+                    if (!string.IsNullOrEmpty(m.PartOfSpeech))
+                        m.PartOfSpeech = NormalizeText(m.PartOfSpeech);
+
+                    // Chuẩn hóa danh sách Definitions
+                    if (m.Definitions != null && m.Definitions.Count > 0)
+                    {
+                        var normDefs = new List<string>();
+                        foreach (var def in m.Definitions)
+                        {
+                            normDefs.Add(NormalizeText(def));
+                        }
+                        m.Definitions = normDefs;
+                    }
+
+                    Meanings.Add(m);
+                }
+            }
 
             PrepareWordsForSelection();
 
-            // 2. [TÍNH NĂNG] Tự động đọc khi dịch xong
             if (currentSettings.AutoPronounceOnTranslate)
             {
                 ExecuteReadAloud(null);
             }
+
+            if (_dbService != null)
+            {
+                IsPinned = false;
+                string wordToCheck = !string.IsNullOrEmpty(CurrentWord) ? CurrentWord : OriginalSentence;
+                string? key = await _dbService.FindSavedKeyAsync(wordToCheck);
+                if (key != null) IsPinned = true;
+            }
+
+            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            {
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+            }
+
+            if (_dbService != null)
+            {
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(OriginalSentence) && !string.IsNullOrWhiteSpace(CurrentTranslatedText))
+                    {
+                        await _dbService.AddHistoryAsync(new Sentences
+                        {
+                            SourceText = OriginalSentence,
+                            TranslatedText = CurrentTranslatedText,
+                            CreatedDate = System.DateTime.Now
+                        });
+                    }
+                }
+                catch { }
+            }
+        }
+
+        // Hàm chuẩn hóa tiếng Việt
+        private string NormalizeText(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            return input.Normalize(NormalizationForm.FormC);
         }
 
         private void ExecuteReadAloud(object? parameter)
         {
+            if (IsPlaying)
+            {
+                StopAudio();
+                return;
+            }
+
             var txt = !string.IsNullOrWhiteSpace(CurrentWord) ? CurrentWord : CurrentTranslatedText;
             if (string.IsNullOrWhiteSpace(txt)) return;
 
             var settings = _settingsService.LoadSettings();
 
-            double speed = 0;
+            int speedRate = 0;
             switch (settings.Speed)
             {
-                case SpeechSpeed.Slower: speed = -5; break;
-                case SpeechSpeed.Slow: speed = -3; break;
-                case SpeechSpeed.Normal: speed = 0; break;
+                case SpeechSpeed.Slower: speedRate = -5; break;
+                case SpeechSpeed.Slow: speedRate = -3; break;
+                case SpeechSpeed.Normal: speedRate = 0; break;
             }
+            _synthesizer.Rate = speedRate;
 
-            string accent = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
-            _ttsService.Speak(txt, speed, accent);
+            string culture = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
+            try
+            {
+                _synthesizer.SelectVoiceByHints(VoiceGender.NotSet, VoiceAge.NotSet, 0, new System.Globalization.CultureInfo(culture));
+            }
+            catch { }
+
+            IsPlaying = true;
+            _synthesizer.SpeakAsync(txt);
         }
-        // --- CÁC HÀM PHỤ TRỢ ---
-        private void ExecutePin(object? parameter) => IsSelectionMode = !IsSelectionMode;
+
+        public void StopAudio()
+        {
+            if (_synthesizer != null && _synthesizer.State == SynthesizerState.Speaking)
+            {
+                _synthesizer.SpeakAsyncCancelAll();
+            }
+            IsPlaying = false;
+        }
+
+        private void ExecutePin(object? parameter)
+        {
+            IsSelectionMode = !IsSelectionMode;
+        }
 
         private void PrepareWordsForSelection()
         {
@@ -122,28 +226,85 @@ namespace LexiScanUI.ViewModels
         private async void ExecuteClickWord(object? parameter)
         {
             if (parameter is not string word) return;
-            var result = await _translator.ProcessTranslationAsync(word);
-            CurrentWord = result.OriginalText ?? word;
-            Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : "";
-            Meanings.Clear();
-            if (result.Meanings != null) foreach (var m in result.Meanings) Meanings.Add(m);
 
-            // 4. [TÍNH NĂNG] Tự động đọc khi tra từ đơn (Click vào từ)
+            var result = await _translator.ProcessTranslationAsync(word);
+
+            // Chuẩn hóa CurrentWord
+            CurrentWord = NormalizeText(result.OriginalText ?? word);
+            Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : "";
+
+            Meanings.Clear();
+            if (result.Meanings != null)
+            {
+                foreach (var m in result.Meanings)
+                {
+                    // Chuẩn hóa PartOfSpeech
+                    if (!string.IsNullOrEmpty(m.PartOfSpeech))
+                        m.PartOfSpeech = NormalizeText(m.PartOfSpeech);
+
+                    // Chuẩn hóa danh sách Definitions
+                    if (m.Definitions != null && m.Definitions.Count > 0)
+                    {
+                        var normDefs = new List<string>();
+                        foreach (var def in m.Definitions)
+                        {
+                            normDefs.Add(NormalizeText(def));
+                        }
+                        m.Definitions = normDefs;
+                    }
+                    Meanings.Add(m);
+                }
+            }
+
             if (_settingsService.LoadSettings().AutoPronounceOnLookup)
                 ExecuteReadAloud(null);
         }
-        
 
         private void ExecuteSettings(object? parameter)
         {
             GlobalEvents.RaiseRequestOpenSettings();
             IsSelectionMode = false; WordList.Clear();
         }
-        private void ExecuteClose(object? parameter) { IsSelectionMode = false; WordList.Clear(); }
-        private void ExecutePinToFirebase(object? parameter)
+
+        private void ExecuteClose(object? parameter)
         {
-            IsPinned = !IsPinned;
+            StopAudio();
+            IsSelectionMode = false;
+            WordList.Clear();
         }
 
+        private async void ExecutePinToFirebase(object? parameter)
+        {
+            if (_dbService == null)
+            {
+                if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                else return;
+            }
+
+            string textToSave = !string.IsNullOrWhiteSpace(CurrentWord) ? CurrentWord : OriginalSentence;
+            string meaningToSave = CurrentTranslatedText;
+
+            if (string.IsNullOrWhiteSpace(textToSave)) return;
+
+            try
+            {
+                string? existingKey = await _dbService.FindSavedKeyAsync(textToSave);
+
+                if (existingKey != null)
+                {
+                    await _dbService.DeleteSavedItemAsync(existingKey);
+                    IsPinned = false;
+                }
+                else
+                {
+                    await _dbService.SaveSimpleVocabularyAsync(textToSave, meaningToSave);
+                    IsPinned = true;
+                }
+
+                GlobalEvents.RaisePersonalDictionaryUpdated();
+            }
+            catch { }
+        }
     }
 }

@@ -212,30 +212,34 @@ namespace LexiScan.App.ViewModels
                 ExecuteSpeakResult(null);
             }
 
-            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            // [SỬA LẠI ĐOẠN NÀY] Chỉ lưu khi cài đặt BẬT
+            if (currentSettings.AutoSaveHistoryToDictionary)
             {
-                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
-            }
-
-            // --- LƯU VÀO LỊCH SỬ ---
-            if (_dbService != null)
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(async () =>
+                if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
                 {
-                    try
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                }
+
+                // --- LƯU VÀO LỊCH SỬ ---
+                if (_dbService != null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(async () =>
                     {
-                        await _dbService.AddHistoryAsync(new Sentences
+                        try
                         {
-                            SourceText = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText,
-                            TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
-                            CreatedDate = System.DateTime.Now
-                        });
-                    }
-                    catch (System.Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine("Lỗi lưu lịch sử: " + ex.Message);
-                    }
-                });
+                            await _dbService.AddHistoryAsync(new Sentences
+                            {
+                                SourceText = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText,
+                                TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
+                                CreatedDate = System.DateTime.Now
+                            });
+                        }
+                        catch (System.Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Lỗi lưu lịch sử: " + ex.Message);
+                        }
+                    });
+                }
             }
         }
 

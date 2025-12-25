@@ -18,6 +18,7 @@ namespace LexiScanUI.View
             ViewModel = new PopupViewModel();
             DataContext = ViewModel;
 
+            this.IsVisibleChanged += PopupView_IsVisibleChanged;
             // ===== PHỤC HỒI VỊ TRÍ CŨ CỦA POPUP =====
             double x = Properties.Settings.Default.PopupX;
             double y = Properties.Settings.Default.PopupY;
@@ -32,12 +33,22 @@ namespace LexiScanUI.View
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
         }
+        private void PopupView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            // Nếu IsVisible chuyển sang false (tức là đang bị ẩn đi)
+            if ((bool)e.NewValue == false)
+            {
+                ViewModel.StopAudio();
+            }
+        }
 
         // =========================================
         //   LƯU VỊ TRÍ POPUP KHI ĐÓNG
         // =========================================
         protected override void OnClosing(CancelEventArgs e)
         {
+            ViewModel.StopAudio(); 
+
             Properties.Settings.Default.PopupX = this.Left;
             Properties.Settings.Default.PopupY = this.Top;
             Properties.Settings.Default.Save();
@@ -54,9 +65,6 @@ namespace LexiScanUI.View
                 DragMove();
         }
 
-        // =========================================
-        //   NHẬN KẾT QUẢ TỪ MAINWINDOW
-        // =========================================
         public void ShowResult(TranslationResult result)
         {
             if (result == null) return;
@@ -67,9 +75,6 @@ namespace LexiScanUI.View
             Activate();
         }
 
-        // =========================================
-        //   NÚT ĐÓNG POPUP
-        // =========================================
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             Hide(); // không destroy

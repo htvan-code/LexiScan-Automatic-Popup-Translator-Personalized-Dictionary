@@ -4,105 +4,110 @@ using System.IO;
 using System.Threading.Tasks;
 using NAudio.Wave;
 using Whisper.net;
+using Whisper.net.Ggml;
 
 namespace LexiScan.Core.Services
 {
     public class VoicetoText : IDisposable
     {
         private WaveInEvent _waveIn;
-        private WhisperFactory? _factory;
-        private WhisperProcessor? _processor;
-        private MemoryStream _audioBuffer = new MemoryStream(); // Bộ đệm để gom âm thanh
+        private MemoryStream _audioStream;
+        private WhisperFactory _whisperFactory;
+        private WhisperProcessor _processor;
+
+        // Đường dẫn tới file model anh vừa tải
         private readonly string _modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "models", "ggml-tiny.bin");
 
-        public event Action<string>? TextRecognized;
-        public event Action<int>? AudioLevelUpdated;
-        public event Action? SpeechStarted;
-        public event Action? SpeechEnded;
+        public event Action<string> TextRecognized;
+        public event Action SpeechStarted;
+        public event Action SpeechEnded;
+        public event Action<int> AudioLevelUpdated;
 
-        public bool IsRecording { get; private set; }
+        public bool IsRecording { get; private set; } = false;
 
         public VoicetoText()
         {
+            // Khởi tạo engine Whisper
             if (File.Exists(_modelPath))
             {
-                _factory = WhisperFactory.FromPath(_modelPath);
-                _processor = _factory.CreateBuilder().WithLanguage("en").Build();
+                _whisperFactory = WhisperFactory.FromPath(_modelPath);
+                _processor = _whisperFactory.CreateBuilder()
+                    .WithLanguage("en") // Để tiếng Anh cho chuẩn từ đơn
+                    .Build();
             }
-            _waveIn = new WaveInEvent { WaveFormat = new WaveFormat(16000, 1) };
-            _waveIn.DataAvailable += OnDataAvailable;
+
+            _waveIn = new WaveInEvent();
+            _waveIn.WaveFormat = new WaveFormat(16000, 1); // Whisper chuẩn 16kHz
+            _waveIn.DataAvailable += OnAudioDataAvailable;
         }
 
-        private void OnDataAvailable(object sender, WaveInEventArgs e)
+        private void OnAudioDataAvailable(object sender, WaveInEventArgs e)
         {
-            if (!IsRecording || _processor == null) return;
+            if (!IsRecording) return;
+            _audioStream?.Write(e.Buffer, 0, e.BytesRecorded);
 
-            // 1. Lưu vào bộ đệm
-            _audioBuffer.Write(e.Buffer, 0, e.BytesRecorded);
-
-            // 2. Nhảy Elip
+            // Tính âm lượng cho Elip nhảy
             long sum = 0;
             for (int i = 0; i < e.BytesRecorded; i += 2) sum += Math.Abs(BitConverter.ToInt16(e.Buffer, i));
             AudioLevelUpdated?.Invoke((int)(sum / (e.BytesRecorded / 2) / 300));
-
-            // 3. Xử lý Streaming: Chỉ xử lý khi có đủ khoảng 0.8 giây âm thanh để tránh vụn vặt
-            if (_audioBuffer.Length > 16000 * 0.8 * 2)
-            {
-                ProcessBuffer(false);
-            }
-        }
-
-        private async void ProcessBuffer(bool isFinal)
-        {
-            if (_processor == null || _audioBuffer.Length == 0) return;
-
-            try
-            {
-                var bytes = _audioBuffer.ToArray();
-                var samples = new float[bytes.Length / 2];
-                for (int i = 0; i < bytes.Length; i += 2)
-                    samples[i / 2] = BitConverter.ToInt16(bytes, i) / 32768.0f;
-
-                await foreach (var result in _processor.ProcessAsync(samples))
-                {
-                    if (!string.IsNullOrWhiteSpace(result.Text))
-                    {
-                        TextRecognized?.Invoke(result.Text);
-                    }
-                }
-
-                // Nếu là Dictionary (thường bấm tắt ngay), ta xóa buffer sau khi bắn chữ
-                if (isFinal) _audioBuffer.SetLength(0);
-            }
-            catch { }
         }
 
         public void StartListening()
         {
-            if (IsRecording) return;
-            _audioBuffer.SetLength(0); // Reset bộ đệm khi bắt đầu
-            IsRecording = true;
+            if (IsRecording || _processor == null) return;
+
+            _audioStream = new MemoryStream();
             _waveIn.StartRecording();
+            IsRecording = true;
             SpeechStarted?.Invoke();
         }
 
-        public void StopListening()
+        public async void StopListening()
         {
             if (!IsRecording) return;
             IsRecording = false;
             _waveIn.StopRecording();
 
-            // Xử lý nốt những gì còn lại trong bộ đệm khi bấm tắt
-            ProcessBuffer(true);
+            if (_audioStream?.Length > 0)
+            {
+                var audioData = _audioStream.ToArray();
+
+                // Chạy nhận diện trên luồng riêng để giao diện không bị đứng
+                await Task.Run(async () => {
+                    try
+                    {
+                        using var wavStream = new MemoryStream();
+                        using (var reader = new RawSourceWaveStream(new MemoryStream(audioData), _waveIn.WaveFormat))
+                        {
+                            WaveFileWriter.WriteWavFileToStream(wavStream, reader);
+                        }
+                        wavStream.Position = 0;
+
+                        string fullText = "";
+                        await foreach (var result in _processor.ProcessAsync(wavStream))
+                        {
+                            fullText += result.Text;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(fullText))
+                        {
+                            // Whisper đôi khi nhận diện nhầm tiếng động thành dấu ngoặc hoặc [Music]
+                            string cleaned = fullText.Trim().Replace(".", "").Replace("[", "").Replace("]", "");
+                            TextRecognized?.Invoke(cleaned);
+                        }
+                    }
+                    catch (Exception ex) { Debug.WriteLine("Whisper Error: " + ex.Message); }
+                });
+            }
             SpeechEnded?.Invoke();
         }
 
         public void Dispose()
         {
             _waveIn?.Dispose();
+            _audioStream?.Dispose();
             _processor?.Dispose();
-            _factory?.Dispose();
-            _audioBuffer.Dispose();
+            _whisperFactory?.Dispose();
         }
     }
 }

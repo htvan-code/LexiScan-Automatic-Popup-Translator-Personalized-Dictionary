@@ -2,6 +2,7 @@
 using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
+using LexiScan.Core.Services; // Cần thêm cái này để dùng SettingsService
 using LexiScanData.Services;
 using LexiScanData.Models;
 using System;
@@ -16,6 +17,7 @@ namespace LexiScan.App.ViewModels
     {
         private DatabaseServices? _dbService;
         private readonly AppCoordinator _coordinator;
+        private readonly SettingsService _settingsService; // [THÊM]
 
         private string _sourceText = "";
         private string _translatedText = "Bản dịch";
@@ -27,6 +29,7 @@ namespace LexiScan.App.ViewModels
         private CancellationTokenSource _translationCts;
         private string _lastSavedText = "";
 
+        // ... Các Command (SpeakSourceCommand, SpeakTargetCommand...) giữ nguyên ...
         public ICommand SpeakSourceCommand { get; }
         public ICommand SpeakTargetCommand { get; }
         public ICommand SwapLanguageCommand { get; }
@@ -39,6 +42,7 @@ namespace LexiScan.App.ViewModels
         public TranslationViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
+            _settingsService = new SettingsService(); // [THÊM] Khởi tạo SettingsService
 
             string uid = SessionManager.CurrentUserId;
             if (!string.IsNullOrEmpty(uid))
@@ -50,10 +54,9 @@ namespace LexiScan.App.ViewModels
             SpeakSourceCommand = new RelayCommand(obj => _coordinator.Speak(SourceText, 1.0, _sourceLang));
             SpeakTargetCommand = new RelayCommand(obj => _coordinator.Speak(TranslatedText, 1.0, _targetLang));
 
-            // [SỬA 2] Thêm đoạn khởi tạo nút LƯU 
             SaveTranslationCommand = new RelayCommand(async (obj) =>
             {
-                await ExecuteSaveHistory();
+                await ExecuteSaveHistory(forceSave: true); // Nút lưu thủ công luôn lưu
             });
 
             StartVoiceCommand = new RelayCommand(obj =>
@@ -88,6 +91,7 @@ namespace LexiScan.App.ViewModels
             _coordinator.VoiceRecognitionEnded += () => OnPropertyChanged("IsListening");
         }
 
+        // ... Các Property (SourceLangName, TargetLangName...) giữ nguyên ...
         public string SourceLangName { get => _sourceLangName; set { _sourceLangName = value; OnPropertyChanged(); } }
         public string TargetLangName { get => _targetLangName; set { _targetLangName = value; OnPropertyChanged(); } }
         public string SourceText { get => _sourceText; set { if (_sourceText != value) { _sourceText = value; OnPropertyChanged(); CurrentCharCount = _sourceText?.Length ?? 0; TriggerAutoTranslate(); } } }
@@ -108,16 +112,26 @@ namespace LexiScan.App.ViewModels
                     if (result != null && !token.IsCancellationRequested)
                     {
                         TranslatedText = result.TranslatedText;
+
+                        // [LOGIC MỚI]: Sau khi dịch xong, kiểm tra settings để tự động lưu
+                        var settings = _settingsService.LoadSettings();
+                        if (settings.AutoSaveHistoryToDictionary)
+                        {
+                            await ExecuteSaveHistory(forceSave: false);
+                        }
                     }
                 }
                 catch (OperationCanceledException) { }
             }, token);
         }
 
-        private async Task ExecuteSaveHistory()
+        private async Task ExecuteSaveHistory(bool forceSave = false)
         {
-            // Kiểm tra: Text rỗng hoặc vừa mới lưu xong thì bỏ qua
-            if (string.IsNullOrWhiteSpace(SourceText) || SourceText == _lastSavedText) return;
+            // Kiểm tra: Text rỗng thì bỏ qua
+            if (string.IsNullOrWhiteSpace(SourceText)) return;
+
+            // Nếu không phải lưu thủ công (forceSave) và text giống lần trước thì bỏ qua (tránh lưu lặp)
+            if (!forceSave && SourceText == _lastSavedText) return;
 
             // Tự kết nối lại nếu bị null
             if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))

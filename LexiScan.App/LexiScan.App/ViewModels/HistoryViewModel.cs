@@ -1,88 +1,246 @@
-﻿// File: ViewModels/HistoryViewModel.cs
-using LexiScan.Core;
+﻿using LexiScan.Core;
 using LexiScan.App.Commands;
 using LexiScanData.Services;
 using System;
+using System.Collections.Generic; // Cần dùng List
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq; // Cần thiết để xóa một phần tử cụ thể
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Windows.Input;
+using System.Threading.Tasks;
+using System.Windows; // Cần để hiện MessageBox
 
 namespace LexiScan.App.ViewModels
 {
-    // Kế thừa từ BaseViewModel
     public class HistoryViewModel : BaseViewModel
     {
-        private readonly DatabaseServices _dbService;
-        public class HistoryEntry
+        // Bỏ 'readonly' để tránh lỗi gán lại (CS0191)
+        private DatabaseServices? _dbService;
+        private readonly AppCoordinator _coordinator;
+
+        public class HistoryEntry : BaseViewModel
         {
             public string Id { get; set; }
             public string SearchTerm { get; set; } = string.Empty;
             public DateTime Timestamp { get; set; }
             public string DisplayTime => Timestamp.ToString("HH:mm - dd/MM/yyyy");
+
+            private bool _isExpanded;
+            public bool IsExpanded
+            {
+                get => _isExpanded;
+                set { _isExpanded = value; OnPropertyChanged(); }
+            }
+
+            private bool _isLoading;
+            public bool IsLoading
+            {
+                get => _isLoading;
+                set { _isLoading = value; OnPropertyChanged(); }
+            }
+
+            private string _detailInfo;
+            public string DetailInfo
+            {
+                get => _detailInfo;
+                set { _detailInfo = value; OnPropertyChanged(); }
+            }
         }
 
-        // ObservableCollection tự động thông báo khi thêm/xóa/sắp xếp item
-        public ObservableCollection<HistoryEntry> HistoryEntries { get; set; }
-        public ICommand ClearHistoryCommand { get; } 
-        public ICommand DeleteHistoryEntryCommand { get; } 
+        public ObservableCollection<HistoryEntry> HistoryEntries { get; set; } = new ObservableCollection<HistoryEntry>();
 
-        public HistoryViewModel()
+        // [MỚI] Danh sách gốc để lưu trữ dữ liệu trước khi lọc
+        private List<HistoryEntry> _allEntries = new List<HistoryEntry>();
+
+        public ICommand ClearHistoryCommand { get; }
+        public ICommand DeleteHistoryEntryCommand { get; }
+        public ICommand ViewDetailsCommand { get; }
+
+        // [MỚI] Biến từ khóa tìm kiếm
+        private string _searchTerm;
+        public string SearchTerm
         {
-            HistoryEntries = new ObservableCollection<HistoryEntry>();
+            get => _searchTerm;
+            set
+            {
+                _searchTerm = value;
+                OnPropertyChanged();
+                FilterList(); // Mỗi khi nhập là lọc ngay
+            }
+        }
+
+        public HistoryViewModel(AppCoordinator coordinator)
+        {
+            _coordinator = coordinator;
 
             string uid = SessionManager.CurrentUserId;
             if (!string.IsNullOrEmpty(uid))
             {
                 _dbService = new DatabaseServices(uid);
-
                 LoadFirebaseHistory();
             }
-            
+
             ClearHistoryCommand = new RelayCommand(ExecuteClearHistory);
             DeleteHistoryEntryCommand = new RelayCommand(ExecuteDeleteHistoryEntry);
-
+            ViewDetailsCommand = new RelayCommand(ExecuteViewDetails);
         }
-        private async void LoadFirebaseHistory()
+
+        // --- 1. LOGIC TẢI DỮ LIỆU & LỌC ---
+        public async void LoadFirebaseHistory()
         {
-            if (_dbService == null) return;
+            if (_dbService == null)
+            {
+                string uid = SessionManager.CurrentUserId;
+                if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+                else return;
+            }
 
             try
             {
                 var listFromServer = await _dbService.GetHistoryAsync();
 
-                HistoryEntries.Clear();
-                foreach (var item in listFromServer)
+                // Lưu vào danh sách gốc (_allEntries)
+                _allEntries.Clear();
+
+                if (listFromServer != null)
                 {
-                    HistoryEntries.Add(new HistoryEntry
+                    // Sắp xếp mới nhất lên đầu
+                    foreach (var item in listFromServer.OrderByDescending(x => x.CreatedDate))
                     {
-                        Id = item.SentenceId, // Lấy ID Firebase
-                        SearchTerm = item.SourceText,
-                        Timestamp = item.CreatedDate
-                    });
+                        _allEntries.Add(new HistoryEntry
+                        {
+                            Id = item.SentenceId,
+                            SearchTerm = item.SourceText,
+                            Timestamp = item.CreatedDate
+                        });
+                    }
                 }
+
+                // Hiển thị ra màn hình thông qua bộ lọc
+                FilterList();
             }
-            catch {  }
-        }
-        
-        private void ExecuteClearHistory(object? _)
-        {
-            HistoryEntries.Clear();
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Lỗi tải lịch sử: {ex.Message}");
+            }
         }
 
-        // Khắc phục cảnh báo unused parameter và sử dụng object?
+        private void FilterList()
+        {
+            HistoryEntries.Clear();
+
+            if (string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                // Nếu không tìm kiếm -> Hiện hết
+                foreach (var item in _allEntries) HistoryEntries.Add(item);
+            }
+            else
+            {
+                // Nếu có tìm kiếm -> Lọc theo tên
+                var filtered = _allEntries.Where(x => x.SearchTerm.ToLower().Contains(SearchTerm.ToLower())).ToList();
+                foreach (var item in filtered) HistoryEntries.Add(item);
+            }
+        }
+
+        // --- 2. LOGIC XÓA TOÀN BỘ (Giống PersonalDictionary) ---
+        private async void ExecuteClearHistory(object? _)
+        {
+            if (_dbService == null || HistoryEntries.Count == 0) return;
+
+            var result = MessageBox.Show("Bạn có chắc chắn muốn xóa toàn bộ lịch sử tra cứu không?",
+                                         "Xác nhận",
+                                         MessageBoxButton.YesNo,
+                                         MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                // Tạo bản sao để loop xóa (tránh lỗi collection modified)
+                var listClone = new List<HistoryEntry>(HistoryEntries);
+
+                // Xóa trên giao diện ngay lập tức
+                HistoryEntries.Clear();
+                _allEntries.Clear();
+
+                // Xóa dưới Database (Firebase)
+                foreach (var item in listClone)
+                {
+                    if (!string.IsNullOrEmpty(item.SearchTerm))
+                    {
+                        await _dbService.DeleteHistoryAsync(item.SearchTerm);
+                    }
+                }
+            }
+        }
+
+        // --- 3. LOGIC XÓA TỪNG MỤC ---
         private async void ExecuteDeleteHistoryEntry(object? parameter)
         {
             if (parameter is HistoryEntry entry)
             {
-                // 1. Xóa trên giao diện trước cho nhanh
+                // Xóa khỏi cả 2 danh sách
                 HistoryEntries.Remove(entry);
+                _allEntries.Remove(entry);
 
-                // 2. Xóa trên Firebase
-                if (_dbService != null && !string.IsNullOrEmpty(entry.Id))
+                if (_dbService != null && !string.IsNullOrEmpty(entry.SearchTerm))
                 {
                     await _dbService.DeleteHistoryAsync(entry.SearchTerm);
+                }
+            }
+        }
+
+        // --- 4. LOGIC XEM CHI TIẾT (Giữ nguyên) ---
+        private async void ExecuteViewDetails(object? parameter)
+        {
+            if (parameter is HistoryEntry entry)
+            {
+                entry.IsExpanded = !entry.IsExpanded;
+
+                if (entry.IsExpanded && string.IsNullOrEmpty(entry.DetailInfo))
+                {
+                    entry.IsLoading = true;
+                    entry.DetailInfo = string.Empty;
+
+                    try
+                    {
+                        var result = await _coordinator.TranslateAndGetResultAsync(entry.SearchTerm);
+
+                        if (result != null)
+                        {
+                            var sb = new System.Text.StringBuilder();
+                            if (!string.IsNullOrEmpty(result.Phonetic)) sb.AppendLine($"/{result.Phonetic}/");
+                            if (!string.IsNullOrEmpty(result.TranslatedText))
+                            {
+                                sb.AppendLine($"➤ {result.TranslatedText}");
+                                sb.AppendLine();
+                            }
+
+                            if (result.Meanings != null && result.Meanings.Count > 0)
+                            {
+                                foreach (var m in result.Meanings)
+                                {
+                                    sb.AppendLine($"★ {m.PartOfSpeech}");
+                                    foreach (var def in m.Definitions) sb.AppendLine($"    • {def}");
+                                    sb.AppendLine();
+                                }
+                            }
+                            entry.DetailInfo = sb.ToString().Trim();
+                        }
+                        else
+                        {
+                            var suggestions = await _coordinator.GetRecommendWordsAsync(entry.SearchTerm);
+                            if (suggestions.Count > 0)
+                                entry.DetailInfo = $"Gợi ý: {string.Join(", ", suggestions)}";
+                            else
+                                entry.DetailInfo = "Không tìm thấy định nghĩa chi tiết.";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        entry.DetailInfo = $"Lỗi tải dữ liệu: {ex.Message}";
+                    }
+                    finally
+                    {
+                        entry.IsLoading = false;
+                    }
                 }
             }
         }

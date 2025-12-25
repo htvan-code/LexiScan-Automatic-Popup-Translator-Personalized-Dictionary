@@ -43,18 +43,32 @@
 
                 <!-- ================= TOOLBAR ================= -->
                 <StackPanel Grid.Row="0"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right"
-                            Margin="0,0,0,4">
+            Orientation="Horizontal"
+            HorizontalAlignment="Right"
+            Margin="0,0,0,4">
 
                     <Button Style="{StaticResource MaterialDesignToolButton}"
-                            Command="{Binding ReadAloudCommand}">
-                        <materialDesign:PackIcon Kind="VolumeHigh"
-                                                 Foreground="{DynamicResource SecondaryText}"/>
+            Command="{Binding ReadAloudCommand}"
+            ToolTip="Nghe phát âm">
+
+                        <materialDesign:PackIcon Width="18">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                            <Setter Property="Foreground" Value="HotPink"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
                     </Button>
 
                     <Button Style="{StaticResource MaterialDesignToolButton}"
-                            Command="{Binding PinCommand}">
+            Command="{Binding PinCommand}">
                         <materialDesign:PackIcon Width="18">
                             <materialDesign:PackIcon.Style>
                                 <Style TargetType="materialDesign:PackIcon">
@@ -72,7 +86,7 @@
                     </Button>
 
                     <Button Style="{StaticResource MaterialDesignToolButton}"
-                            Command="{Binding PinToFirebaseCommand}">
+            Command="{Binding PinToFirebaseCommand}">
                         <materialDesign:PackIcon Width="18">
                             <materialDesign:PackIcon.Style>
                                 <Style TargetType="materialDesign:PackIcon">
@@ -90,18 +104,17 @@
                     </Button>
 
                     <Button Style="{StaticResource MaterialDesignToolButton}"
-                            Command="{Binding SettingsCommand}">
+            Command="{Binding SettingsCommand}">
                         <materialDesign:PackIcon Kind="Cog"
-                                                 Foreground="{DynamicResource SecondaryText}"/>
+                                 Foreground="{DynamicResource SecondaryText}"/>
                     </Button>
 
                     <Button Style="{StaticResource MaterialDesignToolButton}"
-                            Click="Close_Click">
+            Click="Close_Click">
                         <materialDesign:PackIcon Kind="Close"
-                                                 Foreground="{DynamicResource DangerColor}"/>
+                                 Foreground="{DynamicResource DangerColor}"/>
                     </Button>
                 </StackPanel>
-
                 <!-- ================= SCROLL ALL CONTENT ================= -->
                 <ScrollViewer Grid.Row="1"
                               VerticalScrollBarVisibility="Auto"
@@ -185,6 +198,10 @@
                                                    Foreground="{DynamicResource PrimaryText}"/>
                                         <TextBlock Text="{Binding DefinitionsText}"
                                                    FontSize="13"
+                                                   TextOptions.TextFormattingMode="Display"
+                                                   LineStackingStrategy="BlockLineHeight"
+                                                   TextOptions.TextRenderingMode="ClearType"
+                                                   UseLayoutRounding="True"
                                                    Margin="10,2,0,0"
                                                    TextWrapping="Wrap"
                                                    TextAlignment="Justify"

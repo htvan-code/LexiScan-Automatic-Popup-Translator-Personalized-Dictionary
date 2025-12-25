@@ -24,7 +24,7 @@ namespace LexiScan.App.Views
         public HistoryView()
         {
             InitializeComponent();
-            this.DataContext = new HistoryViewModel();
+
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
