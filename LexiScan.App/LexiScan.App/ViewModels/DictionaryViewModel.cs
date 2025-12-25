@@ -7,6 +7,7 @@ using LexiScan.Core.Models;
 using LexiScan.Core.Services;
 using LexiScanData.Services;
 using LexiScanData.Models;
+using System.Text; // [THÊM] Để dùng NormalizationForm
 
 namespace LexiScan.App.ViewModels
 {
@@ -46,71 +47,42 @@ namespace LexiScan.App.ViewModels
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
             SuggestionList = new ObservableCollection<string>();
 
-            _coordinator.VoiceRecognitionStarted += () =>
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(() => {
-                    IsListening = true;
-                    IsSpeaking = true;
-                });
-            };
-
-            _coordinator.VoiceRecognitionEnded += () =>
-            {
-                var app = System.Windows.Application.Current;
-                if (app == null) return;
-                app.Dispatcher.Invoke(() => {
-                    IsListening = false;
-                    VoiceLevel = 0;
-                    CommandManager.InvalidateRequerySuggested(); 
-                });
-            };
+            _coordinator.VoiceRecognitionStarted += () => IsSpeaking = true;
+            _coordinator.VoiceRecognitionEnded += () => { IsSpeaking = false; IsListening = false; };
 
             SearchCommand = new RelayCommand(async (o) =>
             {
                 if (string.IsNullOrWhiteSpace(SearchText)) return;
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    SuggestionList.Clear();
-                });
+
+                // Ẩn gợi ý khi bắt đầu tìm kiếm
+                SuggestionList.Clear();
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
             StartVoiceSearchCommand = new RelayCommand((o) =>
             {
-                if (!IsListening)
-                {
-                    _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
-                }
-                else
-                {
-                    _coordinator.StopVoiceSearch();
-                }
+                IsListening = true;
+                _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
             });
 
             SpeakResultCommand = new RelayCommand(ExecuteSpeakResult);
 
             _coordinator.VoiceSearchCompleted += (text) =>
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() => {
-                    if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
-                    {
-                        string cleanedText = text.Trim().Replace(".", "").Replace("[", "").Replace("]", "").ToLower();
-
-                        if (!string.IsNullOrWhiteSpace(cleanedText))
-                        {
-                            SearchText = cleanedText;
-
-                            if (SearchCommand.CanExecute(null)) SearchCommand.Execute(null);
-                        }
-                    }
-                });
+                if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
+                {
+                    IsListening = false;
+                    IsSpeaking = false;
+                    SearchText = text;
+                    SearchCommand.Execute(null);
+                }
             };
 
             _coordinator.AudioLevelUpdated += (level) =>
             {
-                double newSize = 22.0 + (level * 1.5);
-                if (newSize > 35) newSize = 35;
-                if (newSize < 20) newSize = 20;
+                double newSize = 25.0 + (level * 4.0);
+                if (newSize < 25) newSize = 25;
+                if (newSize > 120) newSize = 120;
                 VoiceLevel = newSize;
             };
         }
@@ -176,18 +148,27 @@ namespace LexiScan.App.ViewModels
             });
         }
 
+        // [MỚI] Hàm chuẩn hóa chữ (giống PopupViewModel)
+        private string NormalizeText(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            return input.Normalize(NormalizationForm.FormC);
+        }
+
         private void OnTranslationResultReceived(TranslationResult result)
         {
             if (result == null) return;
 
-            DisplayWord = result.OriginalText ?? "";
+            // [ÁP DỤNG] Chuẩn hóa từ hiển thị
+            DisplayWord = NormalizeText(result.OriginalText ?? "");
             PhoneticText = (!string.IsNullOrEmpty(result.Phonetic)) ? $"/{result.Phonetic}/" : "";
 
             var sb = new System.Text.StringBuilder();
 
             if (!string.IsNullOrWhiteSpace(result.TranslatedText))
             {
-                sb.AppendLine(result.TranslatedText);
+                // [ÁP DỤNG] Chuẩn hóa nghĩa chính
+                sb.AppendLine(NormalizeText(result.TranslatedText));
             }
 
             if (result.Meanings != null && result.Meanings.Count > 0)
@@ -195,10 +176,12 @@ namespace LexiScan.App.ViewModels
                 sb.AppendLine();
                 foreach (var m in result.Meanings)
                 {
-                    sb.AppendLine($"★ {m.PartOfSpeech}");
+                    // [ÁP DỤNG] Chuẩn hóa Loại từ
+                    sb.AppendLine($"★ {NormalizeText(m.PartOfSpeech)}");
                     foreach (var def in m.Definitions)
                     {
-                        sb.AppendLine($"    - {def}");
+                        // [ÁP DỤNG] Chuẩn hóa Định nghĩa chi tiết
+                        sb.AppendLine($"    - {NormalizeText(def)}");
                     }
                     sb.AppendLine();
                 }
@@ -212,7 +195,6 @@ namespace LexiScan.App.ViewModels
                 ExecuteSpeakResult(null);
             }
 
-            // [SỬA LẠI ĐOẠN NÀY] Chỉ lưu khi cài đặt BẬT
             if (currentSettings.AutoSaveHistoryToDictionary)
             {
                 if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
@@ -220,7 +202,6 @@ namespace LexiScan.App.ViewModels
                     _dbService = new DatabaseServices(SessionManager.CurrentUserId);
                 }
 
-                // --- LƯU VÀO LỊCH SỬ ---
                 if (_dbService != null)
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke(async () =>

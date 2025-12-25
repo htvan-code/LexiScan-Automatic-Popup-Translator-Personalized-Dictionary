@@ -11,17 +11,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Text; // [THÊM] Để dùng NormalizationForm
 
 namespace LexiScan.App.ViewModels
 {
     public class PersonalDictionaryViewModel : BaseViewModel
     {
-        // [SỬA LỖI Ở ĐÂY]: Xóa từ khóa 'readonly' để có thể gán lại trong hàm LoadData
         private DatabaseServices? _dbService;
-
         private readonly AppCoordinator _coordinator;
 
-        // ... (Class PersonalWordEntry giữ nguyên) ...
         public class PersonalWordEntry : BaseViewModel
         {
             public string Id { get; set; }
@@ -63,14 +61,19 @@ namespace LexiScan.App.ViewModels
 
             LoadData();
 
-            // Đăng ký sự kiện cập nhật
             GlobalEvents.OnPersonalDictionaryUpdated += () =>
             {
                 Application.Current.Dispatcher.Invoke(() => LoadData());
             };
         }
 
-        // ... (Hàm ExecuteViewDetails giữ nguyên) ...
+        // [MỚI] Hàm chuẩn hóa chữ
+        private string NormalizeText(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            return input.Normalize(NormalizationForm.FormC);
+        }
+
         private async void ExecuteViewDetails(object? parameter)
         {
             if (parameter is PersonalWordEntry entry)
@@ -90,9 +93,11 @@ namespace LexiScan.App.ViewModels
                         {
                             var sb = new System.Text.StringBuilder();
                             if (!string.IsNullOrEmpty(result.Phonetic)) sb.AppendLine($"/{result.Phonetic}/");
+
                             if (!string.IsNullOrEmpty(result.TranslatedText))
                             {
-                                sb.AppendLine($"➤ {result.TranslatedText}");
+                                // [ÁP DỤNG] Chuẩn hóa nghĩa
+                                sb.AppendLine($"➤ {NormalizeText(result.TranslatedText)}");
                                 sb.AppendLine();
                             }
 
@@ -100,8 +105,13 @@ namespace LexiScan.App.ViewModels
                             {
                                 foreach (var m in result.Meanings)
                                 {
-                                    sb.AppendLine($"★ {m.PartOfSpeech}");
-                                    foreach (var def in m.Definitions) sb.AppendLine($"    • {def}");
+                                    // [ÁP DỤNG] Chuẩn hóa Loại từ
+                                    sb.AppendLine($"★ {NormalizeText(m.PartOfSpeech)}");
+                                    foreach (var def in m.Definitions)
+                                    {
+                                        // [ÁP DỤNG] Chuẩn hóa Định nghĩa
+                                        sb.AppendLine($"    • {NormalizeText(def)}");
+                                    }
                                     sb.AppendLine();
                                 }
                             }
@@ -129,7 +139,6 @@ namespace LexiScan.App.ViewModels
             if (_dbService == null)
             {
                 string uid = SessionManager.CurrentUserId;
-                // Dòng này trước đây gây lỗi vì _dbService là readonly. Giờ đã sửa.
                 if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
                 else return;
             }
@@ -144,7 +153,8 @@ namespace LexiScan.App.ViewModels
                     _allEntries.Add(new PersonalWordEntry
                     {
                         Id = item.Id,
-                        SourceText = item.SourceText,
+                        // [ÁP DỤNG] Chuẩn hóa từ gốc khi load
+                        SourceText = NormalizeText(item.SourceText),
                         SavedDate = item.SavedDate
                     });
                 }

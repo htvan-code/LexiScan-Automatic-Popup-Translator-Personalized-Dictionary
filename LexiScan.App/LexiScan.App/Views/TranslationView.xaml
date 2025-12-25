@@ -88,9 +88,7 @@
                                 <Button Style="{StaticResource ActionIconButton}" Command="{Binding SpeakSourceCommand}" Margin="5,0,0,0">
                                     <TextBlock Text="&#xE767;" FontFamily="Segoe MDL2 Assets" FontSize="16"/>
                                 </Button>
-                                <Button Style="{StaticResource ActionIconButton}" Command="{Binding SaveTranslationCommand}" Margin="5,0,0,0">
-                                    <TextBlock Text="&#xE734;" FontFamily="Segoe MDL2 Assets" FontSize="16"/>
-                                </Button>
+                               
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">

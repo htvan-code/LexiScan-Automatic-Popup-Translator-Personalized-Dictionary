@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows.Input;
 using System.Threading.Tasks;
 using System.Windows; // Cần để hiện MessageBox
+using System.Text; // [THÊM] Để dùng NormalizationForm
 
 namespace LexiScan.App.ViewModels
 {
@@ -48,14 +49,14 @@ namespace LexiScan.App.ViewModels
 
         public ObservableCollection<HistoryEntry> HistoryEntries { get; set; } = new ObservableCollection<HistoryEntry>();
 
-        // [MỚI] Danh sách gốc để lưu trữ dữ liệu trước khi lọc
+        // Danh sách gốc để lưu trữ dữ liệu trước khi lọc
         private List<HistoryEntry> _allEntries = new List<HistoryEntry>();
 
         public ICommand ClearHistoryCommand { get; }
         public ICommand DeleteHistoryEntryCommand { get; }
         public ICommand ViewDetailsCommand { get; }
 
-        // [MỚI] Biến từ khóa tìm kiếm
+        // Biến từ khóa tìm kiếm
         private string _searchTerm;
         public string SearchTerm
         {
@@ -84,6 +85,13 @@ namespace LexiScan.App.ViewModels
             ViewDetailsCommand = new RelayCommand(ExecuteViewDetails);
         }
 
+        // [MỚI] Hàm chuẩn hóa chữ
+        private string NormalizeText(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            return input.Normalize(NormalizationForm.FormC);
+        }
+
         // --- 1. LOGIC TẢI DỮ LIỆU & LỌC ---
         public async void LoadFirebaseHistory()
         {
@@ -109,7 +117,8 @@ namespace LexiScan.App.ViewModels
                         _allEntries.Add(new HistoryEntry
                         {
                             Id = item.SentenceId,
-                            SearchTerm = item.SourceText,
+                            // [ÁP DỤNG] Chuẩn hóa từ gốc
+                            SearchTerm = NormalizeText(item.SourceText),
                             Timestamp = item.CreatedDate
                         });
                     }
@@ -141,7 +150,7 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        // --- 2. LOGIC XÓA TOÀN BỘ (Giống PersonalDictionary) ---
+        // --- 2. LOGIC XÓA TOÀN BỘ ---
         private async void ExecuteClearHistory(object? _)
         {
             if (_dbService == null || HistoryEntries.Count == 0) return;
@@ -153,7 +162,6 @@ namespace LexiScan.App.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
-                // Tạo bản sao để loop xóa (tránh lỗi collection modified)
                 var listClone = new List<HistoryEntry>(HistoryEntries);
 
                 // Xóa trên giao diện ngay lập tức
@@ -187,7 +195,7 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        // --- 4. LOGIC XEM CHI TIẾT (Giữ nguyên) ---
+        // --- 4. LOGIC XEM CHI TIẾT ---
         private async void ExecuteViewDetails(object? parameter)
         {
             if (parameter is HistoryEntry entry)
@@ -207,9 +215,11 @@ namespace LexiScan.App.ViewModels
                         {
                             var sb = new System.Text.StringBuilder();
                             if (!string.IsNullOrEmpty(result.Phonetic)) sb.AppendLine($"/{result.Phonetic}/");
+
                             if (!string.IsNullOrEmpty(result.TranslatedText))
                             {
-                                sb.AppendLine($"➤ {result.TranslatedText}");
+                                // [ÁP DỤNG] Chuẩn hóa nghĩa
+                                sb.AppendLine($"➤ {NormalizeText(result.TranslatedText)}");
                                 sb.AppendLine();
                             }
 
@@ -217,8 +227,13 @@ namespace LexiScan.App.ViewModels
                             {
                                 foreach (var m in result.Meanings)
                                 {
-                                    sb.AppendLine($"★ {m.PartOfSpeech}");
-                                    foreach (var def in m.Definitions) sb.AppendLine($"    • {def}");
+                                    // [ÁP DỤNG] Chuẩn hóa Loại từ
+                                    sb.AppendLine($"★ {NormalizeText(m.PartOfSpeech)}");
+                                    foreach (var def in m.Definitions)
+                                    {
+                                        // [ÁP DỤNG] Chuẩn hóa Định nghĩa
+                                        sb.AppendLine($"    • {NormalizeText(def)}");
+                                    }
                                     sb.AppendLine();
                                 }
                             }
