@@ -12,14 +12,14 @@
         <Style x:Key="ActionIconButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="35"/>
-            <Setter Property="Height" Value="35"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="20">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -69,11 +69,11 @@
                         </Border>
 
                         <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
-                            <TextBox x:Name="SourceTextBox" Text="{Binding SourceText, UpdateSourceTrigger=PropertyChanged}" 
-                            MaxLength="1000" BorderThickness="0" Background="Transparent" 
-                            TextWrapping="Wrap" FontSize="18" Foreground="{DynamicResource PrimaryText}" 
-                            FontWeight="SemiBold" AcceptsReturn="True">
-
+                            <TextBox x:Name="SourceTextBox" 
+                                     Text="{Binding SourceText, UpdateSourceTrigger=PropertyChanged}" 
+                                     MaxLength="1000" BorderThickness="0" Background="Transparent" 
+                                     TextWrapping="Wrap" FontSize="18" Foreground="{DynamicResource PrimaryText}" 
+                                     FontWeight="SemiBold" AcceptsReturn="True">
                                 <TextBox.InputBindings>
                                     <KeyBinding Key="Return" Command="{Binding SaveTranslationCommand}" />
                                 </TextBox.InputBindings>
@@ -83,12 +83,43 @@
                         <Grid Grid.Row="2" Margin="10,0,10,10">
                             <StackPanel Orientation="Horizontal" Visibility="{Binding IsSourceEnglishVisible}">
                                 <Button Style="{StaticResource ActionIconButton}" Command="{Binding StartVoiceCommand}">
-                                    <TextBlock Text="&#xE720;" FontFamily="Segoe MDL2 Assets" FontSize="18"/>
+                                    <Grid>
+                                        <Ellipse Fill="#FF4081" Opacity="0.3"
+                                                 Width="{Binding VoiceLevel}" 
+                                                 Height="{Binding VoiceLevel}"
+                                                 HorizontalAlignment="Center" 
+                                                 VerticalAlignment="Center">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+
+                                        <TextBlock Text="&#xE720;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                                            <Setter Property="Foreground" Value="#FF4081"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
                                 </Button>
+
                                 <Button Style="{StaticResource ActionIconButton}" Command="{Binding SpeakSourceCommand}" Margin="5,0,0,0">
                                     <TextBlock Text="&#xE767;" FontFamily="Segoe MDL2 Assets" FontSize="16"/>
                                 </Button>
-                               
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -99,7 +130,7 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="1" VerticalAlignment="Center" Width="35" Height="35" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="17">
+                <Border Grid.Column="1" VerticalAlignment="Center" Width="35" Height="35" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="17" Panel.ZIndex="1">
                     <Button Style="{StaticResource ActionIconButton}" Command="{Binding SwapLanguageCommand}">
                         <TextBlock Text="&#xE8CB;" FontFamily="Segoe MDL2 Assets" FontSize="16" RenderTransformOrigin="0.5,0.5">
                             <TextBlock.RenderTransform>

@@ -6,6 +6,9 @@ using LexiScan.Core.Services;
 using LexiScan.Core.Utils;
 using LexiScanData.Models;
 using System.Text; // [THÊM] Để dùng NormalizationForm
+using LexiScanData.Services;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace LexiScan.App.ViewModels
 {
@@ -51,42 +54,82 @@ namespace LexiScan.App.ViewModels
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
             SuggestionList = new ObservableCollection<string>();
 
-            _coordinator.VoiceRecognitionStarted += () => IsSpeaking = true;
-            _coordinator.VoiceRecognitionEnded += () => { IsSpeaking = false; IsListening = false; };
+            _coordinator.VoiceRecognitionStarted += () =>
+            {
+                if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => IsListening = true);
+                }
+            };
+
+            _coordinator.VoiceRecognitionEnded += () =>
+            {
+                var app = System.Windows.Application.Current;
+                if (app == null) return;
+                app.Dispatcher.Invoke(() => {
+                    IsListening = false;
+                    VoiceLevel = 0;
+                    CommandManager.InvalidateRequerySuggested();
+                });
+            };
 
             SearchCommand = new RelayCommand(async (o) =>
             {
                 if (string.IsNullOrWhiteSpace(SearchText)) return;
-
-                // Ẩn gợi ý khi bắt đầu tìm kiếm
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    SuggestionList.Clear();
+                });
                 SuggestionList.Clear();
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
             StartVoiceSearchCommand = new RelayCommand((o) =>
             {
-                IsListening = true;
-                _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
+                if (!IsListening)
+                {
+                    SearchText = ""; // [MỚI] Xóa text cũ khi bắt đầu nói mới
+                    _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
+                }
+                else
+                {
+                    _coordinator.StopVoiceSearch();
+                }
             });
 
             SpeakResultCommand = new RelayCommand(ExecuteSpeakResult);
 
             _coordinator.VoiceSearchCompleted += (text) =>
             {
-                if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    IsListening = false;
-                    IsSpeaking = false;
-                    SearchText = text;
-                    SearchCommand.Execute(null);
-                }
+                    if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
+                    {
+                        string cleanedText = text.Trim().Replace(".", "").Replace("[", "").Replace("]", "").ToLower();
+
+                        if (!string.IsNullOrWhiteSpace(cleanedText))
+                        {
+                            // [MỚI] Nối chuỗi thay vì thay thế (sửa lỗi mất chữ khi nói dài)
+                            if (string.IsNullOrWhiteSpace(SearchText))
+                            {
+                                SearchText = cleanedText;
+                            }
+                            else
+                            {
+                                SearchText += " " + cleanedText;
+                            }
+
+                            if (SearchCommand.CanExecute(null)) SearchCommand.Execute(null);
+                        }
+                    }
+                });
             };
 
             _coordinator.AudioLevelUpdated += (level) =>
             {
-                double newSize = 25.0 + (level * 4.0);
-                if (newSize < 25) newSize = 25;
-                if (newSize > 120) newSize = 120;
+                double newSize = 22.0 + (level * 1.5);
+                if (newSize > 35) newSize = 35;
+                if (newSize < 20) newSize = 20;
                 VoiceLevel = newSize;
             };
 
@@ -198,7 +241,7 @@ namespace LexiScan.App.ViewModels
             return input.Normalize(NormalizationForm.FormC);
         }
 
-        private void OnTranslationResultReceived(TranslationResult result)
+        private async void OnTranslationResultReceived(TranslationResult result)
         {
             if (result == null) return;
 

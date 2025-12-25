@@ -15,7 +15,7 @@ namespace LexiScan.Core
         private readonly TranslationService _translationService;
         private readonly VoicetoText _voiceToTextService;
         private readonly TtsService _ttsService;
-
+        private string _dictionaryFullText = "";
         // Thuộc tính để biết ai đang dùng Mic
         public VoiceSource CurrentVoiceSource { get; private set; }
 
@@ -42,19 +42,34 @@ namespace LexiScan.Core
             _voiceToTextService.SpeechStarted += () => VoiceRecognitionStarted?.Invoke();
             _voiceToTextService.SpeechEnded += () => VoiceRecognitionEnded?.Invoke();
 
+            _voiceToTextService.SpeechEnded += () =>
+            {
+                if (CurrentVoiceSource == VoiceSource.Dictionary && !string.IsNullOrWhiteSpace(_dictionaryFullText))
+                {
+                    var finalSearch = _dictionaryFullText.Trim().Replace(".", "").ToLower();
+                    VoiceSearchCompleted?.Invoke(finalSearch);
+                    _dictionaryFullText = ""; // Xóa thùng chứa cho lần sau
+                }
+                VoiceRecognitionEnded?.Invoke();
+            };
+
             _voiceToTextService.TextRecognized += (text) =>
             {
-                string processedText = text.Trim();
-                if (string.IsNullOrWhiteSpace(processedText)) return;
+                string clean = System.Text.RegularExpressions.Regex.Replace(text, @"(?i)blankaudio|\[.*?\]|[^a-zA-Z0-9\s]", "").Trim();
+                if (string.IsNullOrWhiteSpace(clean)) return;
 
                 if (CurrentVoiceSource == VoiceSource.Dictionary)
                 {
-                    var cleanText = processedText.Replace(".", "").Replace(",", "").ToLower();
-                    VoiceSearchCompleted?.Invoke(cleanText);
+                    string currentFull = _dictionaryFullText.Trim();
+                    if (!currentFull.EndsWith(clean, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _dictionaryFullText = (currentFull + " " + clean).Trim();
+                    }
                 }
                 else if (CurrentVoiceSource == VoiceSource.Translation)
                 {
-                    TranslationVoiceRecognized?.Invoke(processedText);
+                    // Translation: Vẫn cho nhảy chữ rào rào theo yêu cầu của anh
+                    TranslationVoiceRecognized?.Invoke(clean);
                 }
             };
 
@@ -62,6 +77,8 @@ namespace LexiScan.Core
             {
                 AudioLevelUpdated?.Invoke(level);
             };
+
+          
         }
 
         public void Speak(string text, double speed, string accent)

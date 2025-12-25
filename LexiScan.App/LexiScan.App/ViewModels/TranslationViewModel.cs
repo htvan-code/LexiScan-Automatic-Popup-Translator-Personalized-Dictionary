@@ -18,7 +18,7 @@ namespace LexiScan.App.ViewModels
         private DatabaseServices? _dbService;
         private readonly AppCoordinator _coordinator;
         private readonly SettingsService _settingsService; // [THÊM]
-
+        
         private string _sourceText = "";
         private string _translatedText = "Bản dịch";
         private int _currentCharCount = 0;
@@ -29,7 +29,12 @@ namespace LexiScan.App.ViewModels
         private CancellationTokenSource _translationCts;
         private string _lastSavedText = "";
 
+        private bool _isListening;
+        public bool IsListening { get => _isListening; set { _isListening = value; OnPropertyChanged(); } }
         // ... Các Command (SpeakSourceCommand, SpeakTargetCommand...) giữ nguyên ...
+
+        private double _voiceLevel;
+        public double VoiceLevel { get => _voiceLevel; set { _voiceLevel = value; OnPropertyChanged(); } }
         public ICommand SpeakSourceCommand { get; }
         public ICommand SpeakTargetCommand { get; }
         public ICommand SwapLanguageCommand { get; }
@@ -61,7 +66,14 @@ namespace LexiScan.App.ViewModels
 
             StartVoiceCommand = new RelayCommand(obj =>
             {
-                _coordinator.StartVoiceSearch(VoiceSource.Translation);
+                if (!IsListening)
+                {
+                    _coordinator.StartVoiceSearch(VoiceSource.Translation);
+                }
+                else
+                {
+                    _coordinator.StopVoiceSearch();
+                }
             });
 
             _coordinator.VoiceSearchCompleted += (text) =>
@@ -78,7 +90,6 @@ namespace LexiScan.App.ViewModels
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        // Cộng dồn chữ vào khung nhập liệu
                         if (string.IsNullOrWhiteSpace(SourceText))
                             SourceText = text;
                         else
@@ -87,8 +98,33 @@ namespace LexiScan.App.ViewModels
                 }
             };
 
-            _coordinator.VoiceRecognitionStarted += () => OnPropertyChanged("IsListening");
-            _coordinator.VoiceRecognitionEnded += () => OnPropertyChanged("IsListening");
+            _coordinator.VoiceRecognitionStarted += () =>
+            {
+                if (_coordinator.CurrentVoiceSource == VoiceSource.Translation)
+                {
+                    Application.Current.Dispatcher.Invoke(() => IsListening = true);
+                }
+            };
+
+            _coordinator.VoiceRecognitionEnded += () =>
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    IsListening = false;
+                    VoiceLevel = 0;
+                });
+            };
+
+            _coordinator.AudioLevelUpdated += (level) =>
+            {
+                if (_coordinator.CurrentVoiceSource == VoiceSource.Translation)
+                {
+                    // Tính toán nấc mic giống bên Dictionary
+                    double newSize = 25.0 + (level * 1.8);
+                    if (newSize > 45) newSize = 45;
+                    if (newSize < 25) newSize = 25;
+                    VoiceLevel = newSize;
+                }
+            };
         }
 
         // ... Các Property (SourceLangName, TargetLangName...) giữ nguyên ...
