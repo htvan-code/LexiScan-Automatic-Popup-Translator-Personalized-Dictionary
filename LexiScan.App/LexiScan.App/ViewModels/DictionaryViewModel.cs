@@ -46,42 +46,71 @@ namespace LexiScan.App.ViewModels
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
             SuggestionList = new ObservableCollection<string>();
 
-            _coordinator.VoiceRecognitionStarted += () => IsSpeaking = true;
-            _coordinator.VoiceRecognitionEnded += () => { IsSpeaking = false; IsListening = false; };
+            _coordinator.VoiceRecognitionStarted += () =>
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    IsListening = true;
+                    IsSpeaking = true;
+                });
+            };
+
+            _coordinator.VoiceRecognitionEnded += () =>
+            {
+                var app = System.Windows.Application.Current;
+                if (app == null) return;
+                app.Dispatcher.Invoke(() => {
+                    IsListening = false;
+                    VoiceLevel = 0;
+                    CommandManager.InvalidateRequerySuggested(); 
+                });
+            };
 
             SearchCommand = new RelayCommand(async (o) =>
             {
                 if (string.IsNullOrWhiteSpace(SearchText)) return;
-
-                // Ẩn gợi ý khi bắt đầu tìm kiếm
-                SuggestionList.Clear();
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    SuggestionList.Clear();
+                });
                 await _coordinator.ExecuteSearchAsync(SearchText);
             });
 
             StartVoiceSearchCommand = new RelayCommand((o) =>
             {
-                IsListening = true;
-                _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
+                if (!IsListening)
+                {
+                    _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
+                }
+                else
+                {
+                    _coordinator.StopVoiceSearch();
+                }
             });
 
             SpeakResultCommand = new RelayCommand(ExecuteSpeakResult);
 
             _coordinator.VoiceSearchCompleted += (text) =>
             {
-                if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
-                {
-                    IsListening = false;
-                    IsSpeaking = false;
-                    SearchText = text;
-                    SearchCommand.Execute(null);
-                }
+                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    if (_coordinator.CurrentVoiceSource == VoiceSource.Dictionary)
+                    {
+                        string cleanedText = text.Trim().Replace(".", "").Replace("[", "").Replace("]", "").ToLower();
+
+                        if (!string.IsNullOrWhiteSpace(cleanedText))
+                        {
+                            SearchText = cleanedText;
+
+                            if (SearchCommand.CanExecute(null)) SearchCommand.Execute(null);
+                        }
+                    }
+                });
             };
 
             _coordinator.AudioLevelUpdated += (level) =>
             {
-                double newSize = 25.0 + (level * 4.0);
-                if (newSize < 25) newSize = 25;
-                if (newSize > 120) newSize = 120;
+                double newSize = 22.0 + (level * 1.5);
+                if (newSize > 35) newSize = 35;
+                if (newSize < 20) newSize = 20;
                 VoiceLevel = newSize;
             };
         }
@@ -98,11 +127,8 @@ namespace LexiScan.App.ViewModels
                     _searchText = value;
                     OnPropertyChanged();
 
-                    // Logic: Chỉ load gợi ý khi người dùng gõ, 
-                    // Nếu SearchText thay đổi do chọn từ gợi ý (SelectedSuggestion) thì không load lại
                     if (!string.IsNullOrWhiteSpace(_searchText))
                     {
-                        // Kiểm tra: Nếu text hiện tại GIỐNG cái đang chọn thì không load lại gợi ý
                         if (_selectedSuggestion != _searchText)
                         {
                             LoadSuggestions(_searchText);
@@ -116,7 +142,6 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        // --- [QUAN TRỌNG: ĐÃ SỬA PHẦN NÀY] ---
         public string SelectedSuggestion
         {
             get => _selectedSuggestion;
@@ -125,13 +150,8 @@ namespace LexiScan.App.ViewModels
                 _selectedSuggestion = value;
                 OnPropertyChanged();
 
-                // KHI CHỌN GỢI Ý (BẰNG MŨI TÊN HOẶC CHUỘT):
-                // 1. Chỉ đưa chữ lên ô tìm kiếm.
-                // 2. KHÔNG gọi ExecuteSearchAsync ở đây (để tránh bị tìm luôn khi mới bấm nút xuống).
-                // 3. Việc kích hoạt tìm kiếm sẽ do phím Enter hoặc Click chuột (ở View) đảm nhận.
                 if (!string.IsNullOrEmpty(value))
                 {
-                    // Cập nhật biến _searchText trực tiếp để tránh kích hoạt LoadSuggestions vòng lặp
                     _searchText = value;
                     OnPropertyChanged(nameof(SearchText));
                 }
@@ -210,14 +230,9 @@ namespace LexiScan.App.ViewModels
                             TranslatedText = !string.IsNullOrEmpty(result.TranslatedText) ? result.TranslatedText : "Tra từ điển",
                             CreatedDate = System.DateTime.Now
                         });
-
-                        // Đã ẩn thông báo để trải nghiệm mượt mà hơn. 
-                        // Nếu cần debug thì mở lại dòng dưới:
-                        // System.Windows.MessageBox.Show("Đã lưu vào Lịch sử thành công!", "Thông báo");
                     }
                     catch (System.Exception ex)
                     {
-                        // Chỉ hiện lỗi nếu thực sự có vấn đề nghiêm trọng
                         System.Diagnostics.Debug.WriteLine("Lỗi lưu lịch sử: " + ex.Message);
                     }
                 });

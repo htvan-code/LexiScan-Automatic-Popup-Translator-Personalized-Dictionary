@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace LexiScan.Core
 {
-    // [THÊM] Enum để phân biệt nguồn gọi Voice
     public enum VoiceSource { Dictionary, Translation }
 
     public class AppCoordinator
@@ -17,7 +16,7 @@ namespace LexiScan.Core
         private readonly VoicetoText _voiceToTextService;
         private readonly TtsService _ttsService;
 
-        // [THÊM] Thuộc tính để biết ai đang dùng Mic
+        // Thuộc tính để biết ai đang dùng Mic
         public VoiceSource CurrentVoiceSource { get; private set; }
 
         // Sự kiện dành cho Dictionary (Giao diện chính)
@@ -45,18 +44,17 @@ namespace LexiScan.Core
 
             _voiceToTextService.TextRecognized += (text) =>
             {
-                string cleanedText = text.Trim().Replace(".", "").ToLower();
-                if (!string.IsNullOrWhiteSpace(cleanedText))
+                string processedText = text.Trim();
+                if (string.IsNullOrWhiteSpace(processedText)) return;
+
+                if (CurrentVoiceSource == VoiceSource.Dictionary)
                 {
-                    // [QUAN TRỌNG] Gửi tín hiệu Voice dựa trên nguồn đã lưu
-                    if (CurrentVoiceSource == VoiceSource.Dictionary)
-                    {
-                        VoiceSearchCompleted?.Invoke(cleanedText);
-                    }
-                    else if (CurrentVoiceSource == VoiceSource.Translation)
-                    {
-                        TranslationVoiceRecognized?.Invoke(cleanedText);
-                    }
+                    var cleanText = processedText.Replace(".", "").Replace(",", "").ToLower();
+                    VoiceSearchCompleted?.Invoke(cleanText);
+                }
+                else if (CurrentVoiceSource == VoiceSource.Translation)
+                {
+                    TranslationVoiceRecognized?.Invoke(processedText);
                 }
             };
 
@@ -76,7 +74,7 @@ namespace LexiScan.Core
             return await _translationService.GetGoogleSuggestionsAsync(prefix);
         }
 
-        // --- HÀM 1: CHỈ DÀNH CHO APP CHÍNH (Tra cứu thủ công) ---
+        // --- HÀM TRA CỨU TỪ ĐIỂN ---
         public async Task ExecuteSearchAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return;
@@ -102,7 +100,7 @@ namespace LexiScan.Core
             }
         }
 
-        // --- HÀM 2: CHỈ DÀNH CHO POPUP (Dịch nhanh qua Clipboard/Hotkey) ---
+        //--- HÀM DỊCH NHANH POPUP ---
         public async Task HandleClipboardTextAsync(string rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText)) return;
@@ -126,24 +124,23 @@ namespace LexiScan.Core
             }
         }
 
-        // [CẬP NHẬT] Hàm bắt đầu nghe phải nhận vào Nguồn gọi
         public void StartVoiceSearch(VoiceSource source)
         {
-            CurrentVoiceSource = source; // Lưu lại ai đang gọi
+            CurrentVoiceSource = source; 
             _voiceToTextService.StartListening();
+        }
+
+        public void StopVoiceSearch()
+        {
+            if (_voiceToTextService.IsRecording)
+            {
+                _voiceToTextService.StopListening();
+            }
         }
 
         public async Task<TranslationResult> TranslateGeneralAsync(string text, string sl, string tl)
         {
             return await _translationService.TranslateForMainApp(text, sl, tl);
         }
-
-        // [BỔ SUNG] Hàm lưu vào từ điển cá nhân (Đã hứa ở các bước trước)
-        /*
-        public void SaveToPersonalDictionary(string word, string meaning, string phonetic = "")
-        {
-            // Logic lưu dữ liệu của bạn sẽ gọi vào DataService ở đây
-            System.Diagnostics.Debug.WriteLine($"Đang lưu: {word} - {meaning}");
-        }*/
     }
 }

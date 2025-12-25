@@ -48,20 +48,10 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderColor}"/>
                             </Trigger>
-
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="{DynamicResource SelectedBackground}"/>
-
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
-
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsSelected" Value="True"/>
-                                    <Condition Property="IsMouseOver" Value="True"/>
-                                </MultiTrigger.Conditions>
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource SelectedBackground}"/>
-                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -95,20 +85,48 @@
                         </Button>
 
                         <TextBox x:Name="SearchTextBox" 
-             Grid.Column="1" 
-             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-             Style="{StaticResource SearchTextBoxStyle}" 
-             HorizontalAlignment="Stretch" 
-             VerticalAlignment="Center"
-             PreviewKeyDown="SearchTextBox_PreviewKeyDown">
+                                 Grid.Column="1" 
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                                 Style="{StaticResource SearchTextBoxStyle}" 
+                                 HorizontalAlignment="Stretch" 
+                                 VerticalAlignment="Center"
+                                 PreviewKeyDown="SearchTextBox_PreviewKeyDown">
                             <TextBox.InputBindings>
                                 <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
                             </TextBox.InputBindings>
                         </TextBox>
 
-                        <Grid Grid.Column="2" Width="45" Height="45">
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding StartVoiceSearchCommand}" Width="45" Height="45">
-                                <materialDesign:PackIcon Kind="Microphone" Width="20" Height="20"/>
+                        <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,10,0" Width="40" Height="40">
+                            <Ellipse Fill="{DynamicResource PrimaryAccent}" Opacity="0.3" IsHitTestVisible="False"
+             HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Setter Property="Width" Value="{Binding VoiceLevel}"/>
+                                        <Setter Property="Height" Value="{Binding VoiceLevel}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+
+                            <Button Command="{Binding StartVoiceSearchCommand}" Style="{StaticResource IconButtonStyle}"
+            Width="40" Height="40" Panel.ZIndex="1">
+                                <materialDesign:PackIcon Kind="Microphone" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon.Style>
+                                        <Style TargetType="materialDesign:PackIcon">
+                                            <Setter Property="Opacity" Value="1.0"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.3"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </materialDesign:PackIcon.Style>
+                                </materialDesign:PackIcon>
                             </Button>
                         </Grid>
                     </Grid>
@@ -188,7 +206,6 @@
                          Background="Transparent" 
                          MaxHeight="250" 
                          ItemContainerStyle="{StaticResource ListBoxItemStyle}">
-
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding .}" 
@@ -196,7 +213,6 @@
                                        Padding="5,2"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
-
                 </ListBox>
             </Border>
         </Grid>

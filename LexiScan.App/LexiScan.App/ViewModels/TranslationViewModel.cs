@@ -68,6 +68,24 @@ namespace LexiScan.App.ViewModels
                     SourceText = text;
                 }
             };
+
+            _coordinator.TranslationVoiceRecognized += (text) =>
+            {
+                if (_coordinator.CurrentVoiceSource == VoiceSource.Translation)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        // Cộng dồn chữ vào khung nhập liệu
+                        if (string.IsNullOrWhiteSpace(SourceText))
+                            SourceText = text;
+                        else
+                            SourceText += " " + text;
+                    });
+                }
+            };
+
+            _coordinator.VoiceRecognitionStarted += () => OnPropertyChanged("IsListening");
+            _coordinator.VoiceRecognitionEnded += () => OnPropertyChanged("IsListening");
         }
 
         public string SourceLangName { get => _sourceLangName; set { _sourceLangName = value; OnPropertyChanged(); } }
