@@ -84,7 +84,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0" Margin="0,0,10,0" Padding="10" 
-                    Background="{DynamicResource CardBackground}" CornerRadius="8">
+                        Background="{DynamicResource CardBackground}" CornerRadius="8">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryAccent}" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
@@ -106,11 +106,15 @@
             </Grid>
 
             <Border Grid.Row="2" Padding="10" 
-                Background="{DynamicResource CardBackground}" CornerRadius="8">
+                    Background="{DynamicResource CardBackground}" CornerRadius="8">
+
                 <ListView ItemsSource="{Binding HistoryEntries}" 
-                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                      BorderThickness="0"
-                      Background="Transparent">
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.ScrollUnit="Pixel"
+                          BorderThickness="0"
+                          Background="Transparent">
 
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
@@ -138,63 +142,111 @@
 
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,5">
 
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock x:Name="MainText"
-                           Text="{Binding SourceText}" 
-                           FontSize="16" 
-                           FontWeight="SemiBold" 
-                           Foreground="{DynamicResource PrimaryAccent}"
-                           TextWrapping="Wrap"
-                           TextTrimming="CharacterEllipsis"
-                           MaxHeight="26" 
-                           Margin="0,0,10,0"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="{Binding SavedDate, StringFormat='{}{0:HH:mm - dd/MM/yyyy}'}" 
-                           FontSize="12" 
-                           Foreground="{DynamicResource SecondaryText}"/>
-                                </StackPanel>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding SearchTerm}" 
+                                                   FontSize="16" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{DynamicResource PrimaryAccent}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxHeight="60"
+                                                   TextWrapping="Wrap"
+                                                   ToolTip="{Binding SearchTerm}"/>
 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DisplayTime}" 
+                                                   FontSize="12" 
+                                                   Foreground="{DynamicResource SecondaryText}"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
 
-                                    <ToggleButton x:Name="BtnExpand"
-                              Content="Xem Chi Tiết"
-                              Margin="0,0,10,0"
-                              Background="{DynamicResource PrimaryAccent}"
-                              Foreground="White"
-                              FontSize="12"
-                              Padding="10,4"
-                              Cursor="Hand">
-                                        <ToggleButton.Template>
-                                            <ControlTemplate TargetType="ToggleButton">
-                                                <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </ToggleButton.Template>
-                                    </ToggleButton>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <Button Content="Xem Chi Tiết" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.ViewDetailsCommand}"
+                                                CommandParameter="{Binding .}"
+                                                Margin="0,0,10,0"
+                                                Style="{StaticResource DetailButtonStyle}"/>
 
-                                    <Button Content="&#xE74D;" 
-                        FontFamily="Segoe MDL2 Assets"
-                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteItemCommand}"
-                        CommandParameter="{Binding .}"
-                        Style="{StaticResource DeleteIconButtonStyle}"/>
-                                </StackPanel>
-                            </Grid>
+                                        <Button Content="&#xE74D;" 
+                                                FontFamily="Segoe MDL2 Assets"
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.DeleteHistoryEntryCommand}"
+                                                CommandParameter="{Binding .}"
+                                                Style="{StaticResource DeleteIconButtonStyle}"/>
+                                    </StackPanel>
+                                </Grid>
 
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding ElementName=BtnExpand, Path=IsChecked}" Value="True">
-                                    <Setter TargetName="BtnExpand" Property="Content" Value="Thu Gọn"/>
-                                    <Setter TargetName="MainText" Property="MaxHeight" Value="Infinity"/>
-                                    <Setter TargetName="MainText" Property="TextTrimming" Value="None"/>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
+                                <Border Background="{DynamicResource AppBackground}" 
+                                        BorderBrush="{DynamicResource BorderColor}"
+                                        BorderThickness="1"
+                                        CornerRadius="5"
+                                        Margin="0,8,0,0"
+                                        Padding="15"
+                                        Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
 
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}" Margin="0,0,0,10">
+                                            <materialDesign:PackIcon Kind="ProgressDownload" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource PrimaryAccent}">
+                                                <materialDesign:PackIcon.RenderTransform>
+                                                    <RotateTransform Angle="0"/>
+                                                </materialDesign:PackIcon.RenderTransform>
+                                            </materialDesign:PackIcon>
+                                            <TextBlock Text="Đang tải dữ liệu..." VerticalAlignment="Center" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic"/>
+                                        </StackPanel>
+
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350">
+                                            <StackPanel>
+
+                                                <TextBlock Text="VĂN BẢN GỐC:" 
+                                                           FontSize="11" 
+                                                           FontWeight="Bold" 
+                                                           Foreground="{DynamicResource SecondaryText}" 
+                                                           Opacity="0.7"
+                                                           Margin="0,0,0,5"/>
+
+                                                <TextBlock Text="{Binding SearchTerm}" 
+                                                           TextWrapping="Wrap" 
+                                                           FontSize="15" 
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource PrimaryAccent}"
+                                                           Margin="0,0,0,15"/>
+
+                                                <Separator Background="{DynamicResource BorderColor}" Margin="0,0,0,15"/>
+
+                                                <TextBlock Text="NGHĨA CHI TIẾT:" 
+                                                           FontSize="11" 
+                                                           FontWeight="Bold" 
+                                                           Foreground="{DynamicResource SecondaryText}" 
+                                                           Opacity="0.7"
+                                                           Margin="0,0,0,5"/>
+
+                                                <TextBlock Text="{Binding DetailInfo}" 
+                                                           TextWrapping="Wrap" 
+                                                           FontSize="14" 
+                                                           LineHeight="24"
+                                                           Foreground="{DynamicResource PrimaryText}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>

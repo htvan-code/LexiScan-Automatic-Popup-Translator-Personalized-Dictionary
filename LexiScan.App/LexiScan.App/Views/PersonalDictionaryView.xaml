@@ -107,8 +107,12 @@
 
             <Border Grid.Row="2" Padding="10" 
                     Background="{DynamicResource CardBackground}" CornerRadius="8">
+
                 <ListView ItemsSource="{Binding SavedWords}" 
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.ScrollUnit="Pixel"
                           BorderThickness="0"
                           Background="Transparent">
 
@@ -150,14 +154,19 @@
                                         <TextBlock Text="{Binding SourceText}" 
                                                    FontSize="16" 
                                                    FontWeight="SemiBold" 
-                                                   Foreground="{DynamicResource PrimaryAccent}"/>
+                                                   Foreground="{DynamicResource PrimaryAccent}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxHeight="60"
+                                                   TextWrapping="Wrap"
+                                                   ToolTip="{Binding SourceText}"/>
 
                                         <TextBlock Text="{Binding SavedDate, StringFormat='{}{0:HH:mm - dd/MM/yyyy}'}" 
                                                    FontSize="12" 
-                                                   Foreground="{DynamicResource SecondaryText}"/>
+                                                   Foreground="{DynamicResource SecondaryText}"
+                                                   Margin="0,2,0,0"/>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
                                         <Button Content="Xem Chi Tiết" 
                                                 Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Path=DataContext.ViewDetailsCommand}"
                                                 CommandParameter="{Binding .}"
@@ -177,11 +186,11 @@
                                         BorderThickness="1"
                                         CornerRadius="5"
                                         Margin="0,8,0,0"
-                                        Padding="10"
+                                        Padding="15"
                                         Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
 
                                     <StackPanel>
-                                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}" Margin="0,0,0,10">
                                             <materialDesign:PackIcon Kind="ProgressDownload" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource PrimaryAccent}">
                                                 <materialDesign:PackIcon.RenderTransform>
                                                     <RotateTransform Angle="0"/>
@@ -190,22 +199,51 @@
                                             <TextBlock Text="Đang tải dữ liệu..." VerticalAlignment="Center" Foreground="{DynamicResource SecondaryText}" FontStyle="Italic"/>
                                         </StackPanel>
 
-                                        <TextBlock Text="{Binding DetailInfo}" 
-                                                   TextWrapping="Wrap" 
-                                                   FontSize="14" 
-                                                   LineHeight="22"
-                                                   Foreground="{DynamicResource PrimaryText}">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350">
+                                            <StackPanel>
+
+                                                <TextBlock Text="VĂN BẢN GỐC:" 
+                                                           FontSize="11" 
+                                                           FontWeight="Bold" 
+                                                           Foreground="{DynamicResource SecondaryText}" 
+                                                           Opacity="0.7"
+                                                           Margin="0,0,0,5"/>
+
+                                                <TextBlock Text="{Binding SourceText}" 
+                                                           TextWrapping="Wrap" 
+                                                           FontSize="15" 
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource PrimaryAccent}"
+                                                           Margin="0,0,0,15"/>
+
+                                                <Separator Background="{DynamicResource BorderColor}" Margin="0,0,0,15"/>
+
+                                                <TextBlock Text="NGHĨA CHI TIẾT:" 
+                                                           FontSize="11" 
+                                                           FontWeight="Bold" 
+                                                           Foreground="{DynamicResource SecondaryText}" 
+                                                           Opacity="0.7"
+                                                           Margin="0,0,0,5"/>
+
+                                                <TextBlock Text="{Binding DetailInfo}" 
+                                                           TextWrapping="Wrap" 
+                                                           FontSize="14" 
+                                                           LineHeight="24"
+                                                           Foreground="{DynamicResource PrimaryText}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                            </StackPanel>
+                                        </ScrollViewer>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
