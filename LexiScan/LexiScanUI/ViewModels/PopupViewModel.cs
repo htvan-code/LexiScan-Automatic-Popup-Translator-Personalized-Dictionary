@@ -7,32 +7,29 @@ using LexiScanData.Services;
 using LexiScanService;
 using LexiScanUI.Helpers;
 using System.Collections.ObjectModel;
-using System.Speech.Synthesis; // [MỚI] Thêm thư viện này (nhớ Add Reference System.Speech nếu chưa có)
+using System.Speech.Synthesis;
 using System.Windows.Input;
 using InputKind = LexiScan.Core.Enums.InputType;
-// using UiTts = LexiScanService.TtsService; // [BỎ] Chúng ta sẽ dùng trực tiếp Synthesizer để dễ kiểm soát Stop/Start
+using System.Text;
+using System.Collections.Generic; // Thêm để dùng List
 
 namespace LexiScanUI.ViewModels
 {
     public class PopupViewModel : BaseViewModel
     {
         private readonly TranslationService _translator;
-        // private readonly UiTts _ttsService; // [BỎ] Không dùng service cũ nữa
         private readonly SettingsService _settingsService;
         private DatabaseServices? _dbService;
 
-        // [MỚI] Đối tượng đọc và Biến trạng thái
         private SpeechSynthesizer _synthesizer;
         private bool _isPlaying;
 
-        // [MỚI] Property để Binding màu nút Loa (True = Sáng, False = Tối)
         public bool IsPlaying
         {
             get => _isPlaying;
             set { _isPlaying = value; OnPropertyChanged(); }
         }
 
-        // ... Các Properties cũ giữ nguyên ...
         private string _currentWord = "";
         public string CurrentWord { get => _currentWord; set { _currentWord = value; OnPropertyChanged(); } }
         private string _phonetic = "";
@@ -64,13 +61,10 @@ namespace LexiScanUI.ViewModels
         {
             PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
             _translator = new TranslationService();
-            // _ttsService = new UiTts(); // [BỎ]
             _settingsService = new SettingsService();
 
-            // [MỚI] Khởi tạo bộ đọc và đăng ký sự kiện
             _synthesizer = new SpeechSynthesizer();
             _synthesizer.SetOutputToDefaultAudioDevice();
-            // Sự kiện: Khi đọc xong -> Tự set IsPlaying về false (Tắt đèn)
             _synthesizer.SpeakCompleted += (s, e) => IsPlaying = false;
 
             string uid = SessionManager.CurrentUserId;
@@ -89,20 +83,42 @@ namespace LexiScanUI.ViewModels
         {
             if (result == null) return;
 
-            // [MỚI] Reset trạng thái đọc khi load từ mới
             StopAudio();
 
             var currentSettings = _settingsService.LoadSettings();
 
             IsSelectionMode = false;
-            OriginalSentence = result.OriginalText ?? "";
-            CurrentWord = result.OriginalText ?? "";
-            CurrentTranslatedText = result.TranslatedText ?? "";
+
+            // Áp dụng chuẩn hóa Text
+            OriginalSentence = NormalizeText(result.OriginalText);
+            CurrentWord = NormalizeText(result.OriginalText);
+            CurrentTranslatedText = NormalizeText(result.TranslatedText);
+
             Phonetic = (result.InputType == InputKind.SingleWord && !string.IsNullOrEmpty(result.Phonetic)) ? $"/{result.Phonetic}/" : "";
 
             Meanings.Clear();
             if (result.InputType == InputKind.SingleWord && result.Meanings != null)
-                foreach (var m in result.Meanings) Meanings.Add(m);
+            {
+                foreach (var m in result.Meanings)
+                {
+                    // Chuẩn hóa PartOfSpeech
+                    if (!string.IsNullOrEmpty(m.PartOfSpeech))
+                        m.PartOfSpeech = NormalizeText(m.PartOfSpeech);
+
+                    // Chuẩn hóa danh sách Definitions
+                    if (m.Definitions != null && m.Definitions.Count > 0)
+                    {
+                        var normDefs = new List<string>();
+                        foreach (var def in m.Definitions)
+                        {
+                            normDefs.Add(NormalizeText(def));
+                        }
+                        m.Definitions = normDefs;
+                    }
+
+                    Meanings.Add(m);
+                }
+            }
 
             PrepareWordsForSelection();
 
@@ -111,7 +127,6 @@ namespace LexiScanUI.ViewModels
                 ExecuteReadAloud(null);
             }
 
-            // Logic Ghim (Giữ nguyên)
             if (_dbService != null)
             {
                 IsPinned = false;
@@ -119,6 +134,35 @@ namespace LexiScanUI.ViewModels
                 string? key = await _dbService.FindSavedKeyAsync(wordToCheck);
                 if (key != null) IsPinned = true;
             }
+
+            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            {
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+            }
+
+            if (_dbService != null)
+            {
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(OriginalSentence) && !string.IsNullOrWhiteSpace(CurrentTranslatedText))
+                    {
+                        await _dbService.AddHistoryAsync(new Sentences
+                        {
+                            SourceText = OriginalSentence,
+                            TranslatedText = CurrentTranslatedText,
+                            CreatedDate = System.DateTime.Now
+                        });
+                    }
+                }
+                catch { }
+            }
+        }
+
+        // Hàm chuẩn hóa tiếng Việt
+        private string NormalizeText(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            return input.Normalize(NormalizationForm.FormC);
         }
 
         private void ExecuteReadAloud(object? parameter)
@@ -148,7 +192,7 @@ namespace LexiScanUI.ViewModels
             {
                 _synthesizer.SelectVoiceByHints(VoiceGender.NotSet, VoiceAge.NotSet, 0, new System.Globalization.CultureInfo(culture));
             }
-            catch {  }
+            catch { }
 
             IsPlaying = true;
             _synthesizer.SpeakAsync(txt);
@@ -163,7 +207,6 @@ namespace LexiScanUI.ViewModels
             IsPlaying = false;
         }
 
-        // ... CÁC HÀM PHỤ TRỢ ...
         private void ExecutePin(object? parameter)
         {
             IsSelectionMode = !IsSelectionMode;
@@ -184,17 +227,38 @@ namespace LexiScanUI.ViewModels
         {
             if (parameter is not string word) return;
 
-
             var result = await _translator.ProcessTranslationAsync(word);
-            CurrentWord = result.OriginalText ?? word;
+
+            // Chuẩn hóa CurrentWord
+            CurrentWord = NormalizeText(result.OriginalText ?? word);
             Phonetic = !string.IsNullOrEmpty(result.Phonetic) ? $"/{result.Phonetic}/" : "";
+
             Meanings.Clear();
-            if (result.Meanings != null) foreach (var m in result.Meanings) Meanings.Add(m);
+            if (result.Meanings != null)
+            {
+                foreach (var m in result.Meanings)
+                {
+                    // Chuẩn hóa PartOfSpeech
+                    if (!string.IsNullOrEmpty(m.PartOfSpeech))
+                        m.PartOfSpeech = NormalizeText(m.PartOfSpeech);
+
+                    // Chuẩn hóa danh sách Definitions
+                    if (m.Definitions != null && m.Definitions.Count > 0)
+                    {
+                        var normDefs = new List<string>();
+                        foreach (var def in m.Definitions)
+                        {
+                            normDefs.Add(NormalizeText(def));
+                        }
+                        m.Definitions = normDefs;
+                    }
+                    Meanings.Add(m);
+                }
+            }
 
             if (_settingsService.LoadSettings().AutoPronounceOnLookup)
                 ExecuteReadAloud(null);
         }
-
 
         private void ExecuteSettings(object? parameter)
         {
@@ -205,15 +269,12 @@ namespace LexiScanUI.ViewModels
         private void ExecuteClose(object? parameter)
         {
             StopAudio();
-
             IsSelectionMode = false;
             WordList.Clear();
         }
 
-        // --- SỬA LẠI HÀM NÀY ---
         private async void ExecutePinToFirebase(object? parameter)
         {
-            // 1. Kiểm tra kết nối DB
             if (_dbService == null)
             {
                 if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
@@ -232,19 +293,15 @@ namespace LexiScanUI.ViewModels
 
                 if (existingKey != null)
                 {
-                    // Đã có -> Xóa
                     await _dbService.DeleteSavedItemAsync(existingKey);
                     IsPinned = false;
                 }
                 else
                 {
-                    // Chưa có -> Lưu
                     await _dbService.SaveSimpleVocabularyAsync(textToSave, meaningToSave);
                     IsPinned = true;
                 }
 
-                // [QUAN TRỌNG - THÊM DÒNG NÀY]
-                // Báo hiệu cho các màn hình khác biết là dữ liệu đã thay đổi
                 GlobalEvents.RaisePersonalDictionaryUpdated();
             }
             catch { }

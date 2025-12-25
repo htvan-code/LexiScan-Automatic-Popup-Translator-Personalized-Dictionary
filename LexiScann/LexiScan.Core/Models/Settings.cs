@@ -63,7 +63,7 @@ namespace LexiScan.Core.Models
             set { if (_isDarkModeEnabled != value) { _isDarkModeEnabled = value; OnPropertyChanged(); } }
         }
 
-        private bool _autoSaveHistoryToDictionary = false;
+        private bool _autoSaveHistoryToDictionary = true;
         public bool AutoSaveHistoryToDictionary
         {
             get => _autoSaveHistoryToDictionary;

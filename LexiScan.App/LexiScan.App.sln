@@ -5,11 +5,7 @@ VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan.App", "LexiScan.App\LexiScan.App.csproj", "{6037CE70-9904-4FCB-B6A5-73B438D88321}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan", "..\LexiScan\LexiScan\LexiScan.csproj", "{D914A8DC-60BA-4266-31BB-8BA5A4110D55}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanData", "..\LexiScan\LexiScanData\LexiScanData.csproj", "{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanService", "..\LexiScan\LexiScanService\LexiScanService.csproj", "{44FE81D1-7EC1-B560-AC45-BC37979DF158}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanUI", "..\LexiScan\LexiScanUI\LexiScanUI.csproj", "{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}"
 EndProject
@@ -27,18 +23,10 @@ Global
 		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D914A8DC-60BA-4266-31BB-8BA5A4110D55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D914A8DC-60BA-4266-31BB-8BA5A4110D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D914A8DC-60BA-4266-31BB-8BA5A4110D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D914A8DC-60BA-4266-31BB-8BA5A4110D55}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{44FE81D1-7EC1-B560-AC45-BC37979DF158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{44FE81D1-7EC1-B560-AC45-BC37979DF158}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{44FE81D1-7EC1-B560-AC45-BC37979DF158}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{44FE81D1-7EC1-B560-AC45-BC37979DF158}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Release|Any CPU.ActiveCfg = Release|Any CPU

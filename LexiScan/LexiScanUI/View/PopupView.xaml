@@ -198,6 +198,10 @@
                                                    Foreground="{DynamicResource PrimaryText}"/>
                                         <TextBlock Text="{Binding DefinitionsText}"
                                                    FontSize="13"
+                                                   TextOptions.TextFormattingMode="Display"
+                                                   LineStackingStrategy="BlockLineHeight"
+                                                   TextOptions.TextRenderingMode="ClearType"
+                                                   UseLayoutRounding="True"
                                                    Margin="10,2,0,0"
                                                    TextWrapping="Wrap"
                                                    TextAlignment="Justify"
