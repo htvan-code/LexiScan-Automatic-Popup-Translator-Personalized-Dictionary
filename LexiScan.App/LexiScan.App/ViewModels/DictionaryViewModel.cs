@@ -1,12 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
-using LexiScan.App.Commands;
+﻿using LexiScan.App.Commands;
 using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
 using LexiScan.Core.Services;
-using LexiScanData.Services;
+using LexiScan.Core.Utils;
 using LexiScanData.Models;
+using LexiScanData.Services;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+
 
 namespace LexiScan.App.ViewModels
 {
@@ -34,7 +36,13 @@ namespace LexiScan.App.ViewModels
             get => _voiceLevel;
             set { _voiceLevel = value; OnPropertyChanged(); }
         }
-
+        private bool _isPinned;
+        public bool IsPinned
+        {
+            get => _isPinned;
+            set { _isPinned = value; OnPropertyChanged(); }
+        }
+        public ICommand PinToFirebaseCommand { get; }
         public DictionaryViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
@@ -113,6 +121,8 @@ namespace LexiScan.App.ViewModels
                 if (newSize < 20) newSize = 20;
                 VoiceLevel = newSize;
             };
+
+            PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
         }
 
         public ObservableCollection<string> SuggestionList { get; set; }
@@ -158,6 +168,43 @@ namespace LexiScan.App.ViewModels
             }
         }
 
+        private async void ExecutePinToFirebase(object? obj)
+        {
+            if (_dbService == null)
+            {
+                if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                else return;
+            }
+
+            string textToSave = !string.IsNullOrWhiteSpace(DisplayWord) ? DisplayWord : SearchText;
+
+            string meaningToSave = DefinitionText;
+
+            if (string.IsNullOrWhiteSpace(textToSave)) return;
+
+            try
+            {
+                string? existingKey = await _dbService.FindSavedKeyAsync(textToSave);
+
+                if (existingKey != null)
+                {
+                    await _dbService.DeleteSavedItemAsync(existingKey);
+                    IsPinned = false;
+                }
+                else
+                {
+                    await _dbService.SaveSimpleVocabularyAsync(textToSave, meaningToSave);
+                    IsPinned = true;
+                }
+
+                GlobalEvents.RaisePersonalDictionaryUpdated();
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi lưu: " + ex.Message);
+            }
+        }
         public string DisplayWord { get => _displayWord; set { _displayWord = value; OnPropertyChanged(); } }
         public string DefinitionText { get => _definitionText; set { _definitionText = value; OnPropertyChanged(); } }
         public string PhoneticText { get => _phoneticText; set { _phoneticText = value; OnPropertyChanged(); } }
@@ -176,7 +223,7 @@ namespace LexiScan.App.ViewModels
             });
         }
 
-        private void OnTranslationResultReceived(TranslationResult result)
+        private async void OnTranslationResultReceived(TranslationResult result)
         {
             if (result == null) return;
 
@@ -205,6 +252,26 @@ namespace LexiScan.App.ViewModels
             }
 
             DefinitionText = sb.ToString().Trim();
+
+            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            {
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+            }
+
+            if (_dbService != null)
+            {
+                try
+                {
+                    string wordToCheck = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText;
+                    // Hàm này trả về Key nếu có, null nếu không
+                    string? key = await _dbService.FindSavedKeyAsync(wordToCheck);
+
+                    // Nếu key khác null => Đã lưu => IsPinned = true
+                    IsPinned = (key != null);
+                }
+                catch { IsPinned = false; }
+            }
+
             var currentSettings = _settingsService.LoadSettings();
 
             if (currentSettings.AutoPronounceOnLookup)
