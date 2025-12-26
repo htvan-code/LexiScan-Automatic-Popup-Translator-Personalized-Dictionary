@@ -66,7 +66,7 @@ This project was developed as part of a course requirement at UIT.
         <br/>
         <b>Smart Text-to-Speech</b>
         <br/>
-        <sub>Native pronunciation support for English and Vietnamese with auto-read mode.</sub>
+        <sub>Native pronunciation support for English with auto-read mode.</sub>
       </td>
       <td width="25%" align="center">
         <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Light%20Bulb.png" width="40px" height="40px"/>
@@ -83,19 +83,19 @@ This project was developed as part of a course requirement at UIT.
 
 <div align="center">
 
-<kbd><img width="400" src="Assets/1.png" alt="Popup Translation Interface" /></kbd>
+<img width="400" height="261" alt="Image" src="https://github.com/user-attachments/assets/0e5a3558-0862-4ef6-aa69-83223d257ad3" />
 &nbsp;&nbsp;&nbsp;
-<kbd><img width="400" src="Assets/2.png" alt="Personal Dictionary" /></kbd>
+<img width="400" height="261" alt="Image" src="https://github.com/user-attachments/assets/f05f28d7-771d-4f7e-a643-4de4e1042109" />
 
 <br/>
 <br/>
 
-<kbd><img width="400" src="Assets/3.png" alt="Translation History" /></kbd>
+<img width="234" height="250" alt="Image" src="https://github.com/user-attachments/assets/1e8bddce-7dcc-42db-88f7-a071d41a2743" />
 &nbsp;&nbsp;&nbsp;
-<kbd><img width="400" src="Assets/4.png" alt="Settings & Config" /></kbd>
+<img width="500" height="250" alt="Image" src="https://github.com/user-attachments/assets/18902a54-e571-4bdc-94c9-966a77fadd3d" />
 
   <p align="center">
-    <sup><strong>Interface Preview:</strong> Popup Translation • Personal Dictionary • History Management • Settings</sup>
+    <sup><strong>Interface Preview:</strong> Login • Main app Dictionary • Popup Translation • Popup Translation choose word</sup>
   </p>
 </div>
 
