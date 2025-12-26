@@ -100,8 +100,8 @@ namespace ScreenTranslator
 
                 // 3. Đưa cửa sổ lên trên cùng (Active)
                 _mainWindow.Activate();
-                _mainWindow.Topmost = true;  // Mẹo: Bật Topmost
-                _mainWindow.Topmost = false; // Tắt ngay để người dùng còn bấm sang cửa sổ khác được
+                _mainWindow.Topmost = true;  
+                _mainWindow.Topmost = false; 
                 _mainWindow.Focus();
             }
         }

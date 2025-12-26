@@ -27,9 +27,9 @@ namespace LexiScanData.Services
             });
         }
 
-        // ==========================================
+
         // PHẦN 1: QUẢN LÝ LỊCH SỬ DỊCH (HISTORY)
-        // ==========================================
+   
 
         // 1.1 Thêm vào lịch sử 
         public async Task AddHistoryAsync(Sentences sentence)
@@ -95,9 +95,9 @@ namespace LexiScanData.Services
             catch { return false; }
         }
 
-        // ==========================================
+ 
         // PHẦN 2: QUẢN LÝ TỪ ĐÃ LƯU (SAVED VOCABULARY)
-        // ==========================================
+
         public async Task<string?> FindSavedKeyAsync(string textToCheck)
         {
             try
@@ -167,9 +167,9 @@ namespace LexiScanData.Services
             }).Reverse().ToList();
         }
 
-        // ==========================================
+   
         // PHẦN 3: TIỆN ÍCH KHÁC
-        // ==========================================
+
 
         public async Task<bool> TestConnectionAsync()
         {

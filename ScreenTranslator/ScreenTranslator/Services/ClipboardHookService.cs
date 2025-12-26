@@ -20,11 +20,10 @@ namespace ScreenTranslator
         const int HOTKEY_ID = 9000;
         const int WM_HOTKEY = 0x0312;
 
-        // [SỬA] Thêm import keybd_event để giả lập phím bấm tầng thấp (Win32 API)
         [DllImport("user32.dll")]
         static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
 
-        // [SỬA] Định nghĩa mã phím cho Win32 API
+        // Định nghĩa mã phím cho Win32 API
         private const byte VK_CONTROL = 0x11;   // Mã phím Ctrl
         private const byte VK_C = 0x43;         // Mã phím C
         private const uint KEYEVENTF_KEYUP = 0x0002; // Cờ báo nhả phím
@@ -85,27 +84,24 @@ namespace ScreenTranslator
         {
             try
             {
-                // Xóa clipboard để tránh lấy dữ liệu cũ
+
                 try { Clipboard.Clear(); } catch { }
 
-                // [SỬA] Thay thế SendKeys bằng keybd_event để chạy ổn định khi ẩn App
-                // Cách cũ (hay lỗi): SendKeys.SendWait("^c");
+      
 
-                // Cách mới:
-                // 1. Nhấn giữ Ctrl
+         
+
                 keybd_event(VK_CONTROL, 0, 0, 0);
-                // 2. Nhấn giữ C
+    
                 keybd_event(VK_C, 0, 0, 0);
 
-                // Đợi 50ms cho hệ điều hành nhận tín hiệu
                 Thread.Sleep(50);
 
-                // 3. Nhả C
+
                 keybd_event(VK_C, 0, KEYEVENTF_KEYUP, 0);
-                // 4. Nhả Ctrl
+
                 keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
 
-                // [SỬA] Tăng thời gian chờ lên 150ms để đảm bảo text đã vào Clipboard
                 Thread.Sleep(150);
 
                 string text = GetClipboardTextWithRetry();

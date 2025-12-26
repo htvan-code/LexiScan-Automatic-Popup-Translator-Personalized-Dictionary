@@ -27,7 +27,7 @@ namespace LexiScan.App.Commands
             _execute(parameter);
         }
 
-        // Sự kiện này thông báo cho WPF UI khi trạng thái CanExecute thay đổi.
+        // thông báo cho WPF UI khi trạng thái CanExecute thay đổi.
         public event EventHandler? CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }

@@ -6,7 +6,7 @@ namespace LexiScanService
 {
     public class TtsService
     {
-        // [QUAN TRỌNG] Static = Chỉ 1 bộ đọc duy nhất trong toàn app
+        // Static = Chỉ 1 bộ đọc duy nhất trong toàn app
         private static readonly SpeechSynthesizer _synthesizer;
 
         static TtsService()

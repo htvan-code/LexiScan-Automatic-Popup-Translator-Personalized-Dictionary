@@ -12,7 +12,6 @@ namespace LexiScan.App.ViewModels
     {
         private readonly AuthService _authService;
 
-        // ... (Giữ nguyên các biến IsLoginVisible, Username, RegEmail...)
         private bool _isLoginVisible = true;
         public bool IsLoginVisible { get => _isLoginVisible; set { _isLoginVisible = value; OnPropertyChanged(); } }
 

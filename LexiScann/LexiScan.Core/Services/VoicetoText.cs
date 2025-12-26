@@ -34,7 +34,7 @@ namespace LexiScan.Core.Services
             if (File.Exists(modelPath))
             {
                 _factory = WhisperFactory.FromPath(modelPath);
-                // [TỐI ƯU] Dùng Greedy Sampling để bắt từ vựng chuẩn xác hơn
+                // Dùng Greedy Sampling để bắt từ vựng chuẩn xác hơn
                 _processor = _factory.CreateBuilder()
                     .WithLanguage("en")
                     .Build();
@@ -49,14 +49,11 @@ namespace LexiScan.Core.Services
             {
                 if (!IsRecording) return;
 
-                // 1. Tính âm lượng
                 long sum = 0;
                 for (int i = 0; i < e.BytesRecorded; i += 2) sum += Math.Abs(BitConverter.ToInt16(e.Buffer, i));
                 int level = (int)(sum / (e.BytesRecorded / 2) / 300);
                 AudioLevelUpdated?.Invoke(level);
 
-                // 2. [CỰC QUAN TRỌNG] Ngưỡng lọc tiếng ồn (Gate)
-                // Chỉ nạp vào Buffer khi âm lượng > 800 để tránh rác "blankaudio"
                 bool hasVoice = false;
                 for (int i = 0; i < e.BytesRecorded; i += 2)
                 {
@@ -100,7 +97,7 @@ namespace LexiScan.Core.Services
 
                 await foreach (var result in _processor.ProcessAsync(samples))
                 {
-                    // [BỘ LỌC] Xóa sạch blankaudio và ký tự rác
+
                     string clean = Regex.Replace(result.Text, @"(?i)blankaudio|\[.*?\]|[^a-zA-Z0-9\s]", "").Trim();
                     if (!string.IsNullOrWhiteSpace(clean) && clean.Length > 2)
                     {
