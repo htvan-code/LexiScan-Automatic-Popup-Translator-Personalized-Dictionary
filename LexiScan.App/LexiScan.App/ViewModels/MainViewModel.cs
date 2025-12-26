@@ -13,8 +13,6 @@ namespace LexiScan.App.ViewModels
     {
         private readonly DictionaryViewModel _dictionaryVM;
 
-        // [SỬA 1]: Xóa đoạn "= new PersonalDictionaryViewModel()" đi
-        // Chỉ khai báo biến thôi, sẽ khởi tạo trong Constructor
         private readonly PersonalDictionaryViewModel _personalDictionaryVM;
 
         private readonly HistoryViewModel _historyVM;
@@ -52,7 +50,6 @@ namespace LexiScan.App.ViewModels
             _translationVM = new TranslationViewModel(coordinator);
             _historyVM = new HistoryViewModel(coordinator);
 
-            // [SỬA 2]: Khởi tạo PersonalDictionaryViewModel Ở ĐÂY (truyền coordinator vào)
             _personalDictionaryVM = new PersonalDictionaryViewModel(coordinator);
 
             NavigateCommand = new RelayCommand(Navigate);
@@ -93,12 +90,10 @@ namespace LexiScan.App.ViewModels
             SelectedMenu = viewName;
 
             // [LOGIC TẢI LẠI DỮ LIỆU]
-            // 1. Nếu chọn History -> Tải lại lịch sử
             if (viewName == "History")
             {
                 _historyVM.LoadFirebaseHistory();
             }
-            // 2. [NÊN THÊM] Nếu chọn Từ điển cá nhân -> Cũng tải lại cho mới
             else if (viewName == "PersonalDictionary" || viewName == "Dictionary")
             {
                 _personalDictionaryVM.LoadData();

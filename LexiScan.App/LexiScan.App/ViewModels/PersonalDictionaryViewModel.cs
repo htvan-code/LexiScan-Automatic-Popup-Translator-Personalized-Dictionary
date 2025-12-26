@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Text; // [THÊM] Để dùng NormalizationForm
+using System.Text; 
 
 namespace LexiScan.App.ViewModels
 {
@@ -68,7 +68,7 @@ namespace LexiScan.App.ViewModels
             };
         }
 
-        // [MỚI] Hàm chuẩn hóa chữ
+        // Hàm chuẩn hóa chữ
         private string NormalizeText(string? input)
         {
             if (string.IsNullOrEmpty(input)) return "";
@@ -97,7 +97,6 @@ namespace LexiScan.App.ViewModels
 
                             if (!string.IsNullOrEmpty(result.TranslatedText))
                             {
-                                // [ÁP DỤNG] Chuẩn hóa nghĩa
                                 sb.AppendLine($"➤ {NormalizeText(result.TranslatedText)}");
                                 sb.AppendLine();
                             }
@@ -106,11 +105,9 @@ namespace LexiScan.App.ViewModels
                             {
                                 foreach (var m in result.Meanings)
                                 {
-                                    // [ÁP DỤNG] Chuẩn hóa Loại từ
                                     sb.AppendLine($"★ {NormalizeText(m.PartOfSpeech)}");
                                     foreach (var def in m.Definitions)
                                     {
-                                        // [ÁP DỤNG] Chuẩn hóa Định nghĩa
                                         sb.AppendLine($"    • {NormalizeText(def)}");
                                     }
                                     sb.AppendLine();
@@ -155,7 +152,6 @@ namespace LexiScan.App.ViewModels
                     _allEntries.Add(new PersonalWordEntry
                     {
                         Id = item.Id,
-                        // [ÁP DỤNG] Chuẩn hóa từ gốc khi load
                         SourceText = NormalizeText(item.SourceText),
                         SavedDate = item.SavedDate
                     });
@@ -166,7 +162,6 @@ namespace LexiScan.App.ViewModels
             catch { }
         }
 
-        // ... (Các hàm FilterList, Delete, ClearAll giữ nguyên) ...
         private void FilterList()
         {
             SavedWords.Clear();

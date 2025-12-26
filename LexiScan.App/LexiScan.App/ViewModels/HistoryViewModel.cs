@@ -96,7 +96,7 @@ namespace LexiScan.App.ViewModels
             ViewDetailsCommand = new RelayCommand(ExecuteViewDetails);
         }
 
-        // [MỚI] Hàm chuẩn hóa chữ
+        //Hàm chuẩn hóa chữ
         private string NormalizeText(string? input)
         {
             if (string.IsNullOrEmpty(input)) return "";
@@ -118,25 +118,22 @@ namespace LexiScan.App.ViewModels
             {
                 var listFromServer = await _dbService.GetHistoryAsync();
 
-                // Lưu vào danh sách gốc (_allEntries)
+                // Lưu vào danh sách gốc 
                 _allEntries.Clear();
 
                 if (listFromServer != null)
                 {
-                    // Sắp xếp mới nhất lên đầu
                     foreach (var item in listFromServer.OrderByDescending(x => x.CreatedDate))
                     {
                         _allEntries.Add(new HistoryEntry
                         {
                             Id = item.SentenceId,
-                            // [ÁP DỤNG] Chuẩn hóa từ gốc
                             SearchTerm = NormalizeText(item.SourceText),
                             Timestamp = item.CreatedDate
                         });
                     }
                 }
 
-                // Hiển thị ra màn hình thông qua bộ lọc
                 FilterList();
             }
             catch (Exception ex)
@@ -225,7 +222,6 @@ namespace LexiScan.App.ViewModels
 
                             if (!string.IsNullOrEmpty(result.TranslatedText))
                             {
-                                // [ÁP DỤNG] Chuẩn hóa nghĩa
                                 sb.AppendLine($"➤ {NormalizeText(result.TranslatedText)}");
                                 sb.AppendLine();
                             }
@@ -234,11 +230,9 @@ namespace LexiScan.App.ViewModels
                             {
                                 foreach (var m in result.Meanings)
                                 {
-                                    // [ÁP DỤNG] Chuẩn hóa Loại từ
                                     sb.AppendLine($"★ {NormalizeText(m.PartOfSpeech)}");
                                     foreach (var def in m.Definitions)
                                     {
-                                        // [ÁP DỤNG] Chuẩn hóa Định nghĩa
                                         sb.AppendLine($"    • {NormalizeText(def)}");
                                     }
                                     sb.AppendLine();

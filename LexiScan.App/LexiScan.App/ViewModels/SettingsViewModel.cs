@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-// [SỬA LẠI] Dùng Core thay vì App (vì bạn đã chuyển file sang Core)
 using LexiScan.Core.Models;
 using LexiScan.Core.Services;
 
@@ -17,7 +16,6 @@ namespace LexiScan.App.ViewModels
         private Settings _currentSettings;
         private bool _hasUnsavedChanges;
 
-        // Variables for Hotkey
         private bool _isChangingHotkey;
         private string _hotkeyButtonText = "Thiết Lập";
 
@@ -30,7 +28,6 @@ namespace LexiScan.App.ViewModels
         {
             CurrentSettings = _settingsService.LoadSettings();
 
-            // Áp dụng theme lần đầu
             ApplyTheme(CurrentSettings.IsDarkModeEnabled);
 
             SaveCommand = new RelayCommand(SaveSettings);
@@ -87,7 +84,7 @@ namespace LexiScan.App.ViewModels
                 OnPropertyChanged(nameof(CurrentSettings));
                 IsChangingHotkey = false;
                 HotkeyButtonText = "Thiết Lập";
-                CheckIfDirty(); // Báo thay đổi để hiện nút Lưu
+                CheckIfDirty();
             }
         }
 
@@ -104,14 +101,14 @@ namespace LexiScan.App.ViewModels
         private void CheckIfDirty()
         {
             if (_currentSettings == null || _originalSettings == null) return;
-            HasUnsavedChanges = true; // Hiện nút Lưu khi có thay đổi
+            HasUnsavedChanges = true;
         }
 
         private void SaveSettings(object parameter)
         {
             _settingsService.SaveSettings(_currentSettings);
-            _originalSettings = (Settings)_currentSettings.Clone(); // Cập nhật mốc
-            HasUnsavedChanges = false; // Ẩn nút lưu
+            _originalSettings = (Settings)_currentSettings.Clone(); 
+            HasUnsavedChanges = false; 
             MessageBox.Show("Đã lưu cài đặt!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -120,7 +117,6 @@ namespace LexiScan.App.ViewModels
             var backup = _originalSettings;
             _currentSettings.PropertyChanged -= OnSettingsChanged;
 
-            // Phục hồi thủ công các trường quan trọng
             _currentSettings.Hotkey = backup.Hotkey;
             _currentSettings.IsAutoReadEnabled = backup.IsAutoReadEnabled;
             _currentSettings.Speed = backup.Speed;

@@ -5,7 +5,7 @@ using LexiScan.Core.Models;
 using LexiScan.Core.Services;
 using LexiScan.Core.Utils;
 using LexiScanData.Models;
-using System.Text; // [THÊM] Để dùng NormalizationForm
+using System.Text; 
 using LexiScanData.Services;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -91,7 +91,7 @@ namespace LexiScan.App.ViewModels
             {
                 if (!IsListening)
                 {
-                    SearchText = ""; // [MỚI] Xóa text cũ khi bắt đầu nói mới
+                    SearchText = ""; 
                     _coordinator.StartVoiceSearch(VoiceSource.Dictionary);
                 }
                 else
@@ -234,7 +234,6 @@ namespace LexiScan.App.ViewModels
             });
         }
 
-        // [MỚI] Hàm chuẩn hóa chữ (giống PopupViewModel)
         private string NormalizeText(string? input)
         {
             if (string.IsNullOrEmpty(input)) return "";
@@ -245,7 +244,6 @@ namespace LexiScan.App.ViewModels
         {
             if (result == null) return;
 
-            // [ÁP DỤNG] Chuẩn hóa từ hiển thị
             DisplayWord = NormalizeText(result.OriginalText ?? "");
             PhoneticText = (!string.IsNullOrEmpty(result.Phonetic)) ? $"/{result.Phonetic}/" : "";
 
@@ -253,7 +251,6 @@ namespace LexiScan.App.ViewModels
 
             if (!string.IsNullOrWhiteSpace(result.TranslatedText))
             {
-                // [ÁP DỤNG] Chuẩn hóa nghĩa chính
                 sb.AppendLine(NormalizeText(result.TranslatedText));
             }
 
@@ -262,11 +259,9 @@ namespace LexiScan.App.ViewModels
                 sb.AppendLine();
                 foreach (var m in result.Meanings)
                 {
-                    // [ÁP DỤNG] Chuẩn hóa Loại từ
                     sb.AppendLine($"★ {NormalizeText(m.PartOfSpeech)}");
                     foreach (var def in m.Definitions)
                     {
-                        // [ÁP DỤNG] Chuẩn hóa Định nghĩa chi tiết
                         sb.AppendLine($"    - {NormalizeText(def)}");
                     }
                     sb.AppendLine();

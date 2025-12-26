@@ -46,7 +46,7 @@ namespace LexiScan.App.ViewModels
         public TranslationViewModel(AppCoordinator coordinator)
         {
             _coordinator = coordinator;
-            _settingsService = new SettingsService(); // [THÊM] Khởi tạo SettingsService
+            _settingsService = new SettingsService(); //Khởi tạo SettingsService
 
             string uid = SessionManager.CurrentUserId;
             string token = SessionManager.CurrentAuthToken;
@@ -61,7 +61,7 @@ namespace LexiScan.App.ViewModels
 
             SaveTranslationCommand = new RelayCommand(async (obj) =>
             {
-                await ExecuteSaveHistory(forceSave: true); // Nút lưu thủ công luôn lưu
+                await ExecuteSaveHistory(forceSave: true); 
             });
 
             StartVoiceCommand = new RelayCommand(obj =>
@@ -118,7 +118,6 @@ namespace LexiScan.App.ViewModels
             {
                 if (_coordinator.CurrentVoiceSource == VoiceSource.Translation)
                 {
-                    // Tính toán nấc mic giống bên Dictionary
                     double newSize = 25.0 + (level * 1.8);
                     if (newSize > 45) newSize = 45;
                     if (newSize < 25) newSize = 25;
@@ -127,7 +126,6 @@ namespace LexiScan.App.ViewModels
             };
         }
 
-        // ... Các Property (SourceLangName, TargetLangName...) giữ nguyên ...
         public string SourceLangName { get => _sourceLangName; set { _sourceLangName = value; OnPropertyChanged(); } }
         public string TargetLangName { get => _targetLangName; set { _targetLangName = value; OnPropertyChanged(); } }
         public string SourceText { get => _sourceText; set { if (_sourceText != value) { _sourceText = value; OnPropertyChanged(); CurrentCharCount = _sourceText?.Length ?? 0; TriggerAutoTranslate(); } } }
@@ -149,7 +147,6 @@ namespace LexiScan.App.ViewModels
                     {
                         TranslatedText = result.TranslatedText;
 
-                        // [LOGIC MỚI]: Sau khi dịch xong, kiểm tra settings để tự động lưu
                         var settings = _settingsService.LoadSettings();
                         if (settings.AutoSaveHistoryToDictionary)
                         {
@@ -163,12 +160,10 @@ namespace LexiScan.App.ViewModels
 
         private async Task ExecuteSaveHistory(bool forceSave = false)
         {
-            // Kiểm tra: Text rỗng thì bỏ qua
             if (string.IsNullOrWhiteSpace(SourceText)) return;
 
             if (!forceSave && SourceText == _lastSavedText) return;
 
-            // Tự kết nối lại nếu bị null
             if (_dbService == null && (!string.IsNullOrEmpty(SessionManager.CurrentUserId) || !string.IsNullOrEmpty(SessionManager.CurrentAuthToken)))
             {
                 _dbService = new DatabaseServices(SessionManager.CurrentUserId, SessionManager.CurrentAuthToken);
@@ -185,7 +180,6 @@ namespace LexiScan.App.ViewModels
                         CreatedDate = DateTime.Now
                     });
 
-                    // Cập nhật text đã lưu
                     _lastSavedText = SourceText;
                 }
                 catch { }

@@ -25,7 +25,6 @@ namespace LexiScan.App.ViewModels
         private string _regEmail;
         public string RegEmail { get => _regEmail; set { _regEmail = value; OnPropertyChanged(); } }
 
-        // ... (Giữ nguyên các Command)
         public ICommand LoginCommand { get; }
         public ICommand CloseCommand { get; }
         public ICommand SwitchToSignUpCommand { get; }
@@ -111,15 +110,13 @@ namespace LexiScan.App.ViewModels
             if (!string.IsNullOrEmpty(Username)) await _authService.ResetPasswordAsync(Username);
         }
 
-        // --- SỬA HÀM NÀY ---
-        // Thêm tham số isSuccess để báo kết quả về cho App.xaml.cs
         private void CloseWindow(bool isSuccess)
         {
             foreach (Window window in Application.Current.Windows)
             {
                 if (window.DataContext == this)
                 {
-                    if (isSuccess) window.DialogResult = true; // Tín hiệu để App.xaml.cs mở MainWindow
+                    if (isSuccess) window.DialogResult = true;
                     window.Close();
                     break;
                 }
