@@ -92,7 +92,7 @@ This project was developed as part of a course requirement at UIT.
 
 <img width="234" height="320" alt="Image" src="https://github.com/user-attachments/assets/1e8bddce-7dcc-42db-88f7-a071d41a2743" />
 &nbsp;&nbsp;&nbsp;
-<img width="630" height="320" alt="Image" src="https://github.com/user-attachments/assets/18902a54-e571-4bdc-94c9-966a77fadd3d" />
+<img width="600" height="320" alt="Image" src="https://github.com/user-attachments/assets/18902a54-e571-4bdc-94c9-966a77fadd3d" />
 
   <p align="center">
     <sup><strong>Interface Preview:</strong> Login • Main app Dictionary • Popup Translation • Popup Translation choose word</sup>
