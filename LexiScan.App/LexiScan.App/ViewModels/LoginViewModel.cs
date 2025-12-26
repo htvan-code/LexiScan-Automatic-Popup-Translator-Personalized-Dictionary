@@ -45,6 +45,8 @@ namespace LexiScan.App.ViewModels
             RegisterCommand = new RelayCommand(ExecuteRegister);
             ForgotPasswordCommand = new RelayCommand(ExecuteForgotPassword);
         }
+
+
         private async void ExecuteLogin(object? parameter)
         {
             var passwordBox = parameter as PasswordBox;
@@ -56,20 +58,39 @@ namespace LexiScan.App.ViewModels
                 return;
             }
 
-            var user = await _authService.LoginAndGetUserAsync(Username, password);
-
-            if (user != null)
+            try
             {
-                LexiScan.App.Properties.Settings.Default.UserId = user.Uid;
-                LexiScan.App.Properties.Settings.Default.Save();
+                var user = await _authService.LoginAndGetUserAsync(Username, password);
 
-                LexiScan.Core.SessionManager.CurrentUserId = user.Uid;
-                SessionManager.CurrentUserId = user.Uid;
-                CloseWindow(true);
+                if (user != null)
+                {
+                    string refreshToken = user.Credential.RefreshToken;
+
+                    var settings = LexiScan.App.Properties.Settings.Default;
+                    settings.UserId = user.Uid;
+                    settings.RefreshToken = refreshToken;
+
+                    settings.Save();
+
+                    var uid = user.Uid;
+                    var token = await user.GetIdTokenAsync();
+
+                    LexiScan.App.Properties.Settings.Default.UserId = uid;
+                    LexiScan.App.Properties.Settings.Default.Save();
+
+                    LexiScan.Core.SessionManager.CurrentUserId = uid;
+                    LexiScan.Core.SessionManager.CurrentAuthToken = token;
+
+                    CloseWindow(true);
+                }
+                else
+                {
+                    MessageBox.Show("Đăng nhập thất bại. Kiểm tra lại thông tin.", "Lỗi");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Đăng nhập thất bại. Kiểm tra lại thông tin.", "Lỗi");
+                MessageBox.Show("Lỗi đăng nhập: " + ex.Message, "Lỗi");
             }
         }
         private async void ExecuteRegister(object? parameter)

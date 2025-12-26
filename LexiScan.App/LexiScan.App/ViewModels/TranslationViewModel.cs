@@ -2,7 +2,7 @@
 using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
-using LexiScan.Core.Services; // Cần thêm cái này để dùng SettingsService
+using LexiScan.Core.Services;
 using LexiScanData.Services;
 using LexiScanData.Models;
 using System;
@@ -17,7 +17,7 @@ namespace LexiScan.App.ViewModels
     {
         private DatabaseServices? _dbService;
         private readonly AppCoordinator _coordinator;
-        private readonly SettingsService _settingsService; // [THÊM]
+        private readonly SettingsService _settingsService; 
         
         private string _sourceText = "";
         private string _translatedText = "Bản dịch";
@@ -31,7 +31,6 @@ namespace LexiScan.App.ViewModels
 
         private bool _isListening;
         public bool IsListening { get => _isListening; set { _isListening = value; OnPropertyChanged(); } }
-        // ... Các Command (SpeakSourceCommand, SpeakTargetCommand...) giữ nguyên ...
 
         private double _voiceLevel;
         public double VoiceLevel { get => _voiceLevel; set { _voiceLevel = value; OnPropertyChanged(); } }
@@ -50,9 +49,10 @@ namespace LexiScan.App.ViewModels
             _settingsService = new SettingsService(); // [THÊM] Khởi tạo SettingsService
 
             string uid = SessionManager.CurrentUserId;
-            if (!string.IsNullOrEmpty(uid))
+            string token = SessionManager.CurrentAuthToken;
+            if (!string.IsNullOrEmpty(uid) || !string.IsNullOrEmpty(token))
             {
-                _dbService = new DatabaseServices(uid);
+                _dbService = new DatabaseServices(uid, SessionManager.CurrentAuthToken);
             }
 
             SwapLanguageCommand = new RelayCommand(obj => ExecuteSwap());
@@ -166,13 +166,12 @@ namespace LexiScan.App.ViewModels
             // Kiểm tra: Text rỗng thì bỏ qua
             if (string.IsNullOrWhiteSpace(SourceText)) return;
 
-            // Nếu không phải lưu thủ công (forceSave) và text giống lần trước thì bỏ qua (tránh lưu lặp)
             if (!forceSave && SourceText == _lastSavedText) return;
 
             // Tự kết nối lại nếu bị null
-            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            if (_dbService == null && (!string.IsNullOrEmpty(SessionManager.CurrentUserId) || !string.IsNullOrEmpty(SessionManager.CurrentAuthToken)))
             {
-                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId, SessionManager.CurrentAuthToken);
             }
 
             if (_dbService != null)

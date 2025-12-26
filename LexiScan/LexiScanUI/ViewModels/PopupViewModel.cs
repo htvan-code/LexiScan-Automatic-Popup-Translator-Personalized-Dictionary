@@ -68,7 +68,8 @@ namespace LexiScanUI.ViewModels
             _synthesizer.SpeakCompleted += (s, e) => IsPlaying = false;
 
             string uid = SessionManager.CurrentUserId;
-            if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+            string token = SessionManager.CurrentAuthToken;
+            if (!string.IsNullOrEmpty(uid) || !string.IsNullOrEmpty(token)) _dbService = new DatabaseServices(uid, SessionManager.CurrentAuthToken);
 
             PinToFirebaseCommand = new RelayCommand(ExecutePinToFirebase);
             PinCommand = new RelayCommand(ExecutePin);
@@ -135,9 +136,9 @@ namespace LexiScanUI.ViewModels
                 if (key != null) IsPinned = true;
             }
 
-            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            if (_dbService == null && (!string.IsNullOrEmpty(SessionManager.CurrentUserId) || !string.IsNullOrEmpty(SessionManager.CurrentAuthToken)))
             {
-                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId, SessionManager.CurrentAuthToken);
             }
 
             if (_dbService != null)
@@ -277,8 +278,8 @@ namespace LexiScanUI.ViewModels
         {
             if (_dbService == null)
             {
-                if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
-                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                if (!string.IsNullOrEmpty(SessionManager.CurrentUserId) || !string.IsNullOrEmpty(SessionManager.CurrentAuthToken))
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId, SessionManager.CurrentAuthToken);
                 else return;
             }
 

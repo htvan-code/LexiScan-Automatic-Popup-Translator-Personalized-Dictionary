@@ -53,7 +53,8 @@ namespace LexiScan.App.ViewModels
             _coordinator = coordinator;
 
             string uid = SessionManager.CurrentUserId;
-            if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+            string token = SessionManager.CurrentAuthToken;
+            if (!string.IsNullOrEmpty(uid)||!string.IsNullOrEmpty(token)) _dbService = new DatabaseServices(uid, SessionManager.CurrentAuthToken);
 
             DeleteItemCommand = new RelayCommand(ExecuteDeleteItem);
             ClearAllCommand = new RelayCommand(ExecuteClearAll);
@@ -139,7 +140,8 @@ namespace LexiScan.App.ViewModels
             if (_dbService == null)
             {
                 string uid = SessionManager.CurrentUserId;
-                if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+                string token = SessionManager.CurrentAuthToken;
+                if (!string.IsNullOrEmpty(uid) || !string.IsNullOrEmpty(token)) _dbService = new DatabaseServices(uid, SessionManager.CurrentAuthToken);
                 else return;
             }
 

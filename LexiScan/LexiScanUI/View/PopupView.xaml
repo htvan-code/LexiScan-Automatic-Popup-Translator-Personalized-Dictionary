@@ -30,7 +30,7 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="20"
                                   ShadowDepth="0"
-                                  Opacity="0.32"/>
+                                  Opacity="0"/>
             </Border.Effect>
 
             <Grid>

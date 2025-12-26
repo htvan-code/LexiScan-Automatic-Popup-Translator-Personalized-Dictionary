@@ -2,6 +2,9 @@
 using System.Threading.Tasks;
 using Firebase.Auth;
 using Firebase.Auth.Providers;
+using System.Net.Http; 
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace LexiScan.Core.Services
 {
@@ -30,8 +33,6 @@ namespace LexiScan.Core.Services
             try
             {
                 var userCred = await _authClient.SignInWithEmailAndPasswordAsync(email, password);
-
-                // Trả về nguyên đối tượng User (chứa cả Token lẫn LocalId)
                 return userCred.User;
             }
             catch
@@ -40,14 +41,37 @@ namespace LexiScan.Core.Services
             }
         }
 
-        public async Task<bool> AutoLoginAsync(string refreshToken)
+        public async Task<string> AutoLoginAsync(string refreshToken)
         {
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                return false;
-            }
+            if (string.IsNullOrEmpty(refreshToken)) return null;
 
-            return await Task.FromResult(true);
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var content = new FormUrlEncodedContent(new[]
+                    {
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("refresh_token", refreshToken)
+            });
+
+                    var response = await client.PostAsync($"https://securetoken.googleapis.com/v1/token?key={ApiKey}", content);
+
+                    if (!response.IsSuccessStatusCode) return null;
+
+                    var json = await response.Content.ReadAsStringAsync();
+
+                    if (json.Contains("id_token"))
+                    {
+                        var split1 = json.Split(new[] { "\"id_token\": \"" }, StringSplitOptions.None)[1];
+                        var newToken = split1.Split('"')[0];
+                        return newToken;
+                    }
+                }
+            }
+            catch { }
+
+            return null; 
         }
 
         public async Task<bool> LoginAsync(string email, string password)
@@ -79,5 +103,6 @@ namespace LexiScan.Core.Services
             }
             catch { return false; }
         }
+
     }
 }

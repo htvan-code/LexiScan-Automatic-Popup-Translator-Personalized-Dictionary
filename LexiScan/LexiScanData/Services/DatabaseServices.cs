@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Firebase.Database;
 using Firebase.Database.Query;
 using LexiScanData.Models;
+using LexiScan.Core;
 
 namespace LexiScanData.Services
 {
@@ -16,18 +17,21 @@ namespace LexiScanData.Services
         private readonly FirebaseClient _client;
         private readonly string _userId;
 
-        // BẮT BUỘC: Phải có UserId
-        public DatabaseServices(string userId)
+        public DatabaseServices(string userId, string authToken)
         {
-            _client = new FirebaseClient(DbUrl);
             _userId = userId;
+
+            _client = new FirebaseClient(DbUrl, new FirebaseOptions
+            {
+                AuthTokenAsyncFactory = () => Task.FromResult(LexiScan.Core.SessionManager.CurrentAuthToken)
+            });
         }
 
         // ==========================================
         // PHẦN 1: QUẢN LÝ LỊCH SỬ DỊCH (HISTORY)
         // ==========================================
 
-        // 1.1 Thêm vào lịch sử (Dùng ở màn hình chính khi dịch xong)
+        // 1.1 Thêm vào lịch sử 
         public async Task AddHistoryAsync(Sentences sentence)
         {
             await _client
@@ -37,7 +41,7 @@ namespace LexiScanData.Services
                 .PostAsync(sentence);
         }
 
-        // 1.2 Lấy danh sách lịch sử về (Để hiển thị lên UI)
+        // 1.2 Lấy danh sách lịch sử về
         public async Task<List<Sentences>> GetHistoryAsync()
         {
             var items = await _client
@@ -45,15 +49,15 @@ namespace LexiScanData.Services
                 .Child(_userId)
                 .Child("history")
                 .OrderByKey()
-                .LimitToLast(50) // Lấy 50 tin mới nhất
+                .LimitToLast(50) 
                 .OnceAsync<Sentences>();
 
             return items.Select(i =>
             {
                 var s = i.Object;
-                s.SentenceId = i.Key; // Gán ID của Firebase về lại object
+                s.SentenceId = i.Key; 
                 return s;
-            }).Reverse().ToList(); // Đảo ngược để tin mới nhất lên đầu
+            }).Reverse().ToList(); 
         }
 
         // 1.3 Xóa lịch sử theo từ gốc
@@ -133,8 +137,8 @@ namespace LexiScanData.Services
             // Tạo object dữ liệu
             var item = new WordExample
             {
-                SourceText = text,       // Chắc chắn file WordExample.cs của bạn dùng tên này
-                Meaning = meaning,       // Chắc chắn file WordExample.cs của bạn dùng tên này
+                SourceText = text,      
+                Meaning = meaning,      
                 SavedDate = DateTime.Now
             };
 

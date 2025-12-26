@@ -14,4 +14,8 @@
     <PackageReference Include="FirebaseDatabase.net" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\LexiScann\LexiScan.Core\LexiScan.Core.csproj" />
+  </ItemGroup>
+
 </Project>

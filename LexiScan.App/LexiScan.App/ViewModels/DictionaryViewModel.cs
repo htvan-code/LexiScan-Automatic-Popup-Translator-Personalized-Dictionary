@@ -49,7 +49,10 @@ namespace LexiScan.App.ViewModels
             _settingsService = new SettingsService();
 
             string uid = SessionManager.CurrentUserId;
-            if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+            string token = SessionManager.CurrentAuthToken; 
+                                                            
+            if (!string.IsNullOrEmpty(uid) && !string.IsNullOrEmpty(token))
+                _dbService = new DatabaseServices(uid, token);
 
             _coordinator.TranslationCompleted += OnTranslationResultReceived;
             SuggestionList = new ObservableCollection<string>();
@@ -181,12 +184,9 @@ namespace LexiScan.App.ViewModels
 
         private async void ExecutePinToFirebase(object? obj)
         {
-            if (_dbService == null)
-            {
-                if (!string.IsNullOrEmpty(SessionManager.CurrentUserId))
-                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
-                else return;
-            }
+            if (_dbService == null && (!string.IsNullOrEmpty(SessionManager.CurrentUserId) || !string.IsNullOrEmpty(SessionManager.CurrentAuthToken)))
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId, SessionManager.CurrentAuthToken);
+
 
             string textToSave = !string.IsNullOrWhiteSpace(DisplayWord) ? DisplayWord : SearchText;
 
@@ -275,9 +275,9 @@ namespace LexiScan.App.ViewModels
 
             DefinitionText = sb.ToString().Trim();
 
-            if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+            if (_dbService == null && (!string.IsNullOrEmpty(SessionManager.CurrentUserId) || !string.IsNullOrEmpty(SessionManager.CurrentAuthToken)))
             {
-                _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                _dbService = new DatabaseServices(SessionManager.CurrentUserId, SessionManager.CurrentAuthToken);
             }
 
             if (_dbService != null)
@@ -285,10 +285,7 @@ namespace LexiScan.App.ViewModels
                 try
                 {
                     string wordToCheck = !string.IsNullOrEmpty(DisplayWord) ? DisplayWord : SearchText;
-                    // Hàm này trả về Key nếu có, null nếu không
                     string? key = await _dbService.FindSavedKeyAsync(wordToCheck);
-
-                    // Nếu key khác null => Đã lưu => IsPinned = true
                     IsPinned = (key != null);
                 }
                 catch { IsPinned = false; }
@@ -303,9 +300,9 @@ namespace LexiScan.App.ViewModels
 
             if (currentSettings.AutoSaveHistoryToDictionary)
             {
-                if (_dbService == null && !string.IsNullOrEmpty(SessionManager.CurrentUserId))
+                if (_dbService == null && (!string.IsNullOrEmpty(SessionManager.CurrentUserId) || !string.IsNullOrEmpty(SessionManager.CurrentAuthToken)))
                 {
-                    _dbService = new DatabaseServices(SessionManager.CurrentUserId);
+                    _dbService = new DatabaseServices(SessionManager.CurrentUserId, SessionManager.CurrentAuthToken);
                 }
 
                 if (_dbService != null)

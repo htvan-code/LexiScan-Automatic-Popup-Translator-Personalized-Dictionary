@@ -2,19 +2,18 @@
 using LexiScan.App.Commands;
 using LexiScanData.Services;
 using System;
-using System.Collections.Generic; // Cần dùng List
+using System.Collections.Generic; 
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System.Threading.Tasks;
-using System.Windows; // Cần để hiện MessageBox
-using System.Text; // [THÊM] Để dùng NormalizationForm
+using System.Windows; 
+using System.Text;
 
 namespace LexiScan.App.ViewModels
 {
     public class HistoryViewModel : BaseViewModel
     {
-        // Bỏ 'readonly' để tránh lỗi gán lại (CS0191)
         private DatabaseServices? _dbService;
         private readonly AppCoordinator _coordinator;
 
@@ -49,14 +48,12 @@ namespace LexiScan.App.ViewModels
 
         public ObservableCollection<HistoryEntry> HistoryEntries { get; set; } = new ObservableCollection<HistoryEntry>();
 
-        // Danh sách gốc để lưu trữ dữ liệu trước khi lọc
         private List<HistoryEntry> _allEntries = new List<HistoryEntry>();
 
         public ICommand ClearHistoryCommand { get; }
         public ICommand DeleteHistoryEntryCommand { get; }
         public ICommand ViewDetailsCommand { get; }
 
-        // Biến từ khóa tìm kiếm
         private string _searchTerm;
         public string SearchTerm
         {
@@ -65,7 +62,7 @@ namespace LexiScan.App.ViewModels
             {
                 _searchTerm = value;
                 OnPropertyChanged();
-                FilterList(); // Mỗi khi nhập là lọc ngay
+                FilterList(); 
             }
         }
 
@@ -73,10 +70,24 @@ namespace LexiScan.App.ViewModels
         {
             _coordinator = coordinator;
 
-            string uid = SessionManager.CurrentUserId;
-            if (!string.IsNullOrEmpty(uid))
+            LexiScan.Core.Utils.GlobalEvents.OnPersonalDictionaryUpdated += () =>
             {
-                _dbService = new DatabaseServices(uid);
+                string uid = SessionManager.CurrentUserId;
+                string token = SessionManager.CurrentAuthToken;
+
+                if (!string.IsNullOrEmpty(uid) && !string.IsNullOrEmpty(token))
+                {
+                    _dbService = new DatabaseServices(uid, token);
+                    Application.Current.Dispatcher.Invoke(() => LoadFirebaseHistory());
+                }
+            };
+
+            string currentUid = SessionManager.CurrentUserId;
+            string currentToken = SessionManager.CurrentAuthToken;
+
+            if (!string.IsNullOrEmpty(currentUid) && !string.IsNullOrEmpty(currentToken))
+            {
+                _dbService = new DatabaseServices(currentUid, currentToken);
                 LoadFirebaseHistory();
             }
 
@@ -98,7 +109,8 @@ namespace LexiScan.App.ViewModels
             if (_dbService == null)
             {
                 string uid = SessionManager.CurrentUserId;
-                if (!string.IsNullOrEmpty(uid)) _dbService = new DatabaseServices(uid);
+                string token = SessionManager.CurrentAuthToken;
+                if (!string.IsNullOrEmpty(uid) && !string.IsNullOrEmpty(token)) _dbService = new DatabaseServices(uid, SessionManager.CurrentAuthToken);
                 else return;
             }
 
@@ -139,12 +151,10 @@ namespace LexiScan.App.ViewModels
 
             if (string.IsNullOrWhiteSpace(SearchTerm))
             {
-                // Nếu không tìm kiếm -> Hiện hết
                 foreach (var item in _allEntries) HistoryEntries.Add(item);
             }
             else
             {
-                // Nếu có tìm kiếm -> Lọc theo tên
                 var filtered = _allEntries.Where(x => x.SearchTerm.ToLower().Contains(SearchTerm.ToLower())).ToList();
                 foreach (var item in filtered) HistoryEntries.Add(item);
             }
@@ -164,11 +174,9 @@ namespace LexiScan.App.ViewModels
             {
                 var listClone = new List<HistoryEntry>(HistoryEntries);
 
-                // Xóa trên giao diện ngay lập tức
                 HistoryEntries.Clear();
                 _allEntries.Clear();
 
-                // Xóa dưới Database (Firebase)
                 foreach (var item in listClone)
                 {
                     if (!string.IsNullOrEmpty(item.SearchTerm))
@@ -184,7 +192,6 @@ namespace LexiScan.App.ViewModels
         {
             if (parameter is HistoryEntry entry)
             {
-                // Xóa khỏi cả 2 danh sách
                 HistoryEntries.Remove(entry);
                 _allEntries.Remove(entry);
 

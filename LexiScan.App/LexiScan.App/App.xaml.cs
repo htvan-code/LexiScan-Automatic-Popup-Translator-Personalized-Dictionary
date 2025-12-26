@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Threading; // Để dùng EventWaitHandle và Thread
+using System.Threading; 
 using System.Windows;
 using LexiScan.App.Views;
-using LexiScan.App.ViewModels; // [THÊM] Để dùng MainViewModel
-using LexiScan.Core;           // [THÊM] Để dùng AppCoordinator
+using LexiScan.App.ViewModels; 
+using LexiScan.Core;         
 using LexiScan.Core.Services;
-using LexiScanService;  // [THÊM] Để dùng các Services
+using LexiScanService;  
 
 namespace LexiScan.App
 {
@@ -27,26 +27,16 @@ namespace LexiScan.App
             _mutex = new Mutex(true, UniqueMutexName, out isOwned);
             _eventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, UniqueEventName);
 
-            // ============================================================
-            // TRƯỜNG HỢP 1: APP ĐÃ CHẠY TỪ TRƯỚC (BẢN CŨ)
-            // ============================================================
             if (!isOwned)
             {
-                // Gửi tín hiệu đánh thức cho bản cũ
                 _eventWaitHandle.Set();
 
-                // Tắt bản mới này ngay lập tức
                 this.Shutdown();
                 return;
             }
 
-            // ============================================================
-            // TRƯỜNG HỢP 2: ĐÂY LÀ BẢN ĐẦU TIÊN (CHƯA CHẠY)
-            // ============================================================
             base.OnStartup(e);
 
-            // [QUAN TRỌNG - BƯỚC 1] Khởi tạo hệ thống Service & Coordinator TẠI ĐÂY
-            // Chúng ta phải tạo nó trước khi mở bất kỳ cửa sổ nào
             var ttsService = new TtsService();
             var voiceService = new VoicetoText();
             var translationService = new TranslationService();
@@ -99,8 +89,6 @@ namespace LexiScan.App
         public void ShowLoginWindow()
         {
             LoginView loginWindow = new LoginView();
-            // LoginView có thể cần ViewModel riêng hoặc xử lý code-behind đơn giản
-            // Nếu Login thành công thì gọi StartMainWindow()
             if (loginWindow.ShowDialog() == true)
             {
                 StartMainWindow();
@@ -111,42 +99,31 @@ namespace LexiScan.App
             }
         }
 
-        // [QUAN TRỌNG - BƯỚC 2] Sửa hàm khởi động MainWindow
+        //hàm khởi động MainWindow
         private void StartMainWindow()
         {
-            // Tạo ViewModel và truyền coordinator vào
             var mainVM = new MainViewModel(_coordinator);
 
-            // Tạo MainWindow và truyền coordinator vào (để dùng cho Hotkey/Clipboard)
             MainWindow main = new MainWindow(_coordinator);
 
-            // Gán DataContext
             main.DataContext = mainVM;
 
-            // Gán MainWindow của Application để luồng lắng nghe có thể tìm thấy
             this.MainWindow = main;
 
             main.Show();
         }
 
-        // Hàm đổi Theme (Giữ nguyên)
         public static void ChangeTheme(bool isDark)
         {
-            // --- Phần code cũ của bạn (giữ nguyên) ---
-            // Lưu ý: Dùng Application.Current thay vì Current nếu đang ở class khác ngoài App.xaml.cs
             var mergedDicts = System.Windows.Application.Current.Resources.MergedDictionaries;
 
-            // Xóa dictionary cuối cùng (đang là theme cũ)
             if (mergedDicts.Count > 0) mergedDicts.RemoveAt(mergedDicts.Count - 1);
 
-            // Thêm theme mới
             var newTheme = new ResourceDictionary();
             newTheme.Source = isDark ? new Uri("Themes/DarkTheme.xaml", UriKind.Relative)
                                      : new Uri("Themes/LightTheme.xaml", UriKind.Relative);
             mergedDicts.Add(newTheme);
 
-            // --- PHẦN CẦN THÊM VÀO ĐỂ SỬA LỖI MÀU CHỮ ---
-            // Cập nhật lại Resource "TextColorBrush" mà ListBox đang lắng nghe
             System.Windows.Application.Current.Resources["TextColorBrush"] = isDark
                 ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White)
                 : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Black);
