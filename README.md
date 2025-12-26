@@ -190,7 +190,7 @@ graph TD
 No coding skills required! Just download and use.
 
 1. Go to the **[Releases](../../releases)** page of this repository.
-2. Download the latest `LexiScan_v1.0.zip` file.
+2. Download the latest `LexiScan_v1.0.0.zip` file.
 3. Extract the `.zip` file.
 4. Open the folder and double-click **`LexiScan.exe`** to start.
 
