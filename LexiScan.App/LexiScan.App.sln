@@ -5,13 +5,13 @@ VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan.App", "LexiScan.App\LexiScan.App.csproj", "{6037CE70-9904-4FCB-B6A5-73B438D88321}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanData", "..\LexiScan\LexiScanData\LexiScanData.csproj", "{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanUI", "..\LexiScan\LexiScanUI\LexiScanUI.csproj", "{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenTranslator", "..\ScreenTranslator\ScreenTranslator\ScreenTranslator.csproj", "{C1EEF497-DDD2-2653-3358-5C3B100F9D91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan.Core", "..\LexiScann\LexiScan.Core\LexiScan.Core.csproj", "{3CE062AE-F238-2E3C-F741-39C0A881129F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScan.Core", "..\LexiScan.Core\LexiScan.Core.csproj", "{E75AC055-4827-03C4-A53D-19E42BDED36F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanData", "..\LexiScanData\LexiScanData.csproj", "{CF4259D8-1D7A-C71F-BC9E-0A39144F2819}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexiScanUI", "..\LexiScanUI\LexiScanUI.csproj", "{2FCE220D-023C-68D4-074E-407A25B6DA09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,22 +23,22 @@ Global
 		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6037CE70-9904-4FCB-B6A5-73B438D88321}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D6ED7244-D8E9-11EC-63D6-F1A026D5D73E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE8448C5-9E76-5BD1-A0AD-C4AE628925F4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1EEF497-DDD2-2653-3358-5C3B100F9D91}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3CE062AE-F238-2E3C-F741-39C0A881129F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E75AC055-4827-03C4-A53D-19E42BDED36F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E75AC055-4827-03C4-A53D-19E42BDED36F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E75AC055-4827-03C4-A53D-19E42BDED36F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E75AC055-4827-03C4-A53D-19E42BDED36F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF4259D8-1D7A-C71F-BC9E-0A39144F2819}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF4259D8-1D7A-C71F-BC9E-0A39144F2819}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF4259D8-1D7A-C71F-BC9E-0A39144F2819}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF4259D8-1D7A-C71F-BC9E-0A39144F2819}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FCE220D-023C-68D4-074E-407A25B6DA09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FCE220D-023C-68D4-074E-407A25B6DA09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FCE220D-023C-68D4-074E-407A25B6DA09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FCE220D-023C-68D4-074E-407A25B6DA09}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
