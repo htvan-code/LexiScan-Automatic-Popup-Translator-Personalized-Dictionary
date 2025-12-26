@@ -4,14 +4,13 @@ using LexiScan.Core.Models;
 using LexiScan.Core.Services;
 using LexiScan.Core.Utils;
 using LexiScanData.Services;
-using LexiScanService;
 using LexiScanUI.Helpers;
 using System.Collections.ObjectModel;
 using System.Speech.Synthesis;
 using System.Windows.Input;
 using InputKind = LexiScan.Core.Enums.InputType;
 using System.Text;
-using System.Collections.Generic; // Thêm để dùng List
+
 
 namespace LexiScanUI.ViewModels
 {
