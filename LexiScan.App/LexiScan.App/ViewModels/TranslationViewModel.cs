@@ -56,8 +56,8 @@ namespace LexiScan.App.ViewModels
             }
 
             SwapLanguageCommand = new RelayCommand(obj => ExecuteSwap());
-            SpeakSourceCommand = new RelayCommand(obj => _coordinator.Speak(SourceText, 1.0, _sourceLang));
-            SpeakTargetCommand = new RelayCommand(obj => _coordinator.Speak(TranslatedText, 1.0, _targetLang));
+            SpeakSourceCommand = new RelayCommand(obj => ExecuteSpeak(SourceText, _sourceLang));
+            SpeakTargetCommand = new RelayCommand(obj => ExecuteSpeak(TranslatedText, _targetLang));
 
             SaveTranslationCommand = new RelayCommand(async (obj) =>
             {
@@ -146,12 +146,13 @@ namespace LexiScan.App.ViewModels
                     if (result != null && !token.IsCancellationRequested)
                     {
                         TranslatedText = result.TranslatedText;
-
+                        /*
                         var settings = _settingsService.LoadSettings();
                         if (settings.AutoSaveHistoryToDictionary)
                         {
                             await ExecuteSaveHistory(forceSave: false);
                         }
+                        */
                     }
                 }
                 catch (OperationCanceledException) { }
@@ -198,6 +199,29 @@ namespace LexiScan.App.ViewModels
             OnPropertyChanged(nameof(IsTargetEnglishVisible));
 
             TriggerAutoTranslate();
+        }
+
+        private void ExecuteSpeak(string text, string langCode)
+        {
+            if (string.IsNullOrWhiteSpace(text) || text == "Bản dịch") return;
+
+            var settings = _settingsService.LoadSettings();
+
+            double speedRate = 0;
+            switch (settings.Speed)
+            {
+                case SpeechSpeed.Slower: speedRate = -5; break;
+                case SpeechSpeed.Slow: speedRate = -3; break;
+                case SpeechSpeed.Normal: speedRate = 0; break;
+            }
+
+            string finalLang = langCode;
+            if (langCode == "en")
+            {
+                finalLang = (settings.Voice == SpeechVoice.EngUK) ? "en-GB" : "en-US";
+            }
+
+            _coordinator.Speak(text, speedRate, finalLang);
         }
     }
 }

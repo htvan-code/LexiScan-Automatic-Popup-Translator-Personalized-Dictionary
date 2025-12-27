@@ -81,24 +81,30 @@ namespace ScreenTranslator
 
         private void MenuStartup_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is MenuItem item) SetStartup(item.IsChecked);
+            if (sender is MenuItem item)
+            {
+                bool desiredState = item.IsChecked;
+                bool success = SetStartup(desiredState);
+
+                if (!success)
+                {
+                    item.IsChecked = !desiredState;
+                }
+            }
         }
 
         private void ShowMainWindow()
         {
             if (_mainWindow != null)
             {
-                // 1. Nếu cửa sổ đang bị thu nhỏ, phải khôi phục lại kích thước bình thường
                 if (_mainWindow.WindowState == WindowState.Minimized)
                 {
                     _mainWindow.WindowState = WindowState.Normal;
                 }
 
-                // 2. Hiện cửa sổ
                 _mainWindow.Visibility = Visibility.Visible;
                 _mainWindow.Show();
 
-                // 3. Đưa cửa sổ lên trên cùng (Active)
                 _mainWindow.Activate();
                 _mainWindow.Topmost = true;  
                 _mainWindow.Topmost = false; 
@@ -106,25 +112,45 @@ namespace ScreenTranslator
             }
         }
 
-        private void SetStartup(bool enable)
+        private const string AppRegistryName = "LexiScan";
+
+        private bool SetStartup(bool enable)
         {
             try
             {
-                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true))
                 {
-                    string path = System.Reflection.Assembly.GetExecutingAssembly().Location.Replace(".dll", ".exe");
-                    if (enable) key.SetValue("ScreenTranslator", "\"" + path + "\"");
-                    else key.DeleteValue("ScreenTranslator", false);
+                    if (key == null) return false;
+
+                    string path = System.Environment.ProcessPath;
+
+                    if (string.IsNullOrEmpty(path)) return false;
+
+                    if (enable)
+                    {
+                        key.SetValue(AppRegistryName, $"\"{path}\"");
+                    }
+                    else
+                    {
+                        key.DeleteValue(AppRegistryName, false);
+                    }
+
+                    return true; 
                 }
             }
-            catch { }
+            catch
+            {
+                return false;
+            }
         }
+        
 
         private bool IsStartupEnabled()
         {
             using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
             {
-                return key.GetValue("ScreenTranslator") != null;
+                if (key == null) return false;
+                return key.GetValue(AppRegistryName) != null;
             }
         }
     }
