@@ -3,14 +3,16 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using LexiScan.Core;
+using LexiScan.Core.Services;
 
-namespace ScreenTranslator
+namespace LexiScan.Core.Services // Đảm bảo đúng namespace
 {
-    public class ClipboardHookService
+    public class ClipboardHookService : IHookService
     {
         public event Action<string>? OnTextCaptured;
         public event Action<string>? OnError;
 
+        // Mã phím Modifier
         public const int MOD_NONE = 0x0000;
         public const int MOD_ALT = 0x0001;
         public const int MOD_CONTROL = 0x0002;
@@ -23,10 +25,12 @@ namespace ScreenTranslator
         [DllImport("user32.dll")]
         static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
 
-        // Định nghĩa mã phím cho Win32 API
-        private const byte VK_CONTROL = 0x11;   // Mã phím Ctrl
-        private const byte VK_C = 0x43;         // Mã phím C
-        private const uint KEYEVENTF_KEYUP = 0x0002; // Cờ báo nhả phím
+        // Mã phím ảo để giả lập Copy
+        private const byte VK_CONTROL = 0x11;
+        private const byte VK_C = 0x43;
+        private const byte VK_MENU = 0x12; // Phím ALT
+        private const byte VK_SHIFT = 0x10; // Phím Shift
+        private const uint KEYEVENTF_KEYUP = 0x0002;
 
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
@@ -37,29 +41,77 @@ namespace ScreenTranslator
         private IntPtr _windowHandle;
         private bool _isRegistered = false;
 
-        public void Register(IntPtr windowHandle, int modifier, int key)
+        public void Register(IntPtr windowHandle)
         {
             _windowHandle = windowHandle;
-            UpdateHotkey(modifier, key);
         }
 
-        public void UpdateHotkey(int modifier, int key)
+        public void UpdateHotkey(string hotkeyString)
         {
+            // 1. Gỡ bỏ hotkey cũ
             if (_isRegistered)
             {
                 UnregisterHotKey(_windowHandle, HOTKEY_ID);
                 _isRegistered = false;
             }
 
-            bool success = RegisterHotKey(_windowHandle, HOTKEY_ID, modifier, key);
+            if (string.IsNullOrEmpty(hotkeyString)) return;
 
-            if (success)
+            int modifier = MOD_NONE;
+            int key = 0;
+
+            // Tách chuỗi linh hoạt (chấp nhận cả dấu + và dấu cách)
+            // Ví dụ: "Ctrl + 1" -> ["Ctrl", "1"]
+            var parts = hotkeyString.Split(new[] { '+', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var part in parts)
             {
-                _isRegistered = true;
+                string p = part.Trim();
+                if (string.IsNullOrEmpty(p)) continue;
+
+                switch (p)
+                {
+                    case "Ctrl": modifier |= MOD_CONTROL; break;
+                    case "Alt": modifier |= MOD_ALT; break;
+                    case "Shift": modifier |= MOD_SHIFT; break;
+                    case "Win": modifier |= MOD_WIN; break;
+                    default:
+                        // [QUAN TRỌNG] Xử lý lỗi phím số (1 -> D1, 2 -> D2...)
+                        // Nếu là số 0-9, thêm chữ 'D' đằng trước để khớp với Enum Keys.D1
+                        if (int.TryParse(p, out int digit))
+                        {
+                            p = "D" + digit;
+                        }
+
+                        // Cố gắng ép kiểu sang Enum Keys
+                        if (Enum.TryParse(p, true, out Keys k))
+                        {
+                            key = (int)k;
+                        }
+                        // Xử lý các phím đặc biệt nếu tên không khớp
+                        else if (p == "Esc") key = (int)Keys.Escape;
+                        else if (p == "Del" || p == "Delete") key = (int)Keys.Delete;
+                        else if (p == "Enter") key = (int)Keys.Enter;
+                        else if (p == "Space") key = (int)Keys.Space;
+                        else if (p == "Tab") key = (int)Keys.Tab;
+                        else if (p == "Backspace") key = (int)Keys.Back;
+                        break;
+                }
             }
-            else
+
+            // 2. Đăng ký hotkey mới
+            if (key != 0)
             {
-                OnError?.Invoke("Lỗi: Không thể đăng ký Hotkey này (Có thể bị trùng)!");
+                bool success = RegisterHotKey(_windowHandle, HOTKEY_ID, modifier, key);
+                if (success)
+                {
+                    _isRegistered = true;
+                    // Debug.WriteLine($"Đã đăng ký: {hotkeyString} (Key Code: {key})");
+                }
+                else
+                {
+                    OnError?.Invoke($"Không thể đăng ký phím tắt '{hotkeyString}'. Có thể bị trùng.");
+                }
             }
         }
 
@@ -72,9 +124,9 @@ namespace ScreenTranslator
             }
         }
 
-        public void ProcessWindowMessage(int msg, int param)
+        public void ProcessWindowMessage(int msg, IntPtr param)
         {
-            if (msg == WM_HOTKEY && param == HOTKEY_ID)
+            if (msg == WM_HOTKEY && param.ToInt64() == HOTKEY_ID)
             {
                 PerformCopy();
             }
@@ -82,43 +134,43 @@ namespace ScreenTranslator
 
         private void PerformCopy()
         {
-            try
+            Thread thread = new Thread(() =>
             {
-
-                try { Clipboard.Clear(); } catch { }
-
-      
-
-         
-
-                keybd_event(VK_CONTROL, 0, 0, 0);
-    
-                keybd_event(VK_C, 0, 0, 0);
-
-                Thread.Sleep(50);
-
-
-                keybd_event(VK_C, 0, KEYEVENTF_KEYUP, 0);
-
-                keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
-
-                Thread.Sleep(150);
-
-                string text = GetClipboardTextWithRetry();
-
-                if (!string.IsNullOrWhiteSpace(text))
+                try
                 {
-                    OnTextCaptured?.Invoke(text);
+                    try { Clipboard.Clear(); } catch { }
+
+                    // [FIX LỖI KẸT PHÍM]
+                    // Giả lập nhả các phím chức năng ra trước khi bấm Ctrl+C
+                    // Điều này giúp tránh lỗi khi người dùng giữ Alt hoặc Shift
+                    keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);    // Nhả Alt
+                    keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, 0);   // Nhả Shift
+                    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0); // Nhả Ctrl
+
+                    Thread.Sleep(50); // Nghỉ xíu cho hệ thống xử lý
+
+                    // Thực hiện Ctrl + C
+                    keybd_event(VK_CONTROL, 0, 0, 0);
+                    keybd_event(VK_C, 0, 0, 0);
+                    Thread.Sleep(50);
+                    keybd_event(VK_C, 0, KEYEVENTF_KEYUP, 0);
+                    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+
+                    Thread.Sleep(150); // Chờ Windows copy xong
+
+                    string text = GetClipboardTextWithRetry();
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        OnTextCaptured?.Invoke(text);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine("Clipboard rỗng hoặc bị khóa.");
+                    OnError?.Invoke("Lỗi Copy: " + ex.Message);
                 }
-            }
-            catch (Exception ex)
-            {
-                OnError?.Invoke("Lỗi Copy: " + ex.Message);
-            }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
         }
 
         private string GetClipboardTextWithRetry()
@@ -127,10 +179,7 @@ namespace ScreenTranslator
             {
                 try
                 {
-                    if (Clipboard.ContainsText())
-                    {
-                        return Clipboard.GetText();
-                    }
+                    if (Clipboard.ContainsText()) return Clipboard.GetText();
                 }
                 catch (System.Runtime.InteropServices.ExternalException)
                 {

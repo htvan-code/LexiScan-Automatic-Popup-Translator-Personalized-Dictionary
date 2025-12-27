@@ -1,11 +1,11 @@
 ﻿using LexiScan.App.Commands;
-using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using System.Windows.Input;
 using LexiScan.Core.Models;
 using LexiScan.Core.Services;
+using LexiScan.Core.Utils;
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Input;
 
 namespace LexiScan.App.ViewModels
 {
@@ -16,8 +16,18 @@ namespace LexiScan.App.ViewModels
         private Settings _currentSettings;
         private bool _hasUnsavedChanges;
 
+        // Cờ chặn sự kiện khi khởi tạo
+        private bool _isInitializing = false;
+
         private bool _isChangingHotkey;
         private string _hotkeyButtonText = "Thiết Lập";
+        private string _currentHotkey;
+
+        public string CurrentHotkey
+        {
+            get => _currentHotkey;
+            set { _currentHotkey = value; OnPropertyChanged(); }
+        }
 
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
@@ -26,8 +36,10 @@ namespace LexiScan.App.ViewModels
 
         public SettingsViewModel()
         {
-            CurrentSettings = _settingsService.LoadSettings();
+            _isInitializing = true; // Bắt đầu khởi tạo
 
+            CurrentSettings = _settingsService.LoadSettings();
+            CurrentHotkey = CurrentSettings.Hotkey;
             ApplyTheme(CurrentSettings.IsDarkModeEnabled);
 
             SaveCommand = new RelayCommand(SaveSettings);
@@ -38,6 +50,9 @@ namespace LexiScan.App.ViewModels
                 HotkeyButtonText = "Đang bấm phím...";
             });
             ExportDataCommand = new RelayCommand(_ => { });
+
+            _isInitializing = false; // Xong khởi tạo
+            HasUnsavedChanges = false;
         }
 
         public Settings CurrentSettings
@@ -53,7 +68,8 @@ namespace LexiScan.App.ViewModels
                     _currentSettings.PropertyChanged += OnSettingsChanged;
                 }
                 OnPropertyChanged();
-                CheckIfDirty();
+
+                if (!_isInitializing) CheckIfDirty();
             }
         }
 
@@ -71,7 +87,11 @@ namespace LexiScan.App.ViewModels
             }
         }
 
-        public bool HasUnsavedChanges { get => _hasUnsavedChanges; set { _hasUnsavedChanges = value; OnPropertyChanged(); } }
+        public bool HasUnsavedChanges
+        {
+            get => _hasUnsavedChanges;
+            set { _hasUnsavedChanges = value; OnPropertyChanged(); }
+        }
 
         public bool IsChangingHotkey { get => _isChangingHotkey; set { _isChangingHotkey = value; OnPropertyChanged(); } }
         public string HotkeyButtonText { get => _hotkeyButtonText; set { _hotkeyButtonText = value; OnPropertyChanged(); } }
@@ -81,6 +101,7 @@ namespace LexiScan.App.ViewModels
             if (IsChangingHotkey)
             {
                 CurrentSettings.Hotkey = newHotkey;
+                CurrentHotkey = newHotkey;
                 OnPropertyChanged(nameof(CurrentSettings));
                 IsChangingHotkey = false;
                 HotkeyButtonText = "Thiết Lập";
@@ -90,6 +111,8 @@ namespace LexiScan.App.ViewModels
 
         private void OnSettingsChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (_isInitializing) return;
+
             if (e.PropertyName == nameof(Settings.IsDarkModeEnabled))
             {
                 OnPropertyChanged(nameof(IsDarkModeEnabled));
@@ -100,20 +123,39 @@ namespace LexiScan.App.ViewModels
 
         private void CheckIfDirty()
         {
+            if (_isInitializing) return;
             if (_currentSettings == null || _originalSettings == null) return;
-            HasUnsavedChanges = true;
+
+            HasUnsavedChanges = !AreSettingsEqual(_currentSettings, _originalSettings);
+        }
+
+        // [ĐÃ SỬA] Loại bỏ UserId và RefreshToken gây lỗi
+        private bool AreSettingsEqual(Settings a, Settings b)
+        {
+            return a.IsAutoReadEnabled == b.IsAutoReadEnabled &&
+                   a.Speed == b.Speed &&
+                   a.Voice == b.Voice &&
+                   a.IsDarkModeEnabled == b.IsDarkModeEnabled &&
+                   a.Hotkey == b.Hotkey &&
+                   a.AutoPronounceOnLookup == b.AutoPronounceOnLookup &&
+                   a.AutoPronounceOnTranslate == b.AutoPronounceOnTranslate;
         }
 
         private void SaveSettings(object parameter)
         {
             _settingsService.SaveSettings(_currentSettings);
-            _originalSettings = (Settings)_currentSettings.Clone(); 
-            HasUnsavedChanges = false; 
+            _originalSettings = (Settings)_currentSettings.Clone();
+            HasUnsavedChanges = false;
+
+            GlobalEvents.RaiseHotkeyChanged();
+
             MessageBox.Show("Đã lưu cài đặt!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void CancelChanges(object parameter)
         {
+            _isInitializing = true; // Bật cờ chặn sự kiện
+
             var backup = _originalSettings;
             _currentSettings.PropertyChanged -= OnSettingsChanged;
 
@@ -129,10 +171,13 @@ namespace LexiScan.App.ViewModels
 
             ApplyTheme(_currentSettings.IsDarkModeEnabled);
             OnPropertyChanged(nameof(IsDarkModeEnabled));
-            OnPropertyChanged(nameof(CurrentSettings)); // Refresh UI
+            OnPropertyChanged(nameof(CurrentSettings));
+            CurrentHotkey = _currentSettings.Hotkey;
 
+            _isInitializing = false; // Tắt cờ
             HasUnsavedChanges = false;
         }
+
         private void ApplyTheme(bool isDark)
         {
             var app = Application.Current;

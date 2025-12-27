@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Threading; 
+using System.Threading;
 using System.Windows;
 using LexiScan.App.Views;
-using LexiScan.App.ViewModels; 
-using LexiScan.Core;         
+using LexiScan.App.ViewModels;
+using LexiScan.Core;
 using LexiScan.Core.Services;
-using LexiScanService;  
+using LexiScanService;
+using ScreenTranslator; // [QUAN TRỌNG] Để dùng ClipboardHookService
 
 namespace LexiScan.App
 {
@@ -18,7 +19,7 @@ namespace LexiScan.App
         private EventWaitHandle _eventWaitHandle;
         private Mutex _mutex;
 
-        // [THÊM] Biến lưu trữ Coordinator để dùng chung
+        // Biến lưu trữ Coordinator để dùng chung
         private AppCoordinator _coordinator;
 
         protected override void OnStartup(StartupEventArgs e)
@@ -29,19 +30,29 @@ namespace LexiScan.App
 
             if (!isOwned)
             {
+                // Nếu app đã chạy rồi thì đánh thức nó dậy và tắt cái mới này đi
                 _eventWaitHandle.Set();
-
                 this.Shutdown();
                 return;
             }
 
             base.OnStartup(e);
 
+            // 1. Khởi tạo các Service con
             var ttsService = new TtsService();
             var voiceService = new VoicetoText();
             var translationService = new TranslationService();
 
-            _coordinator = new AppCoordinator(translationService, voiceService, ttsService);
+            // [MỚI] 2. Khởi tạo Hook Service từ Project ScreenTranslator
+            var hookService = new ClipboardHookService();
+
+            // [SỬA] 3. Truyền tất cả vào AppCoordinator
+            _coordinator = new AppCoordinator(
+                translationService,
+                voiceService,
+                ttsService,
+                hookService // <--- Truyền vào đây
+            );
 
 
             // A. Tạo luồng lắng nghe tín hiệu (để chờ bị đánh thức)
@@ -99,11 +110,12 @@ namespace LexiScan.App
             }
         }
 
-        //hàm khởi động MainWindow
+        // Hàm khởi động MainWindow
         private void StartMainWindow()
         {
             var mainVM = new MainViewModel(_coordinator);
 
+            // Truyền coordinator vào MainWindow để nó dùng HookService
             MainWindow main = new MainWindow(_coordinator);
 
             main.DataContext = mainVM;

@@ -1,10 +1,12 @@
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
-using LexiScan.Core.Services;
+using LexiScan.Core.Services; // Cần có namespace này chứa IHookService
+using LexiScan.Core.Utils;    // Cần có namespace này chứa GlobalEvents
 using LexiScanService;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows; // Cần tham chiếu PresentationFramework/WindowsBase
 
 namespace LexiScan.Core
 {
@@ -15,9 +17,18 @@ namespace LexiScan.Core
         private readonly TranslationService _translationService;
         private readonly VoicetoText _voiceToTextService;
         private readonly TtsService _ttsService;
+
+        // [MỚI] Thêm Settings và Hook Service
+        private readonly SettingsService _settingsService;
+        private readonly IHookService _systemHookService;
+
         private string _dictionaryFullText = "";
+
         // Thuộc tính để biết ai đang dùng Mic
         public VoiceSource CurrentVoiceSource { get; private set; }
+
+        // [MỚI] Public HookService để MainWindow có thể gọi đăng ký Handle
+        public IHookService HookService => _systemHookService;
 
         // Sự kiện dành cho Dictionary (Giao diện chính)
         public event Action<TranslationResult>? SearchResultReady;
@@ -33,12 +44,31 @@ namespace LexiScan.Core
         public event Action? VoiceRecognitionEnded;
         public event Action<int>? AudioLevelUpdated;
 
-        public AppCoordinator(TranslationService translationService, VoicetoText voiceToTextService, TtsService ttsService)
+        // [SỬA] Cập nhật Constructor để nhận IHookService từ bên ngoài (Dependency Injection)
+        public AppCoordinator(
+            TranslationService translationService,
+            VoicetoText voiceToTextService,
+            TtsService ttsService,
+            IHookService hookService) // <--- Nhận Hook Service tại đây
         {
             _translationService = translationService;
             _voiceToTextService = voiceToTextService;
             _ttsService = ttsService;
 
+            // Khởi tạo Settings và gán Hook Service
+            _settingsService = new SettingsService();
+            _systemHookService = hookService;
+
+            // [MỚI] Lắng nghe sự kiện khi Hook bắt được chữ
+            _systemHookService.OnTextCaptured += async (text) =>
+            {
+                await HandleClipboardTextAsync(text);
+            };
+
+            // [MỚI] Lắng nghe sự kiện thay đổi Hotkey từ SettingsViewModel
+            GlobalEvents.OnHotkeyChanged += ReloadHotkey;
+
+            // --- CÁC LOGIC CŨ GIỮ NGUYÊN ---
             _voiceToTextService.SpeechStarted += () => VoiceRecognitionStarted?.Invoke();
             _voiceToTextService.SpeechEnded += () => VoiceRecognitionEnded?.Invoke();
 
@@ -68,7 +98,6 @@ namespace LexiScan.Core
                 }
                 else if (CurrentVoiceSource == VoiceSource.Translation)
                 {
-                    // Translation: Vẫn cho nhảy chữ rào rào theo yêu cầu của anh
                     TranslationVoiceRecognized?.Invoke(clean);
                 }
             };
@@ -77,8 +106,13 @@ namespace LexiScan.Core
             {
                 AudioLevelUpdated?.Invoke(level);
             };
+        }
 
-          
+        // [MỚI] Hàm cập nhật Hotkey khi người dùng thay đổi trong cài đặt
+        private void ReloadHotkey()
+        {
+            var settings = _settingsService.LoadSettings();
+            _systemHookService.UpdateHotkey(settings.Hotkey);
         }
 
         public void Speak(string text, double speed, string accent)
@@ -143,7 +177,7 @@ namespace LexiScan.Core
 
         public void StartVoiceSearch(VoiceSource source)
         {
-            CurrentVoiceSource = source; 
+            CurrentVoiceSource = source;
             _voiceToTextService.StartListening();
         }
 
@@ -160,7 +194,6 @@ namespace LexiScan.Core
             return await _translationService.TranslateForMainApp(text, sl, tl);
         }
 
-        // Lấy kết quả dịch đầy đủ và trả về trực tiếp (thay vì bắn Event)
         public async Task<TranslationResult?> TranslateAndGetResultAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return null;
@@ -173,6 +206,5 @@ namespace LexiScan.Core
                 return null;
             }
         }
-
     }
 }

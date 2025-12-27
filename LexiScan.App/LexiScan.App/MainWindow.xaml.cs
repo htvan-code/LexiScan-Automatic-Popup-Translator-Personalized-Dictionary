@@ -1,9 +1,9 @@
 ﻿using LexiScan.App.Services;
-using LexiScan.App.ViewModels; 
+using LexiScan.App.ViewModels;
 using LexiScan.Core;
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
-using LexiScan.Core.Services;
+using LexiScan.Core.Services; // Cần namespace này cho SettingsService
 using LexiScanUI.View;
 using LexiScanUI.ViewModels;
 using ScreenTranslator;
@@ -20,12 +20,11 @@ namespace LexiScan.App
     public partial class MainWindow : Window
     {
         private TrayService _trayService;
-        private ClipboardHookService _hookService;
-        private readonly AppCoordinator _coordinator; 
+        private readonly AppCoordinator _coordinator;
         private PopupView _popupWindow;
 
-        private int _currentKey = 0x20; // Space
-        private int _currentMod = ClipboardHookService.MOD_CONTROL;
+        // [ĐÃ XÓA] Các biến _currentKey, _currentMod, _hookService không cần nữa
+        // vì logic Hotkey giờ được quản lý tập trung trong Service.
 
         public MainWindow(AppCoordinator coordinator)
         {
@@ -34,69 +33,82 @@ namespace LexiScan.App
             RestoreSession();
 
             _coordinator = coordinator;
+
+            // Lắng nghe kết quả dịch để hiển thị Popup
             _coordinator.OnPopupResultReceived += OnTranslationResultReceived;
 
-            _hookService = new ClipboardHookService();
-            _hookService.OnTextCaptured += SendTextToCoordinator;
-            _hookService.OnError += (msg) => MessageBox.Show(msg);
+            // [SỬA] Không tạo mới HookService ở đây nữa.
+            // AppCoordinator đã giữ instance của HookService rồi.
 
             _trayService = new TrayService(this);
             _trayService.Initialize();
         }
 
-
-        // PHẦN 1: ĐĂNG KÝ HOTKEY 
+        // PHẦN 1: ĐĂNG KÝ HOTKEY & WINDOW HOOK
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            IntPtr handle = new WindowInteropHelper(this).Handle;
+
+            var handle = new WindowInteropHelper(this).Handle;
+
             try
             {
-                _hookService.Register(handle, _currentMod, _currentKey);
+                // 1. Đăng ký Handle
+                _coordinator.HookService.Register(handle);
+
+                // [MỚI] Lắng nghe lỗi để debug
+                _coordinator.HookService.OnError += (msg) =>
+                {
+                    MessageBox.Show("Lỗi Hotkey Startup: " + msg);
+                };
+
+                // 2. Load settings và kích hoạt
+                var settingsService = new SettingsService();
+                var settings = settingsService.LoadSettings();
+
+                // Kiểm tra xem settings có trống không
+                if (!string.IsNullOrEmpty(settings.Hotkey))
+                {
+                    _coordinator.HookService.UpdateHotkey(settings.Hotkey);
+                }
+                else
+                {
+                    // Nếu trống thì gán mặc định Ctrl + Space
+                    _coordinator.HookService.UpdateHotkey("Ctrl + Space");
+                }
+
+                // 3. Hook Window Proc
                 HwndSource source = HwndSource.FromHwnd(handle);
-                source.AddHook(HwndHook);
+                source?.AddHook(WndProc);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi đăng ký Hotkey: " + ex.Message);
+                MessageBox.Show("Lỗi khởi tạo: " + ex.Message);
             }
         }
-
-        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            _hookService.ProcessWindowMessage(msg, (int)wParam);
+            // [SỬA] Xóa .ToInt32(), truyền trực tiếp wParam
+            _coordinator.HookService.ProcessWindowMessage(msg, wParam);
+
             return IntPtr.Zero;
         }
 
-        // PHẦN 2: XỬ LÝ DỊCH VÀ HIỆN POPUP 
-        private async void SendTextToCoordinator(string text)
-        {
-            var settingsService = new LexiScan.Core.Services.SettingsService();
-            var settings = settingsService.LoadSettings();
+        // PHẦN 2: XỬ LÝ HIỆN POPUP
+        // [ĐÃ XÓA] Hàm SendTextToCoordinator không cần nữa vì AppCoordinator tự nghe event
 
-            if (!settings.IsAutoReadEnabled) return;
-
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                await _coordinator.HandleClipboardTextAsync(text);
-            }
-        }
         private void OnTranslationResultReceived(TranslationResult result)
         {
             this.Dispatcher.Invoke(() =>
             {
-                if (!result.IsFromClipboard)
-                {
-                    return;
-                }
+                // Chỉ xử lý nếu là dịch từ Clipboard/Hotkey
+                if (!result.IsFromClipboard) return;
 
-                var settingsService = new LexiScan.Core.Services.SettingsService();
+                // Kiểm tra cài đặt xem có cho phép tự động hiện không
+                var settingsService = new SettingsService();
                 var settings = settingsService.LoadSettings();
 
-                if (!settings.IsAutoReadEnabled)
-                {
-                    return;
-                }
+                if (!settings.IsAutoReadEnabled) return;
 
                 if (result.Status == ServiceStatus.Success)
                 {
@@ -108,7 +120,7 @@ namespace LexiScan.App
                     _popupWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                     _popupWindow.Topmost = true;
 
-                    _popupWindow.Show(); 
+                    _popupWindow.Show();
                     _popupWindow.Activate();
 
                     if (_popupWindow.DataContext is PopupViewModel vm)
@@ -119,12 +131,13 @@ namespace LexiScan.App
             });
         }
 
+        // ... (CÁC PHẦN DƯỚI GIỮ NGUYÊN) ...
+
         private bool IsWindowOpen(Window window)
         {
             return window.IsLoaded && window.Visibility != Visibility.Collapsed;
         }
 
-        // PHẦN 3: ĐÓNG/ẨN CỬA SỔ 
         protected override void OnClosing(CancelEventArgs e)
         {
             e.Cancel = true;
@@ -170,29 +183,29 @@ namespace LexiScan.App
 
         private async void RestoreSession()
         {
-            string savedUid = LexiScan.App.Properties.Settings.Default.UserId;
-            string savedRefreshToken = LexiScan.App.Properties.Settings.Default.RefreshToken;
-
-            if (!string.IsNullOrEmpty(savedUid) && !string.IsNullOrEmpty(savedRefreshToken))
+            try
             {
-                LexiScan.Core.SessionManager.CurrentUserId = savedUid;
+                string savedUid = LexiScan.App.Properties.Settings.Default.UserId;
+                string savedRefreshToken = LexiScan.App.Properties.Settings.Default.RefreshToken;
 
-                var authService = new LexiScan.Core.Services.AuthService();
-                string newToken = await authService.AutoLoginAsync(savedRefreshToken);
+                if (!string.IsNullOrEmpty(savedUid) && !string.IsNullOrEmpty(savedRefreshToken))
+                {
+                    LexiScan.Core.SessionManager.CurrentUserId = savedUid;
 
-                if (!string.IsNullOrEmpty(newToken))
-                {
-                    LexiScan.Core.SessionManager.CurrentAuthToken = newToken;
-                }
-                if (!string.IsNullOrEmpty(newToken))
-                {
-                    LexiScan.Core.SessionManager.CurrentAuthToken = newToken;
-                    Dispatcher.Invoke(() =>
+                    var authService = new LexiScan.Core.Services.AuthService();
+                    string newToken = await authService.AutoLoginAsync(savedRefreshToken);
+
+                    if (!string.IsNullOrEmpty(newToken))
                     {
-                        LexiScan.Core.Utils.GlobalEvents.RaisePersonalDictionaryUpdated();
-                    });
+                        LexiScan.Core.SessionManager.CurrentAuthToken = newToken;
+                        Dispatcher.Invoke(() =>
+                        {
+                            LexiScan.Core.Utils.GlobalEvents.RaisePersonalDictionaryUpdated();
+                        });
+                    }
                 }
             }
+            catch (Exception) { /* Bỏ qua lỗi session */ }
         }
     }
 }
