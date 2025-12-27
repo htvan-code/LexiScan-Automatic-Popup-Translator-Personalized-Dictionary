@@ -34,7 +34,7 @@ LexiScan is an innovative desktop translation tool developed to help users learn
 This project was developed as part of a course requirement at UIT.
 
 ### Academic Context
-- **Course:** IT008.P11
+- **Course:** IT008
 - **Objective:** Demonstrate proficiency in **Windows Desktop application development** using **C#, .NET 8, and WPF**.
 
 ### Academic Integrity
