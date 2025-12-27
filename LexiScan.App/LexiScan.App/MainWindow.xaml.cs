@@ -23,8 +23,6 @@ namespace LexiScan.App
         private readonly AppCoordinator _coordinator;
         private PopupView _popupWindow;
 
-        // [ĐÃ XÓA] Các biến _currentKey, _currentMod, _hookService không cần nữa
-        // vì logic Hotkey giờ được quản lý tập trung trong Service.
 
         public MainWindow(AppCoordinator coordinator)
         {
@@ -34,11 +32,8 @@ namespace LexiScan.App
 
             _coordinator = coordinator;
 
-            // Lắng nghe kết quả dịch để hiển thị Popup
             _coordinator.OnPopupResultReceived += OnTranslationResultReceived;
 
-            // [SỬA] Không tạo mới HookService ở đây nữa.
-            // AppCoordinator đã giữ instance của HookService rồi.
 
             _trayService = new TrayService(this);
             _trayService.Initialize();
@@ -53,31 +48,25 @@ namespace LexiScan.App
 
             try
             {
-                // 1. Đăng ký Handle
                 _coordinator.HookService.Register(handle);
 
-                // [MỚI] Lắng nghe lỗi để debug
                 _coordinator.HookService.OnError += (msg) =>
                 {
                     MessageBox.Show("Lỗi Hotkey Startup: " + msg);
                 };
 
-                // 2. Load settings và kích hoạt
                 var settingsService = new SettingsService();
                 var settings = settingsService.LoadSettings();
 
-                // Kiểm tra xem settings có trống không
                 if (!string.IsNullOrEmpty(settings.Hotkey))
                 {
                     _coordinator.HookService.UpdateHotkey(settings.Hotkey);
                 }
                 else
                 {
-                    // Nếu trống thì gán mặc định Ctrl + Space
                     _coordinator.HookService.UpdateHotkey("Ctrl + Space");
                 }
 
-                // 3. Hook Window Proc
                 HwndSource source = HwndSource.FromHwnd(handle);
                 source?.AddHook(WndProc);
             }
@@ -88,23 +77,19 @@ namespace LexiScan.App
         }
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            // [SỬA] Xóa .ToInt32(), truyền trực tiếp wParam
             _coordinator.HookService.ProcessWindowMessage(msg, wParam);
 
             return IntPtr.Zero;
         }
 
         // PHẦN 2: XỬ LÝ HIỆN POPUP
-        // [ĐÃ XÓA] Hàm SendTextToCoordinator không cần nữa vì AppCoordinator tự nghe event
 
         private void OnTranslationResultReceived(TranslationResult result)
         {
             this.Dispatcher.Invoke(() =>
             {
-                // Chỉ xử lý nếu là dịch từ Clipboard/Hotkey
                 if (!result.IsFromClipboard) return;
 
-                // Kiểm tra cài đặt xem có cho phép tự động hiện không
                 var settingsService = new SettingsService();
                 var settings = settingsService.LoadSettings();
 
@@ -205,7 +190,7 @@ namespace LexiScan.App
                     }
                 }
             }
-            catch (Exception) { /* Bỏ qua lỗi session */ }
+            catch (Exception) {  }
         }
     }
 }

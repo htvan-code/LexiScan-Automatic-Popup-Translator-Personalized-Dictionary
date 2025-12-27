@@ -88,7 +88,6 @@ namespace LexiScan.Core.Services // Đảm bảo đúng namespace
                         {
                             key = (int)k;
                         }
-                        // Xử lý các phím đặc biệt nếu tên không khớp
                         else if (p == "Esc") key = (int)Keys.Escape;
                         else if (p == "Del" || p == "Delete") key = (int)Keys.Delete;
                         else if (p == "Enter") key = (int)Keys.Enter;
@@ -99,14 +98,12 @@ namespace LexiScan.Core.Services // Đảm bảo đúng namespace
                 }
             }
 
-            // 2. Đăng ký hotkey mới
             if (key != 0)
             {
                 bool success = RegisterHotKey(_windowHandle, HOTKEY_ID, modifier, key);
                 if (success)
                 {
                     _isRegistered = true;
-                    // Debug.WriteLine($"Đã đăng ký: {hotkeyString} (Key Code: {key})");
                 }
                 else
                 {
@@ -140,23 +137,19 @@ namespace LexiScan.Core.Services // Đảm bảo đúng namespace
                 {
                     try { Clipboard.Clear(); } catch { }
 
-                    // [FIX LỖI KẸT PHÍM]
-                    // Giả lập nhả các phím chức năng ra trước khi bấm Ctrl+C
-                    // Điều này giúp tránh lỗi khi người dùng giữ Alt hoặc Shift
-                    keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);    // Nhả Alt
-                    keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, 0);   // Nhả Shift
-                    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0); // Nhả Ctrl
+                    keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);   
+                    keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, 0);  
+                    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0); 
 
-                    Thread.Sleep(50); // Nghỉ xíu cho hệ thống xử lý
+                    Thread.Sleep(50); 
 
-                    // Thực hiện Ctrl + C
                     keybd_event(VK_CONTROL, 0, 0, 0);
                     keybd_event(VK_C, 0, 0, 0);
                     Thread.Sleep(50);
                     keybd_event(VK_C, 0, KEYEVENTF_KEYUP, 0);
                     keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
 
-                    Thread.Sleep(150); // Chờ Windows copy xong
+                    Thread.Sleep(150); 
 
                     string text = GetClipboardTextWithRetry();
                     if (!string.IsNullOrWhiteSpace(text))

@@ -16,7 +16,6 @@ namespace LexiScan.App.ViewModels
         private Settings _currentSettings;
         private bool _hasUnsavedChanges;
 
-        // Cờ chặn sự kiện khi khởi tạo
         private bool _isInitializing = false;
 
         private bool _isChangingHotkey;
@@ -36,7 +35,7 @@ namespace LexiScan.App.ViewModels
 
         public SettingsViewModel()
         {
-            _isInitializing = true; // Bắt đầu khởi tạo
+            _isInitializing = true; 
 
             CurrentSettings = _settingsService.LoadSettings();
             CurrentHotkey = CurrentSettings.Hotkey;
@@ -51,7 +50,7 @@ namespace LexiScan.App.ViewModels
             });
             ExportDataCommand = new RelayCommand(_ => { });
 
-            _isInitializing = false; // Xong khởi tạo
+            _isInitializing = false; 
             HasUnsavedChanges = false;
         }
 
@@ -129,7 +128,6 @@ namespace LexiScan.App.ViewModels
             HasUnsavedChanges = !AreSettingsEqual(_currentSettings, _originalSettings);
         }
 
-        // [ĐÃ SỬA] Loại bỏ UserId và RefreshToken gây lỗi
         private bool AreSettingsEqual(Settings a, Settings b)
         {
             return a.IsAutoReadEnabled == b.IsAutoReadEnabled &&
@@ -154,7 +152,7 @@ namespace LexiScan.App.ViewModels
 
         private void CancelChanges(object parameter)
         {
-            _isInitializing = true; // Bật cờ chặn sự kiện
+            _isInitializing = true; 
 
             var backup = _originalSettings;
             _currentSettings.PropertyChanged -= OnSettingsChanged;
@@ -174,7 +172,7 @@ namespace LexiScan.App.ViewModels
             OnPropertyChanged(nameof(CurrentSettings));
             CurrentHotkey = _currentSettings.Hotkey;
 
-            _isInitializing = false; // Tắt cờ
+            _isInitializing = false; 
             HasUnsavedChanges = false;
         }
 

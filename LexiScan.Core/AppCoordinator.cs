@@ -1,12 +1,12 @@
 using LexiScan.Core.Enums;
 using LexiScan.Core.Models;
-using LexiScan.Core.Services; // Cần có namespace này chứa IHookService
-using LexiScan.Core.Utils;    // Cần có namespace này chứa GlobalEvents
+using LexiScan.Core.Services; 
+using LexiScan.Core.Utils;  
 using LexiScanService;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows; // Cần tham chiếu PresentationFramework/WindowsBase
+using System.Windows; 
 
 namespace LexiScan.Core
 {
@@ -18,57 +18,46 @@ namespace LexiScan.Core
         private readonly VoicetoText _voiceToTextService;
         private readonly TtsService _ttsService;
 
-        // [MỚI] Thêm Settings và Hook Service
         private readonly SettingsService _settingsService;
         private readonly IHookService _systemHookService;
 
         private string _dictionaryFullText = "";
 
-        // Thuộc tính để biết ai đang dùng Mic
         public VoiceSource CurrentVoiceSource { get; private set; }
 
-        // [MỚI] Public HookService để MainWindow có thể gọi đăng ký Handle
         public IHookService HookService => _systemHookService;
 
-        // Sự kiện dành cho Dictionary (Giao diện chính)
         public event Action<TranslationResult>? SearchResultReady;
         public event Action<TranslationResult>? TranslationCompleted;
 
-        // Sự kiện dành cho Popup (Dịch nhanh từ Clipboard/Hotkey)
         public event Action<TranslationResult>? OnPopupResultReceived;
 
-        // Các sự kiện Voice
         public event Action<string>? VoiceSearchCompleted;
         public event Action<string>? TranslationVoiceRecognized;
         public event Action? VoiceRecognitionStarted;
         public event Action? VoiceRecognitionEnded;
         public event Action<int>? AudioLevelUpdated;
 
-        // [SỬA] Cập nhật Constructor để nhận IHookService từ bên ngoài (Dependency Injection)
         public AppCoordinator(
             TranslationService translationService,
             VoicetoText voiceToTextService,
             TtsService ttsService,
-            IHookService hookService) // <--- Nhận Hook Service tại đây
+            IHookService hookService) 
         {
             _translationService = translationService;
             _voiceToTextService = voiceToTextService;
             _ttsService = ttsService;
 
-            // Khởi tạo Settings và gán Hook Service
             _settingsService = new SettingsService();
             _systemHookService = hookService;
 
-            // [MỚI] Lắng nghe sự kiện khi Hook bắt được chữ
             _systemHookService.OnTextCaptured += async (text) =>
             {
                 await HandleClipboardTextAsync(text);
             };
 
-            // [MỚI] Lắng nghe sự kiện thay đổi Hotkey từ SettingsViewModel
             GlobalEvents.OnHotkeyChanged += ReloadHotkey;
 
-            // --- CÁC LOGIC CŨ GIỮ NGUYÊN ---
             _voiceToTextService.SpeechStarted += () => VoiceRecognitionStarted?.Invoke();
             _voiceToTextService.SpeechEnded += () => VoiceRecognitionEnded?.Invoke();
 
@@ -108,7 +97,7 @@ namespace LexiScan.Core
             };
         }
 
-        // [MỚI] Hàm cập nhật Hotkey khi người dùng thay đổi trong cài đặt
+        // cập nhật Hotkey
         private void ReloadHotkey()
         {
             var settings = _settingsService.LoadSettings();
@@ -125,7 +114,7 @@ namespace LexiScan.Core
             return await _translationService.GetGoogleSuggestionsAsync(prefix);
         }
 
-        // --- HÀM TRA CỨU TỪ ĐIỂN ---
+        // ---TRA CỨU TỪ ĐIỂN ---
         public async Task ExecuteSearchAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return;
@@ -151,7 +140,7 @@ namespace LexiScan.Core
             }
         }
 
-        //--- HÀM DỊCH NHANH POPUP ---
+        //---DỊCH NHANH POPUP ---
         public async Task HandleClipboardTextAsync(string rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText)) return;

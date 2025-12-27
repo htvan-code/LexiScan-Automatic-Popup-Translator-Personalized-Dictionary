@@ -6,20 +6,18 @@ using LexiScan.App.ViewModels;
 using LexiScan.Core;
 using LexiScan.Core.Services;
 using LexiScanService;
-using ScreenTranslator; // [QUAN TRỌNG] Để dùng ClipboardHookService
+using ScreenTranslator; 
 
 namespace LexiScan.App
 {
     public partial class App : Application
     {
-        // 1. Tạo định danh duy nhất cho App
         private const string UniqueEventName = "LexiScan_Unique_Event_Signal";
         private const string UniqueMutexName = "LexiScan_Unique_Mutex_ID";
 
         private EventWaitHandle _eventWaitHandle;
         private Mutex _mutex;
 
-        // Biến lưu trữ Coordinator để dùng chung
         private AppCoordinator _coordinator;
 
         protected override void OnStartup(StartupEventArgs e)
@@ -30,7 +28,6 @@ namespace LexiScan.App
 
             if (!isOwned)
             {
-                // Nếu app đã chạy rồi thì đánh thức nó dậy và tắt cái mới này đi
                 _eventWaitHandle.Set();
                 this.Shutdown();
                 return;
@@ -38,27 +35,22 @@ namespace LexiScan.App
 
             base.OnStartup(e);
 
-            // 1. Khởi tạo các Service con
             var ttsService = new TtsService();
             var voiceService = new VoicetoText();
             var translationService = new TranslationService();
 
-            // [MỚI] 2. Khởi tạo Hook Service từ Project ScreenTranslator
             var hookService = new ClipboardHookService();
 
-            // [SỬA] 3. Truyền tất cả vào AppCoordinator
             _coordinator = new AppCoordinator(
                 translationService,
                 voiceService,
                 ttsService,
-                hookService // <--- Truyền vào đây
+                hookService 
             );
 
 
-            // A. Tạo luồng lắng nghe tín hiệu (để chờ bị đánh thức)
             StartSignalListener();
 
-            // B. Code khởi động cũ của bạn
             this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             // Kiểm tra Token đăng nhập
@@ -74,7 +66,7 @@ namespace LexiScan.App
             }
         }
 
-        // --- HÀM LẮNG NGHE TÍN HIỆU TỪ APP KHÁC (Giữ nguyên) ---
+        // --- LẮNG NGHE TÍN HIỆU ---
         private void StartSignalListener()
         {
             Thread thread = new Thread(() =>
@@ -110,12 +102,11 @@ namespace LexiScan.App
             }
         }
 
-        // Hàm khởi động MainWindow
+        //khởi động MainWindow
         private void StartMainWindow()
         {
             var mainVM = new MainViewModel(_coordinator);
 
-            // Truyền coordinator vào MainWindow để nó dùng HookService
             MainWindow main = new MainWindow(_coordinator);
 
             main.DataContext = mainVM;
