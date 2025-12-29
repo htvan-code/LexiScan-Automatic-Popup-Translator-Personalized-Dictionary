@@ -86,13 +86,11 @@
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-
                             <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" 
                                                    CanContentScroll="{TemplateBinding CanContentScroll}" 
                                                    Content="{TemplateBinding Content}" 
                                                    Grid.Column="0" Grid.Row="0" 
                                                    Margin="{TemplateBinding Padding}"/>
-
                             <ScrollBar x:Name="PART_VerticalScrollBar" 
                                        Grid.Column="1" Grid.Row="0"
                                        Maximum="{TemplateBinding ScrollableHeight}" 
@@ -273,17 +271,46 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" Background="Transparent" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="5" Height="38" Margin="0,0,10,0" IsHitTestVisible="False">
-                                    <TextBlock Text="{Binding CurrentSettings.Hotkey}" 
-                                               Foreground="{DynamicResource PrimaryText}"
-                                               VerticalAlignment="Center" 
-                                               Padding="10,0" 
-                                               FontSize="14"/>
+                                <Border Grid.Column="0" Background="Transparent" 
+                                        BorderBrush="{DynamicResource BorderColor}" 
+                                        BorderThickness="0,0,0,1" 
+                                        Height="38" Margin="0,0,10,0" 
+                                        IsHitTestVisible="False">
+                                    <Grid>
+                                        <TextBlock Text="{Binding CurrentSettings.Hotkey}" 
+                                                   Foreground="{DynamicResource PrimaryText}"
+                                                   VerticalAlignment="Center" 
+                                                   Padding="10,0" 
+                                                   FontSize="14">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChangingHotkey}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <Rectangle Height="2" VerticalAlignment="Bottom" Fill="{DynamicResource PrimaryAccent}" Margin="0,0,0,-1" Visibility="Collapsed">
+                                            <Rectangle.Style>
+                                                <Style TargetType="Rectangle">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChangingHotkey}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Rectangle.Style>
+                                        </Rectangle>
+                                    </Grid>
                                 </Border>
 
                                 <Button Grid.Column="1" Width="120" Style="{StaticResource ActionButtonStyle}" Background="{DynamicResource CardBackground}" Command="{Binding ChangeHotkeyCommand}">
                                     <Border Background="{DynamicResource BorderColor}" CornerRadius="5" Padding="10,5">
-                                        <TextBlock Text="Thiết Lập" Foreground="{DynamicResource PrimaryAccent}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding HotkeyButtonText}" Foreground="{DynamicResource PrimaryAccent}" FontWeight="SemiBold"/>
                                     </Border>
                                 </Button>
                             </Grid>

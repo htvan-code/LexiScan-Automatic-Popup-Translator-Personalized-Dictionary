@@ -10,7 +10,6 @@ namespace LexiScan.App.Views
         public SettingsView()
         {
             InitializeComponent();
-            // Lắng nghe phím bấm trên toàn bộ cửa sổ Settings
             this.PreviewKeyDown += SettingsView_PreviewKeyDown;
         }
 
@@ -18,11 +17,9 @@ namespace LexiScan.App.Views
         {
             if (DataContext is SettingsViewModel vm && vm.IsChangingHotkey)
             {
-                e.Handled = true; // Chặn các phím hệ thống thực hiện lệnh mặc định
-
+                e.Handled = true;
                 var key = (e.Key == Key.System ? e.SystemKey : e.Key);
 
-                // Bỏ qua nếu người dùng chỉ mới nhấn phím Modifier (Ctrl, Alt, Shift, Win)
                 if (key == Key.LeftCtrl || key == Key.RightCtrl ||
                     key == Key.LeftAlt || key == Key.RightAlt ||
                     key == Key.LeftShift || key == Key.RightShift ||
@@ -40,8 +37,6 @@ namespace LexiScan.App.Views
                 if ((modifiers & ModifierKeys.Windows) != 0) sb.Append("Win + ");
 
                 sb.Append(GetSafeKeyName(key));
-
-                // Cập nhật phím tắt mới vào ViewModel
                 vm.UpdateHotkey(sb.ToString());
             }
         }
@@ -68,6 +63,7 @@ namespace LexiScan.App.Views
                 Key.Return => "Enter",
                 Key.Escape => "Esc",
                 Key.Delete => "Del",
+                Key.Space => "Space",
                 _ => key.ToString()
             };
         }

@@ -35,7 +35,7 @@ namespace LexiScan.App.ViewModels
 
         public SettingsViewModel()
         {
-            _isInitializing = true; 
+            _isInitializing = true;
 
             CurrentSettings = _settingsService.LoadSettings();
             CurrentHotkey = CurrentSettings.Hotkey;
@@ -45,12 +45,12 @@ namespace LexiScan.App.ViewModels
             CancelCommand = new RelayCommand(CancelChanges);
 
             ChangeHotkeyCommand = new RelayCommand((o) => {
-                IsChangingHotkey = true;
+                IsChangingHotkey = true; 
                 HotkeyButtonText = "Đang bấm phím...";
             });
             ExportDataCommand = new RelayCommand(_ => { });
 
-            _isInitializing = false; 
+            _isInitializing = false;
             HasUnsavedChanges = false;
         }
 
@@ -95,6 +95,7 @@ namespace LexiScan.App.ViewModels
         public bool IsChangingHotkey { get => _isChangingHotkey; set { _isChangingHotkey = value; OnPropertyChanged(); } }
         public string HotkeyButtonText { get => _hotkeyButtonText; set { _hotkeyButtonText = value; OnPropertyChanged(); } }
 
+
         public void UpdateHotkey(string newHotkey)
         {
             if (IsChangingHotkey)
@@ -102,8 +103,8 @@ namespace LexiScan.App.ViewModels
                 CurrentSettings.Hotkey = newHotkey;
                 CurrentHotkey = newHotkey;
                 OnPropertyChanged(nameof(CurrentSettings));
-                IsChangingHotkey = false;
-                HotkeyButtonText = "Thiết Lập";
+
+
                 CheckIfDirty();
             }
         }
@@ -143,6 +144,10 @@ namespace LexiScan.App.ViewModels
         {
             _settingsService.SaveSettings(_currentSettings);
             _originalSettings = (Settings)_currentSettings.Clone();
+
+            IsChangingHotkey = false;
+            HotkeyButtonText = "Thiết Lập";
+
             HasUnsavedChanges = false;
 
             GlobalEvents.RaiseHotkeyChanged();
@@ -150,9 +155,10 @@ namespace LexiScan.App.ViewModels
             MessageBox.Show("Đã lưu cài đặt!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+
         private void CancelChanges(object parameter)
         {
-            _isInitializing = true; 
+            _isInitializing = true;
 
             var backup = _originalSettings;
             _currentSettings.PropertyChanged -= OnSettingsChanged;
@@ -172,7 +178,10 @@ namespace LexiScan.App.ViewModels
             OnPropertyChanged(nameof(CurrentSettings));
             CurrentHotkey = _currentSettings.Hotkey;
 
-            _isInitializing = false; 
+            IsChangingHotkey = false;
+            HotkeyButtonText = "Thiết Lập";
+
+            _isInitializing = false;
             HasUnsavedChanges = false;
         }
 
