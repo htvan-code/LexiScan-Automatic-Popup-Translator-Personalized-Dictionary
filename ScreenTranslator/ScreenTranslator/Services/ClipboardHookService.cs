@@ -5,14 +5,13 @@ using System.Windows.Forms;
 using LexiScan.Core;
 using LexiScan.Core.Services;
 
-namespace LexiScan.Core.Services // Đảm bảo đúng namespace
+namespace LexiScan.Core.Services 
 {
     public class ClipboardHookService : IHookService
     {
         public event Action<string>? OnTextCaptured;
         public event Action<string>? OnError;
 
-        // Mã phím Modifier
         public const int MOD_NONE = 0x0000;
         public const int MOD_ALT = 0x0001;
         public const int MOD_CONTROL = 0x0002;
@@ -25,7 +24,6 @@ namespace LexiScan.Core.Services // Đảm bảo đúng namespace
         [DllImport("user32.dll")]
         static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
 
-        // Mã phím ảo để giả lập Copy
         private const byte VK_CONTROL = 0x11;
         private const byte VK_C = 0x43;
         private const byte VK_MENU = 0x12; // Phím ALT
@@ -48,7 +46,6 @@ namespace LexiScan.Core.Services // Đảm bảo đúng namespace
 
         public void UpdateHotkey(string hotkeyString)
         {
-            // 1. Gỡ bỏ hotkey cũ
             if (_isRegistered)
             {
                 UnregisterHotKey(_windowHandle, HOTKEY_ID);
@@ -60,8 +57,6 @@ namespace LexiScan.Core.Services // Đảm bảo đúng namespace
             int modifier = MOD_NONE;
             int key = 0;
 
-            // Tách chuỗi linh hoạt (chấp nhận cả dấu + và dấu cách)
-            // Ví dụ: "Ctrl + 1" -> ["Ctrl", "1"]
             var parts = hotkeyString.Split(new[] { '+', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var part in parts)
@@ -76,14 +71,11 @@ namespace LexiScan.Core.Services // Đảm bảo đúng namespace
                     case "Shift": modifier |= MOD_SHIFT; break;
                     case "Win": modifier |= MOD_WIN; break;
                     default:
-                        // [QUAN TRỌNG] Xử lý lỗi phím số (1 -> D1, 2 -> D2...)
-                        // Nếu là số 0-9, thêm chữ 'D' đằng trước để khớp với Enum Keys.D1
                         if (int.TryParse(p, out int digit))
                         {
                             p = "D" + digit;
                         }
 
-                        // Cố gắng ép kiểu sang Enum Keys
                         if (Enum.TryParse(p, true, out Keys k))
                         {
                             key = (int)k;
