@@ -13,6 +13,7 @@ namespace LexiScan.App.Views
             InitializeComponent();
         }
 
+        // Xử lý Click chuột
         private void SuggestionListBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             var item = ItemsControl.ContainerFromElement(SuggestionListBox, e.OriginalSource as DependencyObject) as ListBoxItem;
@@ -21,12 +22,14 @@ namespace LexiScan.App.Views
             {
                 string selectedWord = item.Content.ToString();
                 PerformSearch(selectedWord);
-                e.Handled = true;
+                e.Handled = true; 
             }
         }
 
+        // Xử lý Bàn phím
         private void SearchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+ 
             if (SuggestionListBox.Items.Count == 0 || SuggestionListBox.Visibility != Visibility.Visible)
             {
                 return;
@@ -59,32 +62,28 @@ namespace LexiScan.App.Views
             }
         }
 
-
         private void PerformSearch(string word)
         {
             if (string.IsNullOrEmpty(word)) return;
 
-
-            SearchTextBox.Text = word;
-            SearchTextBox.CaretIndex = SearchTextBox.Text.Length;
-
-
-            BindingExpression binding = SearchTextBox.GetBindingExpression(TextBox.TextProperty);
-            if (binding != null)
-            {
-                binding.UpdateSource();
-            }
-
             if (DataContext is DictionaryViewModel vm)
             {
-                vm.SearchText = word;
+
                 vm.SelectedSuggestion = word;
+
+                vm.SuggestionList.Clear();
+
+                vm.SearchText = word;
 
                 if (vm.SearchCommand.CanExecute(null))
                 {
                     vm.SearchCommand.Execute(null);
                 }
             }
+
+            SearchTextBox.Text = word;
+            SearchTextBox.CaretIndex = SearchTextBox.Text.Length;
+            SearchTextBox.Focus();
         }
     }
 }
