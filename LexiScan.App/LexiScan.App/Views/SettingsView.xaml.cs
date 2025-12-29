@@ -10,6 +10,7 @@ namespace LexiScan.App.Views
         public SettingsView()
         {
             InitializeComponent();
+            // Lắng nghe phím bấm trên toàn bộ cửa sổ Settings
             this.PreviewKeyDown += SettingsView_PreviewKeyDown;
         }
 
@@ -17,10 +18,11 @@ namespace LexiScan.App.Views
         {
             if (DataContext is SettingsViewModel vm && vm.IsChangingHotkey)
             {
-                e.Handled = true; 
+                e.Handled = true; // Chặn các phím hệ thống thực hiện lệnh mặc định
 
                 var key = (e.Key == Key.System ? e.SystemKey : e.Key);
 
+                // Bỏ qua nếu người dùng chỉ mới nhấn phím Modifier (Ctrl, Alt, Shift, Win)
                 if (key == Key.LeftCtrl || key == Key.RightCtrl ||
                     key == Key.LeftAlt || key == Key.RightAlt ||
                     key == Key.LeftShift || key == Key.RightShift ||
@@ -31,46 +33,43 @@ namespace LexiScan.App.Views
 
                 var modifiers = Keyboard.Modifiers;
                 StringBuilder sb = new StringBuilder();
+
                 if ((modifiers & ModifierKeys.Control) != 0) sb.Append("Ctrl + ");
                 if ((modifiers & ModifierKeys.Alt) != 0) sb.Append("Alt + ");
                 if ((modifiers & ModifierKeys.Shift) != 0) sb.Append("Shift + ");
                 if ((modifiers & ModifierKeys.Windows) != 0) sb.Append("Win + ");
-                string niceKeyName = GetSafeKeyName(key);
 
-                sb.Append(niceKeyName);
+                sb.Append(GetSafeKeyName(key));
+
+                // Cập nhật phím tắt mới vào ViewModel
                 vm.UpdateHotkey(sb.ToString());
             }
         }
 
         private string GetSafeKeyName(Key key)
         {
+            if (key >= Key.D0 && key <= Key.D9) return key.ToString().Replace("D", "");
+            if (key >= Key.NumPad0 && key <= Key.NumPad9) return key.ToString().Replace("NumPad", "");
 
-            if (key >= Key.D0 && key <= Key.D9)
-                return key.ToString().Replace("D", "");
-
-            if (key >= Key.NumPad0 && key <= Key.NumPad9)
-                return key.ToString().Replace("NumPad", "");
-
-            switch (key)
+            return key switch
             {
-                case Key.Oem3: return "~";       // Phím dấu ngã / huyền
-                case Key.OemMinus: return "-";
-                case Key.OemPlus: return "+";
-                case Key.OemOpenBrackets: return "[";
-                case Key.OemCloseBrackets: return "]";
-                case Key.Oem5: return "\\";      // Dấu gạch chéo ngược
-                case Key.Oem1: return ";";
-                case Key.OemQuotes: return "'";
-                case Key.OemComma: return ",";
-                case Key.OemPeriod: return ".";
-                case Key.OemQuestion: return "/";
-
-                case Key.Back: return "Backspace";
-                case Key.Return: return "Enter";
-                case Key.Escape: return "Esc";
-                case Key.Delete: return "Del";
-                default: return key.ToString();
-            }
+                Key.Oem3 => "~",
+                Key.OemMinus => "-",
+                Key.OemPlus => "+",
+                Key.OemOpenBrackets => "[",
+                Key.OemCloseBrackets => "]",
+                Key.Oem5 => "\\",
+                Key.Oem1 => ";",
+                Key.OemQuotes => "'",
+                Key.OemComma => ",",
+                Key.OemPeriod => ".",
+                Key.OemQuestion => "/",
+                Key.Back => "Backspace",
+                Key.Return => "Enter",
+                Key.Escape => "Esc",
+                Key.Delete => "Del",
+                _ => key.ToString()
+            };
         }
     }
 }
