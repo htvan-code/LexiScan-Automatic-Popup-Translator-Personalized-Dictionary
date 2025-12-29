@@ -1,7 +1,8 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows;
-using LexiScan.App.ViewModels; // Nhớ using namespace ViewModel của bạn nếu cần ép kiểu
+using LexiScan.App.ViewModels;
+using System.Windows.Data;
 
 namespace LexiScan.App.Views
 {
@@ -12,7 +13,18 @@ namespace LexiScan.App.Views
             InitializeComponent();
         }
 
-        // xử lí điều hướng
+        private void SuggestionListBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = ItemsControl.ContainerFromElement(SuggestionListBox, e.OriginalSource as DependencyObject) as ListBoxItem;
+
+            if (item != null)
+            {
+                string selectedWord = item.Content.ToString();
+                PerformSearch(selectedWord);
+                e.Handled = true;
+            }
+        }
+
         private void SearchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (SuggestionListBox.Items.Count == 0 || SuggestionListBox.Visibility != Visibility.Visible)
@@ -20,72 +32,57 @@ namespace LexiScan.App.Views
                 return;
             }
 
-            // 1. XỬ LÝ PHÍM MŨI TÊN XUỐNG
             if (e.Key == Key.Down)
             {
-                if (SuggestionListBox.SelectedIndex < 0)
-                {
-                    SuggestionListBox.SelectedIndex = 0;
-                }
-                else if (SuggestionListBox.SelectedIndex < SuggestionListBox.Items.Count - 1)
-                {
-                    SuggestionListBox.SelectedIndex++;
-                }
-                SuggestionListBox.ScrollIntoView(SuggestionListBox.SelectedItem);
-                e.Handled = true; // Ngăn con trỏ trong TextBox di chuyển lung tung
-            }
+                if (SuggestionListBox.SelectedIndex < 0) SuggestionListBox.SelectedIndex = 0;
+                else if (SuggestionListBox.SelectedIndex < SuggestionListBox.Items.Count - 1) SuggestionListBox.SelectedIndex++;
 
-            // 2. XỬ LÝ PHÍM MŨI TÊN LÊN
-            else if (e.Key == Key.Up)
-            {
-                
-                if (SuggestionListBox.SelectedIndex > 0)
-                {
-                    SuggestionListBox.SelectedIndex--;
-                    SuggestionListBox.ScrollIntoView(SuggestionListBox.SelectedItem);
-                }
- 
-                else if (SuggestionListBox.SelectedIndex == 0)
-                {
-                    SuggestionListBox.SelectedIndex = -1;
-                }
+                SuggestionListBox.ScrollIntoView(SuggestionListBox.SelectedItem);
                 e.Handled = true;
             }
+            else if (e.Key == Key.Up)
+            {
+                if (SuggestionListBox.SelectedIndex > 0) SuggestionListBox.SelectedIndex--;
+                else if (SuggestionListBox.SelectedIndex == 0) SuggestionListBox.SelectedIndex = -1;
 
-            // 3. XỬ LÝ PHÍM ENTER
+                SuggestionListBox.ScrollIntoView(SuggestionListBox.SelectedItem);
+                e.Handled = true;
+            }
             else if (e.Key == Key.Enter)
             {
-                // Nếu đang có từ được chọn ở dưới ListBox
                 if (SuggestionListBox.SelectedItem != null)
                 {
                     string selectedWord = SuggestionListBox.SelectedItem.ToString();
-                    SearchTextBox.Text = selectedWord;
-                    SearchTextBox.CaretIndex = SearchTextBox.Text.Length;
+                    PerformSearch(selectedWord);
+                    e.Handled = true;
                 }
             }
         }
 
-        private void SuggestionListBox_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+
+        private void PerformSearch(string word)
         {
+            if (string.IsNullOrEmpty(word)) return;
 
-            var item = ItemsControl.ContainerFromElement(SuggestionListBox, e.OriginalSource as DependencyObject) as ListBoxItem;
-            if (item != null && SuggestionListBox.SelectedItem != null)
+
+            SearchTextBox.Text = word;
+            SearchTextBox.CaretIndex = SearchTextBox.Text.Length;
+
+
+            BindingExpression binding = SearchTextBox.GetBindingExpression(TextBox.TextProperty);
+            if (binding != null)
             {
-        
-                string selectedWord = SuggestionListBox.SelectedItem.ToString();
-                SearchTextBox.Text = selectedWord;
-                SearchTextBox.CaretIndex = SearchTextBox.Text.Length;
+                binding.UpdateSource();
+            }
 
-     
-                SuggestionListBox.Visibility = Visibility.Collapsed;
+            if (DataContext is DictionaryViewModel vm)
+            {
+                vm.SearchText = word;
+                vm.SelectedSuggestion = word;
 
-           
-                if (DataContext is LexiScan.App.ViewModels.DictionaryViewModel vm) 
+                if (vm.SearchCommand.CanExecute(null))
                 {
-                    if (vm.SearchCommand.CanExecute(null))
-                    {
-                        vm.SearchCommand.Execute(null);
-                    }
+                    vm.SearchCommand.Execute(null);
                 }
             }
         }

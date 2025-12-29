@@ -98,7 +98,7 @@
 
                         <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,10,0" Width="40" Height="40">
                             <Ellipse Fill="{DynamicResource PrimaryAccent}" Opacity="0.3" IsHitTestVisible="False"
-             HorizontalAlignment="Center" VerticalAlignment="Center">
+                                     HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Ellipse.Style>
                                     <Style TargetType="Ellipse">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -114,7 +114,7 @@
                             </Ellipse>
 
                             <Button Command="{Binding StartVoiceSearchCommand}" Style="{StaticResource IconButtonStyle}"
-            Width="40" Height="40" Panel.ZIndex="1">
+                                    Width="40" Height="40" Panel.ZIndex="1">
                                 <materialDesign:PackIcon Kind="Microphone" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <materialDesign:PackIcon.Style>
                                         <Style TargetType="materialDesign:PackIcon">
@@ -149,7 +149,7 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <Border CornerRadius="20" Width="40" Height="40" Background="{DynamicResource PrimaryAccent}" Margin="0,0,10,0">
                                 <Button Background="Transparent" Style="{StaticResource IconButtonStyle}" Foreground="White" 
-                                Command="{Binding PinToFirebaseCommand}">
+                                        Command="{Binding PinToFirebaseCommand}">
                                     <materialDesign:PackIcon Width="22" Height="22">
                                         <materialDesign:PackIcon.Style>
                                             <Style TargetType="materialDesign:PackIcon">
@@ -200,13 +200,13 @@
                 </Border.Style>
 
                 <ListBox x:Name="SuggestionListBox" 
-                         PreviewMouseLeftButtonUp="SuggestionListBox_PreviewMouseLeftButtonUp"
                          ItemsSource="{Binding SuggestionList}" 
                          SelectedItem="{Binding SelectedSuggestion}"
                          BorderThickness="0" 
                          Background="Transparent" 
                          MaxHeight="250" 
-                         ItemContainerStyle="{StaticResource ListBoxItemStyle}">
+                         ItemContainerStyle="{StaticResource ListBoxItemStyle}"
+                         PreviewMouseDown="SuggestionListBox_PreviewMouseDown">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding .}" 
